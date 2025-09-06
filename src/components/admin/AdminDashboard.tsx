@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, ChevronDown, Menu, Moon, Sun, Edit3, Save, X } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, ChevronDown, Menu, Moon, Sun, Edit3, Save, X, FileSpreadsheet } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
@@ -216,6 +216,16 @@ export default function AdminDashboard() {
                 ) : (
                   <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 )}
+              </GlassButton>
+              
+              {/* Google Sheet Link */}
+              <GlassButton
+                variant="secondary"
+                onClick={() => window.open('https://docs.google.com/spreadsheets/d/your-google-sheet-id-placeholder/edit?gid=1433307170#gid=1433307170', '_blank')}
+                className="p-2"
+                title="Open Google Sheet"
+              >
+                <FileSpreadsheet className="h-4 w-4 text-green-600 dark:text-green-400" />
               </GlassButton>
               
               <GlassButton
