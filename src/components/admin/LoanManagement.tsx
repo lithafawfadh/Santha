@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Calendar, DollarSign, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Calendar, DollarSign, AlertCircle, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
@@ -59,6 +59,24 @@ export default function LoanManagement() {
 
   const isOverdue = (dueDate: string) => {
     return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString();
+  };
+
+  const getDaysRemaining = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const formatCountdown = (daysRemaining: number) => {
+    if (daysRemaining > 0) {
+      return `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining`;
+    } else if (daysRemaining === 0) {
+      return 'Due today';
+    } else {
+      return `Overdue by ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) !== 1 ? 's' : ''}`;
+    }
   };
 
   return (
@@ -171,17 +189,22 @@ export default function LoanManagement() {
               </tr>
             </thead>
             <tbody className="bg-white bg-opacity-5 dark:bg-gray-800 dark:bg-opacity-5 divide-y divide-white divide-opacity-20 dark:divide-gray-700 dark:divide-opacity-20 backdrop-blur-sm">
-              {loans.map((loan) => {
+              {loans.map((loan, index) => {
                 const member = members.find(m => m.id === loan.memberId);
                 const outstanding = loan.amount - loan.repaidAmount;
                 const overdue = isOverdue(loan.dueDate) && loan.status === 'active';
                 const actualStatus = overdue ? 'overdue' : loan.status;
+                const daysRemaining = getDaysRemaining(loan.dueDate);
 
                 return (
-                  <tr key={loan.id} className="hover:bg-white hover:bg-opacity-10 dark:hover:bg-gray-700 dark:hover:bg-opacity-10 transition-colors duration-200">
+                  <tr 
+                    key={loan.id} 
+                    className="hover:bg-white hover:bg-opacity-10 dark:hover:bg-gray-700 dark:hover:bg-opacity-10 transition-all duration-300 animate-slide-in-right hover:scale-[1.01] hover:shadow-lg"
+                    style={{ animationDelay: `${index * 150}ms` }}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <div className="h-8 w-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center animate-pulse-gentle">
                           <span className="text-xs font-medium text-white">
                             {member?.name.charAt(0).toUpperCase()}
                           </span>
@@ -201,8 +224,24 @@ export default function LoanManagement() {
                       LKR {outstanding.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(loan.dueDate).toLocaleDateString()}
-                    </td>
+                      <div className="space-y-1">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(loan.dueDate).toLocaleDateString()}
+                        </div>
+                        {loan.status === 'active' && (
+                          <div className={`flex items-center space-x-1 text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm ${
+                            daysRemaining > 7 ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300' :
+                            daysRemaining > 0 ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-300 animate-pulse' :
+                            'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300 animate-bounce-alert'
+                          }`}>
+                            {daysRemaining > 0 ? (
+                              <Clock className="h-3 w-3" />
+                            ) : (
+                              <AlertTriangle className="h-3 w-3" />
+                            )}
+                            <span>{formatCountdown(daysRemaining)}</span>
+                          </div>
+                        )}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         actualStatus === 'active' ? 'bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200' :
@@ -244,7 +283,7 @@ export default function LoanManagement() {
                             <GlassButton
                               variant="accent"
                               onClick={() => setSelectedLoanId(loan.id)}
-                              className="text-sm font-medium px-3 py-1"
+                              className="text-sm font-medium px-3 py-1 hover:animate-pulse transition-all duration-300"
                             >
                               Add Repayment
                             </GlassButton>
@@ -258,6 +297,50 @@ export default function LoanManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Custom CSS for loan animations */}
+        <style jsx>{`
+          @keyframes slideInRight {
+            0% {
+              opacity: 0;
+              transform: translateX(50px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+          
+          @keyframes pulseGentle {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.02);
+            }
+          }
+          
+          @keyframes bounceAlert {
+            0%, 100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-2px);
+            }
+          }
+          
+          .animate-slide-in-right {
+            animation: slideInRight 0.6s ease-out forwards;
+          }
+          
+          .animate-pulse-gentle {
+            animation: pulseGentle 2s ease-in-out infinite;
+          }
+          
+          .animate-bounce-alert {
+            animation: bounceAlert 1s ease-in-out infinite;
+          }
+        `}</style>
 
         {loans.length === 0 && (
           <div className="text-center py-12">
