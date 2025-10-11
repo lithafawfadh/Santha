@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { GlassCard } from '../common/GlassCard';
-import { GlassButton } from '../common/GlassButton';
+import GlassButton from '../common/GlassButton';
 import { Plus, DollarSign, Calendar, User, AlertTriangle, Clock } from 'lucide-react';
 import type { Loan, Member } from '../../types';
 
