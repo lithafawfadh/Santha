@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { useAppContext } from '../../context/AppContext';
-import { GlassCard } from '../common/GlassCard';
+import { useApp } from '../../context/AppContext';
+import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import { Plus, DollarSign, Calendar, User, AlertTriangle, Clock } from 'lucide-react';
-import type { Loan, Member } from '../../types';
+import type { Loan } from '../../types';
 
-export const LoanManagement: React.FC = () => {
-  const { loans, members, addLoan, updateLoan } = useAppContext();
+export default function LoanManagement() {
+  const { loans, allUsers, addLoan, updateLoanRepayment } = useApp();
+  const members = allUsers.filter(user => user.role === 'member');
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLoan, setNewLoan] = useState({
     memberId: '',
@@ -35,7 +36,7 @@ export const LoanManagement: React.FC = () => {
   };
 
   const handleRepayment = (loanId: string, amount: number) => {
-    updateLoan(loanId, { status: 'repaid' });
+    updateLoanRepayment(loanId, amount);
   };
 
   const getDaysRemaining = (dueDate: string) => {
@@ -383,4 +384,4 @@ export const LoanManagement: React.FC = () => {
       </GlassCard>
     </div>
   );
-};
+}
