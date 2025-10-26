@@ -103,16 +103,11 @@ export default function MemberManagement() {
 
       {/* Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {members.map((member, index) => (
-          <GlassCard 
-            key={member.id} 
-            variant="gradient" 
-            className="p-6 animate-fade-in-up hover:animate-pulse-gentle transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
+        {members.map((member) => (
+          <GlassCard key={member.id} variant="gradient" className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="h-12 w-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center animate-bounce-gentle hover:animate-spin-slow transition-all duration-300">
+                <div className="h-12 w-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
                   <span className="text-lg font-medium text-white">
                     {member.name.charAt(0).toUpperCase()}
                   </span>
@@ -125,7 +120,7 @@ export default function MemberManagement() {
               <GlassButton
                 variant="secondary"
                 onClick={() => handleRemoveMember(member.id, member.name)}
-                className="p-2 text-red-500 hover:text-red-600 hover:animate-shake transition-all duration-300"
+                className="p-2 text-red-500 hover:text-red-600"
               >
                 <UserMinus className="h-4 w-4" />
               </GlassButton>
@@ -153,73 +148,6 @@ export default function MemberManagement() {
           </GlassCard>
         ))}
       </div>
-
-      {/* Custom CSS for animations */}
-      <style jsx>{`
-        @keyframes fadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes pulseGentle {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.02);
-          }
-        }
-        
-        @keyframes bounceGentle {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-3px);
-          }
-        }
-        
-        @keyframes spinSlow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-2px); }
-          75% { transform: translateX(2px); }
-        }
-        
-        .animate-fade-in-up {
-          animation: fadeInUp 0.6s ease-out forwards;
-        }
-        
-        .animate-pulse-gentle {
-          animation: pulseGentle 2s ease-in-out infinite;
-        }
-        
-        .animate-bounce-gentle {
-          animation: bounceGentle 2s ease-in-out infinite;
-        }
-        
-        .animate-spin-slow {
-          animation: spinSlow 3s linear infinite;
-        }
-        
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
 
       {/* Summary */}
       <GlassCard variant="gradient" className="p-6">

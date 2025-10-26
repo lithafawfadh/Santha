@@ -1,373 +1,255 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import { Plus, Calendar, DollarSign, AlertCircle, CheckCircle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
-import { Plus, DollarSign, Calendar, User, AlertTriangle, Clock } from 'lucide-react';
-import type { Loan } from '../../types';
 
 export default function LoanManagement() {
-  const { loans, allUsers, addLoan, updateLoanRepayment } = useApp();
+  const { loans, addLoan, updateLoanRepayment, currentUser, allUsers } = useApp();
+  const [showAddLoan, setShowAddLoan] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
+  const [repaymentAmount, setRepaymentAmount] = useState('');
+
   const members = allUsers.filter(user => user.role === 'member');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newLoan, setNewLoan] = useState({
+
+  const [loanForm, setLoanForm] = useState({
     memberId: '',
     amount: '',
-    interestRate: '5',
-    dueDate: '',
-    purpose: ''
+    issueDate: '',
+    dueDate: ''
   });
 
   const handleAddLoan = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newLoan.memberId && newLoan.amount && newLoan.dueDate) {
-      const loan: Omit<Loan, 'id'> = {
-        memberId: newLoan.memberId,
-        amount: parseFloat(newLoan.amount),
-        interestRate: parseFloat(newLoan.interestRate),
-        dueDate: newLoan.dueDate,
-        purpose: newLoan.purpose,
-        status: 'active',
-        issuedDate: new Date().toISOString().split('T')[0]
-      };
-      addLoan(loan);
-      setNewLoan({ memberId: '', amount: '', interestRate: '5', dueDate: '', purpose: '' });
-      setShowAddForm(false);
+    if (!loanForm.memberId || !loanForm.amount || !loanForm.issueDate || !loanForm.dueDate) return;
+
+    addLoan({
+      memberId: loanForm.memberId,
+      amount: parseFloat(loanForm.amount),
+      issueDate: loanForm.issueDate,
+      dueDate: loanForm.dueDate,
+      repaidAmount: 0,
+      status: 'active',
+      issuedBy: currentUser?.id || ''
+    }).catch(console.error);
+
+    setLoanForm({ memberId: '', amount: '', issueDate: '', dueDate: '' });
+    setShowAddLoan(false);
+  };
+
+  const handleRepayment = (loanId: string) => {
+    if (!repaymentAmount) return;
+    updateLoanRepayment(loanId, parseFloat(repaymentAmount)).catch(console.error);
+    setRepaymentAmount('');
+    setSelectedLoanId(null);
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <AlertCircle className="h-4 w-4 text-orange-500" />;
+      case 'repaid':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'overdue':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return null;
     }
   };
 
-  const handleRepayment = (loanId: string, amount: number) => {
-    updateLoanRepayment(loanId, amount);
+  const isOverdue = (dueDate: string) => {
+    return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString();
   };
-
-  const getDaysRemaining = (dueDate: string) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const getCountdownDisplay = (dueDate: string) => {
-    const daysRemaining = getDaysRemaining(dueDate);
-    
-    if (daysRemaining > 0) {
-      if (daysRemaining === 1) {
-        return {
-          text: 'Due tomorrow',
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-100',
-          icon: Clock,
-          animate: 'animate-pulse'
-        };
-      } else if (daysRemaining <= 7) {
-        return {
-          text: `${daysRemaining} days remaining`,
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-100',
-          icon: Clock,
-          animate: 'animate-pulse'
-        };
-      } else {
-        return {
-          text: `${daysRemaining} days remaining`,
-          color: 'text-green-600',
-          bgColor: 'bg-green-100',
-          icon: Clock,
-          animate: ''
-        };
-      }
-    } else if (daysRemaining === 0) {
-      return {
-        text: 'Due today',
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
-        icon: AlertTriangle,
-        animate: 'animate-bounce'
-      };
-    } else {
-      return {
-        text: `Overdue by ${Math.abs(daysRemaining)} days`,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
-        icon: AlertTriangle,
-        animate: 'animate-bounce'
-      };
-    }
-  };
-
-  const activeLoans = loans.filter(loan => loan.status === 'active');
-  const totalOutstanding = activeLoans.reduce((sum, loan) => sum + loan.amount, 0);
-
-  const loanStats = useMemo(() => {
-    const total = loans.length;
-    const active = loans.filter(l => l.status === 'active').length;
-    const repaid = loans.filter(l => l.status === 'repaid').length;
-    const overdue = loans.filter(l => {
-      if (l.status !== 'active') return false;
-      return getDaysRemaining(l.dueDate) < 0;
-    }).length;
-
-    return { total, active, repaid, overdue };
-  }, [loans]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <GlassCard className="p-4 hover:scale-105 transition-transform duration-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Loans</p>
-              <p className="text-xl font-bold text-gray-800">{loanStats.total}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-4 hover:scale-105 transition-transform duration-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Active Loans</p>
-              <p className="text-xl font-bold text-gray-800">{loanStats.active}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-4 hover:scale-105 transition-transform duration-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Overdue</p>
-              <p className="text-xl font-bold text-gray-800">{loanStats.overdue}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-4 hover:scale-105 transition-transform duration-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Outstanding</p>
-              <p className="text-xl font-bold text-gray-800">${totalOutstanding}</p>
-            </div>
-          </div>
-        </GlassCard>
-      </div>
-
-      {/* Add Loan Button */}
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Loan Management</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Loan Management</h2>
+          <p className="text-gray-600 dark:text-gray-400">Manage member loans and track repayments</p>
+        </div>
         <GlassButton
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200"
+          variant="primary"
+          onClick={() => setShowAddLoan(true)}
+          className="flex items-center px-4 py-2"
         >
-          <Plus className="w-4 h-4" />
-          <span>Add Loan</span>
+          <Plus className="h-4 w-4 mr-2" />
+          New Loan
         </GlassButton>
       </div>
 
-      {/* Add Loan Form */}
-      {showAddForm && (
-        <GlassCard className="p-6 animate-slide-down">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Loan</h3>
-          <form onSubmit={handleAddLoan} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Add Loan Modal */}
+      {showAddLoan && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <GlassCard variant="gradient" className="p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Issue New Loan</h3>
+            <form onSubmit={handleAddLoan} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Member
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Member</label>
                 <select
-                  value={newLoan.memberId}
-                  onChange={(e) => setNewLoan({ ...newLoan, memberId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm"
+                  value={loanForm.memberId}
+                  onChange={(e) => setLoanForm({ ...loanForm, memberId: e.target.value })}
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                   required
                 >
                   <option value="">Select Member</option>
-                  {members.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.name}
-                    </option>
+                  {members.map(member => (
+                    <option key={member.id} value={member.id}>{member.name}</option>
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount ($)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Amount (LKR)</label>
                 <input
                   type="number"
-                  value={newLoan.amount}
-                  onChange={(e) => setNewLoan({ ...newLoan, amount: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm"
+                  value={loanForm.amount}
+                  onChange={(e) => setLoanForm({ ...loanForm, amount: e.target.value })}
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                  placeholder="Enter amount"
                   required
-                  min="0"
-                  step="0.01"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Interest Rate (%)
-                </label>
-                <input
-                  type="number"
-                  value={newLoan.interestRate}
-                  onChange={(e) => setNewLoan({ ...newLoan, interestRate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm"
-                  required
-                  min="0"
-                  step="0.1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Due Date
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Received Date</label>
                 <input
                   type="date"
-                  value={newLoan.dueDate}
-                  onChange={(e) => setNewLoan({ ...newLoan, dueDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm"
+                  value={loanForm.issueDate}
+                  onChange={(e) => setLoanForm({ ...loanForm, issueDate: e.target.value })}
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                   required
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Purpose
-              </label>
-              <input
-                type="text"
-                value={newLoan.purpose}
-                onChange={(e) => setNewLoan({ ...newLoan, purpose: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm"
-                placeholder="Loan purpose (optional)"
-              />
-            </div>
-
-            <div className="flex space-x-3">
-              <GlassButton type="submit" className="hover:scale-105 transition-transform duration-200">
-                Add Loan
-              </GlassButton>
-              <GlassButton
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
-              >
-                Cancel
-              </GlassButton>
-            </div>
-          </form>
-        </GlassCard>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
+                <input
+                  type="date"
+                  value={loanForm.dueDate}
+                  onChange={(e) => setLoanForm({ ...loanForm, dueDate: e.target.value })}
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <GlassButton
+                  variant="secondary"
+                  onClick={() => setShowAddLoan(false)}
+                  className="px-4 py-2"
+                >
+                  Cancel
+                </GlassButton>
+                <GlassButton
+                  variant="primary"
+                  type="submit"
+                  className="px-4 py-2"
+                >
+                  Issue Loan
+                </GlassButton>
+              </div>
+            </form>
+          </GlassCard>
+        </div>
       )}
 
-      {/* Loans Table */}
-      <GlassCard className="overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">All Loans</h3>
+      {/* Loans List */}
+      <GlassCard variant="gradient" className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-purple-500 from-opacity-10 to-pink-500 to-opacity-10 dark:from-purple-600 dark:from-opacity-10 dark:to-pink-600 dark:to-opacity-10 backdrop-blur-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Loans</h3>
         </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50/50">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 backdrop-blur-sm">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Member
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Interest Rate
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Due Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Countdown
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Loan Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Repaid</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outstanding</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loans.map((loan, index) => {
+            <tbody className="bg-white bg-opacity-5 dark:bg-gray-800 dark:bg-opacity-5 divide-y divide-white divide-opacity-20 dark:divide-gray-700 dark:divide-opacity-20 backdrop-blur-sm">
+              {loans.map((loan) => {
                 const member = members.find(m => m.id === loan.memberId);
-                const countdown = loan.status === 'active' ? getCountdownDisplay(loan.dueDate) : null;
-                const IconComponent = countdown?.icon;
-                
+                const outstanding = loan.amount - loan.repaidAmount;
+                const overdue = isOverdue(loan.dueDate) && loan.status === 'active';
+                const actualStatus = overdue ? 'overdue' : loan.status;
+
                 return (
-                  <tr 
-                    key={loan.id} 
-                    className="hover:bg-gray-50/50 hover:scale-[1.01] transition-all duration-200 animate-slide-in-right"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
+                  <tr key={loan.id} className="hover:bg-white hover:bg-opacity-10 dark:hover:bg-gray-700 dark:hover:bg-opacity-10 transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <User className="w-4 h-4 text-blue-600" />
-                          </div>
+                        <div className="h-8 w-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-white">
+                            {member?.name.charAt(0).toUpperCase()}
+                          </span>
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">
-                            {member?.name || 'Unknown Member'}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{member?.name}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${loan.amount}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      LKR {loan.amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {loan.interestRate}%
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+                      LKR {loan.repaidAmount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        {loan.dueDate}
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      LKR {outstanding.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(loan.dueDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        loan.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
+                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        actualStatus === 'active' ? 'bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200' :
+                        actualStatus === 'repaid' ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200' :
+                        'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200'
                       }`}>
-                        {loan.status}
-                      </span>
+                        {getStatusIcon(actualStatus)}
+                        <span className="ml-1 capitalize">{actualStatus}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {countdown && (
-                        <div className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${countdown.bgColor} ${countdown.color} ${countdown.animate}`}>
-                          {IconComponent && <IconComponent className="w-3 h-3 mr-1" />}
-                          {countdown.text}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {loan.status === 'active' && (
-                        <GlassButton
-                          onClick={() => handleRepayment(loan.id, loan.amount)}
-                          className="text-green-600 hover:text-green-900 hover:scale-105 hover:animate-pulse transition-all duration-200"
-                        >
-                          Mark as Repaid
-                        </GlassButton>
+                        <div className="flex items-center space-x-2">
+                          {selectedLoanId === loan.id ? (
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="number"
+                                value={repaymentAmount}
+                                onChange={(e) => setRepaymentAmount(e.target.value)}
+                                placeholder="Amount"
+                                className="w-20 px-2 py-1 text-xs backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded focus:ring-1 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                              />
+                              <GlassButton
+                                variant="primary"
+                                onClick={() => handleRepayment(loan.id)}
+                                className="px-2 py-1 text-xs"
+                              >
+                                Add
+                              </GlassButton>
+                              <GlassButton
+                                variant="secondary"
+                                onClick={() => setSelectedLoanId(null)}
+                                className="px-2 py-1 text-xs"
+                              >
+                                Cancel
+                              </GlassButton>
+                            </div>
+                          ) : (
+                            <GlassButton
+                              variant="accent"
+                              onClick={() => setSelectedLoanId(loan.id)}
+                              className="text-sm font-medium px-3 py-1"
+                            >
+                              Add Repayment
+                            </GlassButton>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -375,12 +257,17 @@ export default function LoanManagement() {
               })}
             </tbody>
           </table>
-          {loans.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No loans found. Add a loan to get started.
-            </div>
-          )}
         </div>
+
+        {loans.length === 0 && (
+          <div className="text-center py-12">
+            <div className="bg-gray-500 bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-20 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
+              <DollarSign className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No loans issued yet</h3>
+            <p className="text-gray-500 dark:text-gray-400">Start by issuing your first loan to a member.</p>
+          </div>
+        )}
       </GlassCard>
     </div>
   );
