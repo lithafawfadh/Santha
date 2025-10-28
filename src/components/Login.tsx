@@ -123,7 +123,7 @@ export default function Login() {
             
             <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif">
               <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 bg-clip-text text-transparent">
-                Santha
+                F.O.R.T
               </span>
             </h1>
             <h2 className="text-2xl font-light text-slate-700 dark:text-gray-300 mb-4 tracking-widest">
