@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, ChevronDown, Menu, Moon, Sun, Edit3, Save, X, FileSpreadsheet } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
+import AnimatedNavBar from '../common/AnimatedNavBar';
 import PaymentGrid from './PaymentGrid';
 import LoanManagement from './LoanManagement';
 import MemberManagement from './MemberManagement';
@@ -12,7 +13,6 @@ import DonationManagement from './DonationManagement';
 export default function AdminDashboard() {
   const { groupStats, currentUser, logout, loading, isDarkMode, toggleDarkMode, updateAdminProfile } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
     name: currentUser?.name || '',
@@ -30,12 +30,6 @@ export default function AdminDashboard() {
     { id: 'reports', label: 'Reports', icon: FileText },
   ];
 
-  const activeTabData = tabs.find(tab => tab.id === activeTab);
-
-  const handleTabSelect = (tabId: string) => {
-    setActiveTab(tabId);
-    setIsDropdownOpen(false);
-  };
 
   const handleProfileUpdate = async () => {
     if (!profileForm.name.trim()) {
@@ -244,57 +238,21 @@ export default function AdminDashboard() {
         {/* Profile Update Message */}
         {profileMessage && (
           <GlassCard className={`mb-6 p-4 ${
-            profileMessage.includes('successfully') 
-              ? 'text-green-800 dark:text-green-200 bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 border-green-400 dark:border-green-600' 
+            profileMessage.includes('successfully')
+              ? 'text-green-800 dark:text-green-200 bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 border-green-400 dark:border-green-600'
               : 'text-red-800 dark:text-red-200 bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-red-600 border-red-400 dark:border-red-600'
           } border border-opacity-30 dark:border-opacity-30 backdrop-blur-sm`}>
             {profileMessage}
           </GlassCard>
         )}
 
-        {/* Navigation Dropdown */}
-        <GlassCard className="relative mb-6 w-fit z-[100]">
-          <GlassButton
-            variant="secondary"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center px-4 py-2"
-          >
-            <Menu className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
-            {activeTabData && (
-              <>
-                <activeTabData.icon className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{activeTabData.label}</span>
-              </>
-            )}
-            <ChevronDown className={`h-4 w-4 ml-2 text-gray-600 dark:text-gray-400 transition-transform duration-300 ${
-              isDropdownOpen ? 'rotate-180' : ''
-            }`} />
-          </GlassButton>
-
-          {isDropdownOpen && (
-            <div className="absolute left-0 mt-2 w-56 backdrop-blur-lg bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 border border-white border-opacity-30 dark:border-gray-700 dark:border-opacity-30 rounded-lg shadow-lg z-[200] transition-all duration-300 transform origin-top-left">
-              <div className="py-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabSelect(tab.id)}
-                      className={`w-full flex items-center px-4 py-2 text-sm font-medium text-left transition-all duration-200 backdrop-blur-sm ${
-                        activeTab === tab.id
-                          ? 'bg-blue-500 bg-opacity-20 dark:bg-blue-600 dark:bg-opacity-20 text-blue-700 dark:text-blue-300'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white hover:bg-opacity-20 dark:hover:bg-gray-700 dark:hover:bg-opacity-20'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 mr-3 transition-transform duration-300" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </GlassCard>
+        {/* Animated Navigation Bar */}
+        <AnimatedNavBar
+          items={tabs}
+          activeItem={activeTab}
+          onItemSelect={setActiveTab}
+          className="mb-6"
+        />
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
