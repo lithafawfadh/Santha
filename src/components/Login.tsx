@@ -132,7 +132,7 @@ export default function Login() {
             <div className="flex items-center justify-center space-x-2 mb-4">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
               <p className="text-slate-600 dark:text-gray-400 font-light tracking-wider text-sm">
-                Our Financial Future, Together
+                Friends Organization for Resllience & Trust
               </p>
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
