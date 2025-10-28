@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart } from 'lucide-react';
+import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart, HeartHandshake } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlassCard from './common/GlassCard';
 import GlassButton from './common/GlassButton';
@@ -116,7 +116,7 @@ export default function Login() {
               <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-emerald-500 opacity-20" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
               
               <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-violet-400/30 shadow-2xl backdrop-blur-xl">
-                <Heart className="h-12 w-12 text-violet-600 animate-bounce" style={{ animationDuration: '3s' }} />
+                <HeartHandshake className="h-12 w-12 text-violet-600 animate-bounce" style={{ animationDuration: '3s' }} />
                 <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-ping" />
               </GlassCard>
             </div>
