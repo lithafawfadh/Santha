@@ -95,7 +95,7 @@ export default function AdminDashboard() {
       color: 'bg-blue-500',
     },
     {
-      title: 'Group Funds',
+      title: 'Available Group Funds',
       value: `LKR ${groupStats.totalFunds.toLocaleString()}`,
       icon: DollarSign,
       color: 'bg-green-500',
