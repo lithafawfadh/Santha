@@ -408,20 +408,20 @@ export default function MemberDashboard() {
         </div>
 
         {/* Group Info */}
-        <GlassCard variant="gradient" className="mt-6 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Group Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 rounded-lg bg-blue-500 bg-opacity-10 dark:bg-blue-600 dark:bg-opacity-10 backdrop-blur-sm border border-blue-300 border-opacity-20 dark:border-blue-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{groupStats.totalMembers}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total Members</div>
+        <GlassCard variant="gradient" className="mt-6 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">Group Information</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            <div className="text-center p-5 sm:p-6 rounded-lg bg-blue-500 bg-opacity-10 dark:bg-blue-600 dark:bg-opacity-10 backdrop-blur-sm border border-blue-300 border-opacity-20 dark:border-blue-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105 touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col items-center justify-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-400">{groupStats.totalMembers}</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">Total Members</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-green-500 bg-opacity-10 dark:bg-green-600 dark:bg-opacity-10 backdrop-blur-sm border border-green-300 border-opacity-20 dark:border-green-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-green-700 dark:text-green-400">LKR {groupStats.monthlyCollection.toLocaleString()}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">This Month Collection</div>
+            <div className="text-center p-5 sm:p-6 rounded-lg bg-green-500 bg-opacity-10 dark:bg-green-600 dark:bg-opacity-10 backdrop-blur-sm border border-green-300 border-opacity-20 dark:border-green-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105 touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col items-center justify-center">
+              <div className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-400">LKR {groupStats.monthlyCollection.toLocaleString()}</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">This Month Collection</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-purple-500 bg-opacity-10 dark:bg-purple-600 dark:bg-opacity-10 backdrop-blur-sm border border-purple-300 border-opacity-20 dark:border-purple-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">{groupStats.activeLoans}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Active Loans</div>
+            <div className="text-center p-5 sm:p-6 rounded-lg bg-purple-500 bg-opacity-10 dark:bg-purple-600 dark:bg-opacity-10 backdrop-blur-sm border border-purple-300 border-opacity-20 dark:border-purple-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105 touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col items-center justify-center">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-700 dark:text-purple-400">{groupStats.activeLoans}</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">Active Loans</div>
             </div>
           </div>
         </GlassCard>
