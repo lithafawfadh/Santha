@@ -14,13 +14,9 @@ const MorphingWelcomeText = ({ userName }: { userName: string }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const welcomeTexts = useMemo(() => [
-    `Welcome, ${userName}`,
-    `Hello, ${userName}`,
-    `Greetings, ${userName}`,
-    `Good to see you, ${userName}`,
-    `Welcome back, ${userName}`,
-    `Hi there, ${userName}`,
-    `Nice to see you, ${userName}`
+    `Welcome`,
+    `To`,
+    `F.O.R.T, ${userName}`,
   ], [userName]);
 
   useEffect(() => {
