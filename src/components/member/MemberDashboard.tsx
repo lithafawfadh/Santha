@@ -667,7 +667,7 @@ export default function MemberDashboard() {
           }
         }
         .animate-shine {
-          animation: shine 6s infinite;
+          animation: shine 7s infinite;
         }
       `}</style>
     </div>
