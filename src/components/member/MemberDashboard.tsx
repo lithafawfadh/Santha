@@ -15,7 +15,7 @@ const MorphingWelcomeText = ({ userName }: { userName: string }) => {
 
   const welcomeTexts = useMemo(() => [
     `Welcome`,
-    `To`,
+    `To Our`,
     `F.O.R.T, ${userName}`,
   ], [userName]);
 
