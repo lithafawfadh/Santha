@@ -179,7 +179,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center space-x-2">
                     <div>
                       <h1 className="text-xl font-semibold text-white drop-shadow-lg">Admin Portal</h1>
-                      <p className="text-sm text-white drop-shadow">Welcome, {currentUser?.name}</p>
+                      <p className="text-sm text-white drop-shadow">Welcome</p>
                     </div>
                     <GlassButton
                       variant="secondary"
