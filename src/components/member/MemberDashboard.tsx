@@ -509,7 +509,7 @@ export default function MemberDashboard() {
 
               <div className="mt-6 pt-4 border-t border-white/20">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent">Progress</span>
+                  <span className="bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">Progress</span>
                   <span className="font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
                     {Math.round((paidMonths / 12) * 100)}%
                   </span>
