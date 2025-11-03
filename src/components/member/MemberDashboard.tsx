@@ -141,11 +141,9 @@ export default function MemberDashboard() {
               </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
-                  Member Portal
-                </h1>
-                <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent drop-shadow hidden sm:block">
                   Welcome, {currentUser?.name}
-                </p>
+                </h1>
+              
               </div>
             </div>
             
