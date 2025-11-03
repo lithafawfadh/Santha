@@ -144,7 +144,7 @@ export default function MemberDashboard() {
               </GlassButton>
               
               {/* User Profile Dropdown - Z-index increased to z-50 */}
-              <div className="relative relative z-[999]" ref={userMenuRef}>
+              <div className="relative z-[999]" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
