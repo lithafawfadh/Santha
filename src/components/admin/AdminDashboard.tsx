@@ -258,28 +258,19 @@ export default function AdminDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Glass Stats Cards with Animated Borders */}
+            {/* Glass Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {statsCards.map((card, index) => {
                 const Icon = card.icon;
                 return (
                   <div
                     key={index}
-                    className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15"
+                    className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15"
                   >
-                    {/* Animated border gradient */}
-                    <div className="absolute inset-0 rounded-2xl p-[2px] animated-border-wrapper">
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/60 to-transparent animated-border" 
-                           style={{ animationDelay: `${index * 0.5}s` }} />
-                    </div>
-                    
-                    {/* Inner border */}
-                    <div className="absolute inset-[2px] rounded-2xl border border-white/20 pointer-events-none" />
-                    
                     {/* Gradient overlay on hover */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`} />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
                     
-                    <div className="relative p-6 z-10">
+                    <div className="relative p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <p className="text-sm font-medium text-white/70 mb-1">{card.title}</p>
@@ -298,35 +289,24 @@ export default function AdminDashboard() {
               })}
             </div>
 
-            {/* Recent Activity Card with Animated Border */}
-            <div className="relative rounded-2xl backdrop-blur-xl bg-white/10 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
-              {/* Animated border gradient */}
-              <div className="absolute inset-0 rounded-2xl p-[2px] animated-border-wrapper">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent animated-border" 
-                     style={{ animationDelay: '2s' }} />
-              </div>
-              
-              {/* Inner border */}
-              <div className="absolute inset-[2px] rounded-2xl border border-white/20 pointer-events-none" />
-              
-              <div className="relative z-10 p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 drop-shadow flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                  Recent Activity
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-green-500/20 rounded-xl hover:bg-green-500/30 transition-all duration-300 backdrop-blur-sm border border-green-300/30 shadow-lg group">
-                    <span className="text-sm text-white/90 group-hover:text-white transition-colors">Monthly collection target achieved</span>
-                    <span className="text-xs text-green-300 bg-green-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">Today</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-blue-500/20 rounded-xl hover:bg-blue-500/30 transition-all duration-300 backdrop-blur-sm border border-blue-300/30 shadow-lg group">
-                    <span className="text-sm text-white/90 group-hover:text-white transition-colors">New member added to the group</span>
-                    <span className="text-xs text-blue-300 bg-blue-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">2 days ago</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-orange-500/20 rounded-xl hover:bg-orange-500/30 transition-all duration-300 backdrop-blur-sm border border-orange-300/30 shadow-lg group">
-                    <span className="text-sm text-white/90 group-hover:text-white transition-colors">Loan repayment received</span>
-                    <span className="text-xs text-orange-300 bg-orange-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">3 days ago</span>
-                  </div>
+            {/* Recent Activity Card */}
+            <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300">
+              <h3 className="text-lg font-semibold text-white mb-4 drop-shadow flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                Recent Activity
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-green-500/20 rounded-xl hover:bg-green-500/30 transition-all duration-300 backdrop-blur-sm border border-green-300/30 shadow-lg group">
+                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Monthly collection target achieved</span>
+                  <span className="text-xs text-green-300 bg-green-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">Today</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-blue-500/20 rounded-xl hover:bg-blue-500/30 transition-all duration-300 backdrop-blur-sm border border-blue-300/30 shadow-lg group">
+                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">New member added to the group</span>
+                  <span className="text-xs text-blue-300 bg-blue-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">2 days ago</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-orange-500/20 rounded-xl hover:bg-orange-500/30 transition-all duration-300 backdrop-blur-sm border border-orange-300/30 shadow-lg group">
+                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Loan repayment received</span>
+                  <span className="text-xs text-orange-300 bg-orange-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">3 days ago</span>
                 </div>
               </div>
             </div>
@@ -340,48 +320,6 @@ export default function AdminDashboard() {
         {activeTab === 'members' && <MemberManagement />}
         {activeTab === 'reports' && <Reports />}
       </div>
-
-      {/* Animated Border Styles */}
-      <style>{`
-        @keyframes border-flow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-
-        .animated-border-wrapper {
-          animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-          0%, 100% {
-            opacity: 0.6;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-
-        .animated-border {
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(139, 92, 246, 0.8),
-            rgba(59, 130, 246, 0.8),
-            rgba(16, 185, 129, 0.8),
-            transparent
-          );
-          background-size: 200% 200%;
-          animation: border-flow 3s linear infinite;
-          animation-delay: inherit;
-        }
-      `}</style>
     </div>
   );
 }
