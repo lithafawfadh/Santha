@@ -5,6 +5,7 @@ import { useApp } from '../../context/AppContext';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
+import ShaderBackground from '../common/ShaderBackground';
 
 export default function MemberDashboard() {
   const { currentUser, payments, loans, groupStats, logout, loading, updateUsername, isDarkMode, toggleDarkMode } = useApp();
@@ -76,7 +77,7 @@ export default function MemberDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your data...</p>
@@ -86,25 +87,21 @@ export default function MemberDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-400 to-orange-500 rounded-full opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-green-400 to-blue-500 rounded-full opacity-10 animate-pulse delay-500"></div>
-      </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Shader Background */}
+      <ShaderBackground />
       
       {/* Header */}
-      <header className="backdrop-blur-lg bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 shadow-lg relative z-10">
+      <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 bg-green-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110">
+              <div className="h-8 w-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 shadow-lg">
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Member Portal</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Welcome, {currentUser?.name}</p>
+                <h1 className="text-xl font-semibold text-white drop-shadow-lg">Member Portal</h1>
+                <p className="text-sm text-white/80 drop-shadow">Welcome, {currentUser?.name}</p>
               </div>
             </div>
             
@@ -117,22 +114,22 @@ export default function MemberDashboard() {
                 className="p-2"
               >
                 {isDarkMode ? (
-                  <Sun className="h-4 w-4 text-yellow-500" />
+                  <Sun className="h-4 w-4 text-yellow-400" />
                 ) : (
-                  <Moon className="h-4 w-4 text-gray-600" />
+                  <Moon className="h-4 w-4 text-white" />
                 )}
               </GlassButton>
               
-              <GlassCard className="px-4 py-2">
+              <div className="px-4 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg">
                 <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <User className="h-4 w-4 text-white/70" />
                   {isEditingUsername ? (
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
-                        className="px-2 py-2 text-sm backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                        className="px-2 py-2 text-sm backdrop-blur-xl bg-white/20 border border-white/30 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50"
                         placeholder="Enter new username"
                         disabled={isUpdatingUsername}
                       />
@@ -155,7 +152,7 @@ export default function MemberDashboard() {
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">@{currentUser?.username}</span>
+                      <span className="text-sm text-white/90">@{currentUser?.username}</span>
                       <GlassButton
                         variant="secondary"
                         onClick={() => setIsEditingUsername(true)}
@@ -166,7 +163,7 @@ export default function MemberDashboard() {
                     </div>
                   )}
                 </div>
-              </GlassCard>
+              </div>
             </div>
             
             <GlassButton
@@ -183,81 +180,98 @@ export default function MemberDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* Username Update Message */}
         {usernameMessage && (
-          <GlassCard className={`mb-6 p-4 ${
+          <div className={`mb-6 p-4 rounded-xl backdrop-blur-xl border shadow-xl ${
             usernameMessage.includes('successfully') 
-              ? 'text-green-800 dark:text-green-200' 
-              : 'text-red-800 dark:text-red-200'
+              ? 'text-green-100 bg-green-500/20 border-green-400/50'
+              : 'text-red-100 bg-red-500/20 border-red-400/50'
           }`}>
             {usernameMessage}
-          </GlassCard>
+          </div>
         )}
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Glassmorphism */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <GlassCard variant="gradient" className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Months Paid</p>
-                <p className="text-2xl font-bold text-green-700 dark:text-green-400">{paidMonths}/12</p>
-              </div>
-              <div className="bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
-                <Calendar className="h-6 w-6 text-green-700 dark:text-green-400" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/70 mb-1">Months Paid</p>
+                  <p className="text-2xl font-bold text-white drop-shadow-lg">{paidMonths}/12</p>
+                </div>
+                <div className="bg-green-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
               </div>
             </div>
-          </GlassCard>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          </div>
 
-          <GlassCard variant="gradient" className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Amount Paid</p>
-                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">LKR {totalPaid.toLocaleString()}</p>
-              </div>
-              <div className="bg-blue-500 bg-opacity-20 dark:bg-blue-600 dark:bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
-                <DollarSign className="h-6 w-6 text-blue-700 dark:text-blue-400" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/70 mb-1">Amount Paid</p>
+                  <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {totalPaid.toLocaleString()}</p>
+                </div>
+                <div className="bg-blue-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                  <DollarSign className="h-6 w-6 text-white" />
+                </div>
               </div>
             </div>
-          </GlassCard>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          </div>
 
-          <GlassCard variant="gradient" className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Group Funds</p>
-                <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">LKR {groupStats.totalFunds.toLocaleString()}</p>
-              </div>
-              <div className="bg-purple-500 bg-opacity-20 dark:bg-purple-600 dark:bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
-                <TrendingUp className="h-6 w-6 text-purple-700 dark:text-purple-400" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/70 mb-1">Group Funds</p>
+                  <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {groupStats.totalFunds.toLocaleString()}</p>
+                </div>
+                <div className="bg-purple-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
               </div>
             </div>
-          </GlassCard>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          </div>
 
-          <GlassCard variant="gradient" className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Outstanding Loans</p>
-                <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">LKR {totalLoanAmount.toLocaleString()}</p>
-              </div>
-              <div className="bg-orange-500 bg-opacity-20 dark:bg-orange-600 dark:bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
-                <CreditCard className="h-6 w-6 text-orange-700 dark:text-orange-400" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/70 mb-1">Outstanding Loans</p>
+                  <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {totalLoanAmount.toLocaleString()}</p>
+                </div>
+                <div className="bg-orange-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                  <CreditCard className="h-6 w-6 text-white" />
+                </div>
               </div>
             </div>
-          </GlassCard>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          </div>
         </div>
 
-        {/* Payment Status */}
+        {/* Payment Status & Loans */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <GlassCard variant="highlight" className="overflow-hidden">
-            <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-blue-500 from-opacity-10 to-purple-500 to-opacity-10 dark:from-blue-600 dark:from-opacity-10 dark:to-purple-600 dark:to-opacity-10 backdrop-blur-sm flex justify-between items-center">
+          {/* Payment Status Card */}
+          <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
+            <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Payment Status - {selectedYear}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Monthly contribution: LKR {MONTHLY_CONTRIBUTION}</p>
+                <h3 className="text-lg font-semibold text-white drop-shadow">Payment Status - {selectedYear}</h3>
+                <p className="text-sm text-white/80 drop-shadow">Monthly contribution: LKR {MONTHLY_CONTRIBUTION}</p>
               </div>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-opacity-40 dark:hover:bg-opacity-40 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+                className="px-3 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-sm font-medium text-white hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
               >
                 {availableYears.map(year => (
-                  <option key={year} value={year}>{year}</option>
+                  <option key={year} value={year} className="bg-slate-800">{year}</option>
                 ))}
               </select>
             </div>
@@ -271,26 +285,26 @@ export default function MemberDashboard() {
                   return (
                     <div
                       key={month}
-                      className={`p-3 rounded-lg backdrop-blur-sm border border-opacity-30 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+                      className={`p-3 rounded-lg backdrop-blur-sm border text-center transition-all duration-300 hover:scale-105 hover:shadow-lg ${
                         isPaid
-                          ? 'bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 border-green-400 dark:border-green-600 text-green-800 dark:text-green-300'
+                          ? 'bg-green-500/30 border-green-400/50 text-green-100'
                           : isCurrent
-                          ? 'bg-yellow-500 bg-opacity-20 dark:bg-yellow-600 dark:bg-opacity-20 border-yellow-400 dark:border-yellow-600 text-yellow-800 dark:text-yellow-300'
+                          ? 'bg-yellow-500/30 border-yellow-400/50 text-yellow-100'
                           : isPast
-                          ? 'bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-opacity-20 border-red-400 dark:border-red-600 text-red-800 dark:text-red-300'
-                          : 'bg-gray-500 bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-20 border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                          ? 'bg-red-500/30 border-red-400/50 text-red-100'
+                          : 'bg-white/10 border-white/20 text-white/70'
                       }`}
                     >
                       <div className="text-xs font-medium">{month.slice(0, 3)}</div>
                       <div className="mt-1">
                         {isPaid ? (
-                          <div className="text-green-700 dark:text-green-400 text-lg">✓</div>
+                          <div className="text-green-200 text-lg">✓</div>
                         ) : isCurrent ? (
-                          <div className="text-yellow-700 dark:text-yellow-400 text-lg">○</div>
+                          <div className="text-yellow-200 text-lg">○</div>
                         ) : isPast ? (
-                          <div className="text-red-700 dark:text-red-400 text-lg">✗</div>
+                          <div className="text-red-200 text-lg">✗</div>
                         ) : (
-                          <div className="text-gray-600 dark:text-gray-400 text-lg">-</div>
+                          <div className="text-white/50 text-lg">-</div>
                         )}
                       </div>
                     </div>
@@ -298,12 +312,12 @@ export default function MemberDashboard() {
                 })}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20">
+              <div className="mt-6 pt-4 border-t border-white/20">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{Math.round((paidMonths / 12) * 100)}%</span>
+                  <span className="text-white/80">Progress</span>
+                  <span className="font-medium text-white">{Math.round((paidMonths / 12) * 100)}%</span>
                 </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="mt-2 bg-white/20 rounded-full h-2">
                   <div
                     className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
                     style={{ width: `${(paidMonths / 12) * 100}%` }}
@@ -312,22 +326,22 @@ export default function MemberDashboard() {
               </div>
 
               {pendingMonths > 0 && (
-                <div className="mt-4 p-3 bg-orange-500 bg-opacity-20 dark:bg-orange-600 dark:bg-opacity-20 border border-orange-400 border-opacity-30 dark:border-orange-600 dark:border-opacity-30 rounded-lg backdrop-blur-sm transition-transform duration-300 hover:scale-[1.02]">
+                <div className="mt-4 p-3 bg-orange-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 hover:scale-[1.02]">
                   <div className="flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4 text-orange-700 dark:text-orange-400" />
-                    <span className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                    <AlertCircle className="h-4 w-4 text-orange-200" />
+                    <span className="text-sm font-medium text-orange-100">
                       {pendingMonths} payment{pendingMonths > 1 ? 's' : ''} pending
                     </span>
                   </div>
                 </div>
               )}
             </div>
-          </GlassCard>
+          </div>
 
-          {/* My Loans */}
-          <GlassCard variant="highlight" className="overflow-hidden">
-            <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-purple-500 from-opacity-10 to-pink-500 to-opacity-10 dark:from-purple-600 dark:from-opacity-10 dark:to-pink-600 dark:to-opacity-10 backdrop-blur-sm">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">My Loans</h3>
+          {/* My Loans Card */}
+          <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
+            <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm">
+              <h3 className="text-lg font-semibold text-white drop-shadow">My Loans</h3>
             </div>
             <div className="p-6">
               {myLoans.length > 0 ? (
@@ -338,22 +352,22 @@ export default function MemberDashboard() {
                     const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
                     
                     return (
-                      <div key={loan.id} className={`p-4 rounded-lg backdrop-blur-sm border border-opacity-30 transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg ${
-                        loan.status === 'repaid' ? 'bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 border-green-400 dark:border-green-600' :
-                        isOverdue ? 'bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-opacity-20 border-red-400 dark:border-red-600' :
-                        'bg-blue-500 bg-opacity-20 dark:bg-blue-600 dark:bg-opacity-20 border-blue-400 dark:border-blue-600'
+                      <div key={loan.id} className={`p-4 rounded-lg backdrop-blur-sm border transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg ${
+                        loan.status === 'repaid' ? 'bg-green-500/30 border-green-400/50' :
+                        isOverdue ? 'bg-red-500/30 border-red-400/50' :
+                        'bg-blue-500/30 border-blue-400/50'
                       }`}>
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">LKR {loan.amount.toLocaleString()}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="font-semibold text-white">LKR {loan.amount.toLocaleString()}</p>
+                            <p className="text-sm text-white/80">
                               Issued: {new Date(loan.issueDate).toLocaleDateString()}
                             </p>
                           </div>
                           <div className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
-                            loan.status === 'repaid' ? 'bg-green-500 bg-opacity-30 text-green-800 dark:text-green-200' :
-                            isOverdue ? 'bg-red-500 bg-opacity-30 text-red-800 dark:text-red-200' :
-                            'bg-orange-500 bg-opacity-30 text-orange-800 dark:text-orange-200'
+                            loan.status === 'repaid' ? 'bg-green-500/40 text-green-100' :
+                            isOverdue ? 'bg-red-500/40 text-red-100' :
+                            'bg-orange-500/40 text-orange-100'
                           }`}>
                             {loan.status === 'repaid' ? 'Repaid' : isOverdue ? 'Overdue' : 'Active'}
                           </div>
@@ -361,27 +375,27 @@ export default function MemberDashboard() {
                         
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">Repaid</span>
-                            <span className="font-medium text-gray-900 dark:text-white">LKR {loan.repaidAmount.toLocaleString()}</span>
+                            <span className="text-white/80">Repaid</span>
+                            <span className="font-medium text-white">LKR {loan.repaidAmount.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">Outstanding</span>
-                            <span className="font-medium text-gray-900 dark:text-white">LKR {outstanding.toLocaleString()}</span>
+                            <span className="text-white/80">Outstanding</span>
+                            <span className="font-medium text-white">LKR {outstanding.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">Due Date</span>
-                            <span className={`font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+                            <span className="text-white/80">Due Date</span>
+                            <span className={`font-medium ${isOverdue ? 'text-red-200' : 'text-white'}`}>
                               {new Date(loan.dueDate).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
 
                         <div className="mt-3">
-                          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                          <div className="flex justify-between text-xs text-white/70 mb-1">
                             <span>Progress</span>
                             <span>{Math.round(progress)}%</span>
                           </div>
-                          <div className="bg-gray-300 bg-opacity-50 dark:bg-gray-600 dark:bg-opacity-50 rounded-full h-1.5 backdrop-blur-sm">
+                          <div className="bg-white/20 rounded-full h-1.5 backdrop-blur-sm">
                             <div
                               className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
                                 loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
@@ -396,35 +410,38 @@ export default function MemberDashboard() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div className="bg-gray-500 bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-20 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
-                    <CreditCard className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                  <div className="bg-white/10 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
+                    <CreditCard className="h-12 w-12 text-white/50" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No loans</h3>
-                  <p className="text-gray-500 dark:text-gray-400">You don't have any active or past loans.</p>
+                  <h3 className="text-lg font-medium text-white mb-2">No loans</h3>
+                  <p className="text-white/70">You don't have any active or past loans.</p>
                 </div>
               )}
             </div>
-          </GlassCard>
+          </div>
         </div>
 
-        {/* Group Info */}
-        <GlassCard variant="gradient" className="mt-6 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Group Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 rounded-lg bg-blue-500 bg-opacity-10 dark:bg-blue-600 dark:bg-opacity-10 backdrop-blur-sm border border-blue-300 border-opacity-20 dark:border-blue-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{groupStats.totalMembers}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total Members</div>
+        {/* Group Info Card */}
+        <div className="mt-6 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300">
+          <h3 className="text-lg font-semibold text-white mb-6 drop-shadow flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+            Group Information
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="text-center p-6 rounded-xl bg-blue-500/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
+              <div className="text-3xl font-bold text-white drop-shadow-lg group-hover:scale-110 transition-transform">{groupStats.totalMembers}</div>
+              <div className="text-sm text-white/80 mt-2">Total Members</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-green-500 bg-opacity-10 dark:bg-green-600 dark:bg-opacity-10 backdrop-blur-sm border border-green-300 border-opacity-20 dark:border-green-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-green-700 dark:text-green-400">LKR {groupStats.monthlyCollection.toLocaleString()}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">This Month Collection</div>
+            <div className="text-center p-6 rounded-xl bg-green-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
+              <div className="text-2xl font-bold text-white drop-shadow-lg group-hover:scale-110 transition-transform">LKR {groupStats.monthlyCollection.toLocaleString()}</div>
+              <div className="text-sm text-white/80 mt-2">This Month Collection</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-purple-500 bg-opacity-10 dark:bg-purple-600 dark:bg-opacity-10 backdrop-blur-sm border border-purple-300 border-opacity-20 dark:border-purple-600 dark:border-opacity-20 transition-transform duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">{groupStats.activeLoans}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Active Loans</div>
+            <div className="text-center p-6 rounded-xl bg-purple-500/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
+              <div className="text-3xl font-bold text-white drop-shadow-lg group-hover:scale-110 transition-transform">{groupStats.activeLoans}</div>
+              <div className="text-sm text-white/80 mt-2">Active Loans</div>
             </div>
           </div>
-        </GlassCard>
+        </div>
       </div>
     </div>
   );
