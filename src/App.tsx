@@ -42,18 +42,3 @@ function App() {
 }
 
 export default App;
-import ShaderBackground from './components/common/ShaderBackground';
-
-function App() {
-  return (
-    <>
-      <ShaderBackground />
-      <div className="relative z-10">
-        {/* Your existing app content */}
-        {/* All your routes, components, etc. go here */}
-      </div>
-    </>
-  );
-}
-
-export default App;
