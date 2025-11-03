@@ -82,34 +82,34 @@ export default function PaymentGrid() {
   };
 
   return (
-    <GlassCard variant="gradient" className="overflow-hidden">
-      <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-blue-500 from-opacity-10 to-purple-500 to-opacity-10 dark:from-blue-600 dark:from-opacity-10 dark:to-purple-600 dark:to-opacity-10 backdrop-blur-sm">
+    <GlassCard variant="gradient" className="overflow-hidden border border-slate-700 border-opacity-40">
+      <div className="px-6 py-4 border-b border-slate-700 border-opacity-40 bg-gradient-to-r from-cyan-500 from-opacity-5 to-blue-600 to-opacity-5 dark:from-cyan-600 dark:from-opacity-5 dark:to-blue-600 dark:to-opacity-5 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Payment Tracking</h2>
+              <h2 className="text-xl font-semibold text-white dark:text-white">Payment Tracking</h2>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="px-3 py-1 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-opacity-40 dark:hover:bg-opacity-40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-1 backdrop-blur-lg bg-slate-800 bg-opacity-50 dark:bg-black dark:bg-opacity-50 border border-slate-700 border-opacity-50 dark:border-slate-700 dark:border-opacity-50 rounded-lg text-sm font-medium text-slate-300 dark:text-slate-300 hover:bg-opacity-60 dark:hover:bg-opacity-60 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
               >
                 {availableYears.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
               </select>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Click on checkboxes to mark payments</p>
+            <p className="text-sm text-slate-400 dark:text-slate-400">Click on checkboxes to mark payments</p>
           </div>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-green-100 border-2 border-green-500 rounded flex items-center justify-center">
-                <Check className="h-2.5 w-2.5 text-green-600" />
+              <div className="w-4 h-4 bg-teal-900 border-2 border-teal-500 rounded flex items-center justify-center">
+                <Check className="h-2.5 w-2.5 text-teal-400" />
               </div>
-              <span className="text-gray-600 dark:text-gray-400">Paid</span>
+              <span className="text-slate-400 dark:text-slate-400">Paid</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-red-50 border-2 border-red-200 rounded"></div>
-              <span className="text-gray-600 dark:text-gray-400">Pending</span>
+              <div className="w-4 h-4 bg-slate-800 border-2 border-slate-600 rounded"></div>
+              <span className="text-slate-400 dark:text-slate-400">Pending</span>
             </div>
           </div>
         </div>
@@ -118,62 +118,62 @@ export default function PaymentGrid() {
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead>
-            <tr className="border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 backdrop-blur-sm">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky left-0 bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 backdrop-blur-sm z-10">
+            <tr className="border-b border-slate-700 border-opacity-40 bg-slate-800 bg-opacity-20 dark:bg-black dark:bg-opacity-20 backdrop-blur-sm">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 dark:text-slate-400 uppercase tracking-wider sticky left-0 bg-slate-800 bg-opacity-20 dark:bg-black dark:bg-opacity-20 backdrop-blur-sm z-10">
                 Member
               </th>
               {months.map((month) => {
                 const stats = getMonthlyStats(month);
                 return (
-                  <th key={month} className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  <th key={month} className="px-4 py-3 text-center text-xs font-medium text-slate-400 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">
                     <div>
                       <div>{month.slice(0, 3)}</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">
                         {stats.paid}/{stats.total} ({stats.percentage}%)
                       </div>
                     </div>
                   </th>
                 );
               })}
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 dark:text-slate-400 uppercase tracking-wider">
                 Total
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white bg-opacity-5 dark:bg-gray-800 dark:bg-opacity-5 divide-y divide-white divide-opacity-20 dark:divide-gray-700 dark:divide-opacity-20 backdrop-blur-sm">
+          <tbody className="bg-slate-800 bg-opacity-5 dark:bg-black dark:bg-opacity-5 divide-y divide-slate-700 divide-opacity-20 dark:divide-slate-700 dark:divide-opacity-20 backdrop-blur-sm">
             {/* Gross Row */}
-            <tr className="bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-opacity-20 border-b-2 border-red-300 border-opacity-50 dark:border-red-600 dark:border-opacity-50 backdrop-blur-sm">
-              <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-opacity-20 backdrop-blur-sm z-10">
-                <div className="text-sm font-bold text-red-600 dark:text-red-400">Gross</div>
+            <tr className="bg-cyan-500 bg-opacity-10 dark:bg-cyan-600 dark:bg-opacity-10 border-b-2 border-cyan-400 border-opacity-30 dark:border-cyan-600 dark:border-opacity-50 backdrop-blur-sm">
+              <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-cyan-500 bg-opacity-10 dark:bg-cyan-600 dark:bg-opacity-10 backdrop-blur-sm z-10">
+                <div className="text-sm font-bold text-cyan-400 dark:text-cyan-400">Gross</div>
               </td>
               {months.map((month) => (
                 <td key={month} className="px-4 py-4 text-center">
-                  <div className="bg-green-600 dark:bg-green-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                  <div className="bg-teal-600 dark:bg-teal-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
                     LKR {monthlyTotals.monthlyGrosses[month]?.toLocaleString() || '0'}
                   </div>
                 </td>
               ))}
               <td className="px-6 py-4 whitespace-nowrap text-center">
-                <div className="bg-green-600 dark:bg-green-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                <div className="bg-teal-600 dark:bg-teal-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
                   LKR {monthlyTotals.yearlyGross.toLocaleString()}
                 </div>
               </td>
             </tr>
             
             {/* Total Row */}
-            <tr className="bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-opacity-20 border-b-2 border-red-300 border-opacity-50 dark:border-red-600 dark:border-opacity-50 backdrop-blur-sm">
-              <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-opacity-20 backdrop-blur-sm z-10">
-                <div className="text-sm font-bold text-red-600 dark:text-red-400">Total</div>
+            <tr className="bg-cyan-500 bg-opacity-10 dark:bg-cyan-600 dark:bg-opacity-10 border-b-2 border-cyan-400 border-opacity-30 dark:border-cyan-600 dark:border-opacity-50 backdrop-blur-sm">
+              <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-cyan-500 bg-opacity-10 dark:bg-cyan-600 dark:bg-opacity-10 backdrop-blur-sm z-10">
+                <div className="text-sm font-bold text-cyan-400 dark:text-cyan-400">Total</div>
               </td>
               {months.map((month) => (
                 <td key={month} className="px-4 py-4 text-center">
-                  <div className="bg-green-600 dark:bg-green-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                  <div className="bg-teal-600 dark:bg-teal-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
                     LKR {monthlyTotals.cumulativeTotals[month]?.toLocaleString() || '0'}
                   </div>
                 </td>
               ))}
               <td className="px-6 py-4 whitespace-nowrap text-center">
-                <div className="bg-green-600 dark:bg-green-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                <div className="bg-teal-600 dark:bg-teal-500 text-white font-bold text-sm px-2 py-1 rounded backdrop-blur-sm shadow-sm">
                   LKR {monthlyTotals.yearlyGross.toLocaleString()}
                 </div>
               </td>
@@ -184,16 +184,16 @@ export default function PaymentGrid() {
               const percentage = Math.round((paidCount / months.length) * 100);
               
               return (
-                <tr key={member.id} className="hover:bg-white hover:bg-opacity-10 dark:hover:bg-gray-700 dark:hover:bg-opacity-10 transition-colors duration-200">
-                  <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-white bg-opacity-5 dark:bg-gray-800 dark:bg-opacity-5 backdrop-blur-sm z-10">
+                <tr key={member.id} className="hover:bg-slate-800 hover:bg-opacity-10 dark:hover:bg-slate-700 dark:hover:bg-opacity-10 transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-slate-800 bg-opacity-5 dark:bg-black dark:bg-opacity-5 backdrop-blur-sm z-10">
                     <div className="flex items-center">
-                      <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                      <div className="h-8 w-8 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full flex items-center justify-center">
                         <span className="text-xs font-medium text-white">
                           {member.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{member.name}</div>
+                        <div className="text-sm font-medium text-white dark:text-white">{member.name}</div>
                       </div>
                     </div>
                   </td>
@@ -205,20 +205,20 @@ export default function PaymentGrid() {
                           onClick={() => togglePayment(member.id, month)}
                           className={`w-6 h-6 rounded border-2 transition-all duration-200 flex items-center justify-center ${
                             isPaid
-                              ? 'bg-green-100 border-green-500 hover:bg-green-200'
-                              : 'bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300'
+                              ? 'bg-teal-900 border-teal-500 hover:bg-teal-800'
+                              : 'bg-slate-800 border-slate-600 hover:bg-slate-700 hover:border-slate-500'
                           }`}
                         >
-                          {isPaid && <Check className="h-3.5 w-3.5 text-green-600" />}
+                          {isPaid && <Check className="h-3.5 w-3.5 text-teal-400" />}
                         </button>
                       </td>
                     );
                   })}
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-medium text-white dark:text-white">
                       {paidCount}/{months.length}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">({percentage}%)</div>
+                    <div className="text-xs text-slate-400 dark:text-slate-400">({percentage}%)</div>
                   </td>
                 </tr>
               );
@@ -227,12 +227,12 @@ export default function PaymentGrid() {
         </table>
       </div>
 
-      <div className="px-6 py-4 bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 border-t border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 backdrop-blur-sm">
+      <div className="px-6 py-4 bg-slate-800 bg-opacity-20 dark:bg-black dark:bg-opacity-20 border-t border-slate-700 border-opacity-40 backdrop-blur-sm">
         <div className="flex items-center justify-between text-sm">
-          <div className="text-gray-600 dark:text-gray-400">
+          <div className="text-slate-400 dark:text-slate-400">
             Total Monthly Contribution: LKR 300 per member
           </div>
-          <div className="text-gray-900 dark:text-white font-medium">
+          <div className="text-white dark:text-white font-medium">
             Expected Annual Collection: LKR {(members.length * 300 * 12).toLocaleString()}
           </div>
         </div>
