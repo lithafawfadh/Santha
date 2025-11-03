@@ -541,7 +541,7 @@ export default function MemberDashboard() {
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
             {/* Border Shine Effect */}
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
-            <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10">
+            <div className="px-6 py-4 border-b border-white bg-gradient-to-r from-purple-500 to-pink-500/20 backdrop-blur-sm relative z-10">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
                 My Loans
               </h3>
