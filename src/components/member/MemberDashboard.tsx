@@ -7,6 +7,34 @@ import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import ShaderBackground from '../common/ShaderBackground';
 
+// MorphingText Component
+const MorphingText = ({ texts }: { texts: string[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayText, setDisplayText] = useState(texts[0]);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % texts.length);
+        setDisplayText(texts[(currentIndex + 1) % texts.length]);
+        setIsAnimating(false);
+      }, 500); // Half the time for the actual text change
+    }, 2000); // Change every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [currentIndex, texts]);
+
+  return (
+    <span className={`inline-block bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent transition-all duration-500 ${
+      isAnimating ? 'opacity-0 transform scale-95' : 'opacity-100 transform scale-100'
+    }`}>
+      {displayText}
+    </span>
+  );
+};
+
 export default function MemberDashboard() {
   const { currentUser, payments, loans, groupStats, logout, loading, updateUsername, isDarkMode, toggleDarkMode } = useApp();
   
@@ -46,6 +74,19 @@ export default function MemberDashboard() {
   };
 
   const getCurrentMonthIndex = () => new Date().getMonth();
+
+  // Morphing texts for the welcome message
+  const welcomeTexts = useMemo(() => [
+    `Welcome, ${currentUser?.name}`,
+    "Ready to manage your funds?",
+    "Track your payments",
+    "Monitor your loans",
+    "Stay updated",
+    "Check your progress",
+    "Manage your account",
+    "View group stats",
+    "Stay on top of payments"
+  ], [currentUser?.name]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -141,9 +182,11 @@ export default function MemberDashboard() {
               </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
-                  Welcome, {currentUser?.name}
+                  Member Portal
                 </h1>
-              
+                <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent drop-shadow hidden sm:block">
+                  <MorphingText texts={welcomeTexts} />
+                </p>
               </div>
             </div>
             
@@ -306,6 +349,38 @@ export default function MemberDashboard() {
           </div>
         )}
 
+        {/* Welcome Card with Enhanced Design */}
+        <div className="mb-8 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-white/20 shadow-2xl overflow-hidden relative">
+          {/* Border Shine Effect */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine" />
+          <div className="p-8 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+                  <span className="bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
+                    Hello, {currentUser?.name}!
+                  </span>
+                </h2>
+                <div className="text-lg sm:text-xl mb-6 min-h-[32px]">
+                  <MorphingText texts={welcomeTexts} />
+                </div>
+                <p className="text-white/80 text-sm sm:text-base max-w-2xl">
+                  Welcome to your member dashboard. Here you can track your payments, 
+                  manage loans, and stay updated with your group's financial activities.
+                </p>
+              </div>
+              <div className="hidden lg:flex items-center justify-center">
+                <div className="relative">
+                  <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl transform rotate-6 hover:rotate-12 transition-transform duration-500">
+                    <User className="h-12 w-12 text-white" />
+                  </div>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full opacity-20 blur-lg animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Stats Cards - Glassmorphism with Border Shine */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Months Paid Card */}
@@ -401,6 +476,7 @@ export default function MemberDashboard() {
           </div>
         </div>
 
+        {/* Rest of the component remains the same... */}
         {/* Payment Status & Loans */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Payment Status Card */}
@@ -667,7 +743,7 @@ export default function MemberDashboard() {
           }
         }
         .animate-shine {
-          animation: shine 7s infinite;
+          animation: shine 3s infinite;
         }
       `}</style>
     </div>
