@@ -447,7 +447,7 @@ export default function MemberDashboard() {
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
                   Payment Status - {selectedYear}
                 </h3>
-                <p className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent drop-shadow">
+                <p className="text-sm bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
                   Monthly contribution: LKR {MONTHLY_CONTRIBUTION}
                 </p>
               </div>
