@@ -140,8 +140,7 @@ export default function MemberDashboard() {
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">Welcome, {currentUser?.name}</h1>
-                <p className="text-xs text-white/70 drop-shadow hidden sm:block">Welcome, {currentUser?.name}</p>
+                <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">Welcome! {currentUser?.name}</h1>
               </div>
             </div>
             
