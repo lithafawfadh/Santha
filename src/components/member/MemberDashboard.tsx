@@ -140,7 +140,12 @@ export default function MemberDashboard() {
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">Welcome! {currentUser?.name}</h1>
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
+                  Member Portal
+                </h1>
+                <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent drop-shadow hidden sm:block">
+                  Welcome, {currentUser?.name}
+                </p>
               </div>
             </div>
             
@@ -166,7 +171,9 @@ export default function MemberDashboard() {
                   className="flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg relative z-50"
                 >
                   <User className="h-4 w-4 text-white/70" />
-                  <span className="text-sm text-white/90 hidden sm:inline">@{currentUser?.username}</span>
+                  <span className="text-sm bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent hidden sm:inline">
+                    @{currentUser?.username}
+                  </span>
                   <svg className={`h-3 w-3 text-white/70 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -206,8 +213,12 @@ export default function MemberDashboard() {
                   <User className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{currentUser?.name}</p>
-                  <p className="text-xs text-white/70 truncate">@{currentUser?.username}</p>
+                  <p className="text-sm font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent truncate">
+                    {currentUser?.name}
+                  </p>
+                  <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent truncate">
+                    @{currentUser?.username}
+                  </p>
                 </div>
               </div>
             </div>
@@ -216,7 +227,9 @@ export default function MemberDashboard() {
             <div className="p-4">
               {isEditingUsername ? (
                 <div className="space-y-3">
-                  <label className="text-xs font-medium text-white/80">Change Username</label>
+                  <label className="text-xs font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
+                    Change Username
+                  </label>
                   <input
                     type="text"
                     value={newUsername}
@@ -251,7 +264,9 @@ export default function MemberDashboard() {
                   className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-200 group"
                 >
                   <Edit3 className="h-4 w-4 text-white/70 group-hover:text-white transition-colors" />
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Edit Username</span>
+                  <span className="text-sm bg-gradient-to-r from-white/90 to-emerald-200/90 bg-clip-text text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-emerald-200 transition-all">
+                    Edit Username
+                  </span>
                 </button>
               )}
             </div>
@@ -263,7 +278,7 @@ export default function MemberDashboard() {
                   setShowUserMenu(false);
                   logout();
                 }}
-                className="w-full px-3 py-2 rounded-lg bg-red-500/20 border border-red-400/50 text-red-100 hover:bg-red-500/30 transition-all duration-200 text-sm font-medium"
+                className="w-full px-3 py-2 rounded-lg bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-400/50 text-red-100 hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-sm font-medium"
               >
                 Logout
               </button>
@@ -278,24 +293,35 @@ export default function MemberDashboard() {
         {usernameMessage && (
           <div className={`mb-6 p-4 rounded-xl backdrop-blur-xl border shadow-xl ${
             usernameMessage.includes('successfully') 
-              ? 'text-green-100 bg-green-500/20 border-green-400/50'
-              : 'text-red-100 bg-red-500/20 border-red-400/50'
+              ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/50'
+              : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-400/50'
           }`}>
-            {usernameMessage}
+            <p className={`text-sm font-medium bg-clip-text text-transparent ${
+              usernameMessage.includes('successfully') 
+                ? 'bg-gradient-to-r from-green-100 to-emerald-200'
+                : 'bg-gradient-to-r from-red-100 to-pink-200'
+            }`}>
+              {usernameMessage}
+            </p>
           </div>
         )}
 
         {/* Stats Cards - Glassmorphism */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Months Paid Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white/70 mb-1">Months Paid</p>
-                  <p className="text-2xl font-bold text-white drop-shadow-lg">{paidMonths}/12</p>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-emerald-200/70 bg-clip-text text-transparent mb-1">
+                    Months Paid
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
+                    {paidMonths}/12
+                  </p>
                 </div>
-                <div className="bg-green-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -303,15 +329,20 @@ export default function MemberDashboard() {
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
 
+          {/* Amount Paid Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white/70 mb-1">Amount Paid</p>
-                  <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {totalPaid.toLocaleString()}</p>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-blue-200/70 bg-clip-text text-transparent mb-1">
+                    Amount Paid
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg">
+                    LKR {totalPaid.toLocaleString()}
+                  </p>
                 </div>
-                <div className="bg-blue-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
                   <DollarSign className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -319,15 +350,20 @@ export default function MemberDashboard() {
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
 
+          {/* Group Funds Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white/70 mb-1">Group Funds</p>
-                  <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {groupStats.totalFunds.toLocaleString()}</p>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-purple-200/70 bg-clip-text text-transparent mb-1">
+                    Group Funds
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg">
+                    LKR {groupStats.totalFunds.toLocaleString()}
+                  </p>
                 </div>
-                <div className="bg-purple-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
                   <TrendingUp className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -335,15 +371,20 @@ export default function MemberDashboard() {
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
 
+          {/* Outstanding Loans Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white/70 mb-1">Outstanding Loans</p>
-                  <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {totalLoanAmount.toLocaleString()}</p>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-orange-200/70 bg-clip-text text-transparent mb-1">
+                    Outstanding Loans
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent drop-shadow-lg">
+                    LKR {totalLoanAmount.toLocaleString()}
+                  </p>
                 </div>
-                <div className="bg-orange-500 bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
                   <CreditCard className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -358,8 +399,12 @@ export default function MemberDashboard() {
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
             <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-semibold text-white drop-shadow">Payment Status - {selectedYear}</h3>
-                <p className="text-sm text-white/80 drop-shadow">Monthly contribution: LKR {MONTHLY_CONTRIBUTION}</p>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
+                  Payment Status - {selectedYear}
+                </h3>
+                <p className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent drop-shadow">
+                  Monthly contribution: LKR {MONTHLY_CONTRIBUTION}
+                </p>
               </div>
               <select
                 value={selectedYear}
@@ -383,24 +428,31 @@ export default function MemberDashboard() {
                       key={month}
                       className={`p-3 rounded-lg backdrop-blur-sm border text-center transition-all duration-300 hover:scale-105 hover:shadow-lg ${
                         isPaid
-                          ? 'bg-green-500/30 border-green-400/50 text-green-100'
+                          ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/50'
                           : isCurrent
-                          ? 'bg-yellow-500/30 border-yellow-400/50 text-yellow-100'
+                          ? 'bg-gradient-to-br from-yellow-500/30 to-amber-500/30 border-yellow-400/50'
                           : isPast
-                          ? 'bg-red-500/30 border-red-400/50 text-red-100'
-                          : 'bg-white/10 border-white/20 text-white/70'
+                          ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border-red-400/50'
+                          : 'bg-white/10 border-white/20'
                       }`}
                     >
-                      <div className="text-xs font-medium">{month.slice(0, 3)}</div>
+                      <div className={`text-xs font-medium ${
+                        isPaid ? 'bg-gradient-to-r from-green-100 to-emerald-200 bg-clip-text text-transparent' :
+                        isCurrent ? 'bg-gradient-to-r from-yellow-100 to-amber-200 bg-clip-text text-transparent' :
+                        isPast ? 'bg-gradient-to-r from-red-100 to-pink-200 bg-clip-text text-transparent' :
+                        'bg-gradient-to-r from-white/70 to-white/50 bg-clip-text text-transparent'
+                      }`}>
+                        {month.slice(0, 3)}
+                      </div>
                       <div className="mt-1">
                         {isPaid ? (
-                          <div className="text-green-200 text-lg">✓</div>
+                          <div className="text-2xl bg-gradient-to-r from-green-200 to-emerald-300 bg-clip-text text-transparent">✓</div>
                         ) : isCurrent ? (
-                          <div className="text-yellow-200 text-lg">○</div>
+                          <div className="text-2xl bg-gradient-to-r from-yellow-200 to-amber-300 bg-clip-text text-transparent">○</div>
                         ) : isPast ? (
-                          <div className="text-red-200 text-lg">✗</div>
+                          <div className="text-2xl bg-gradient-to-r from-red-200 to-pink-300 bg-clip-text text-transparent">✗</div>
                         ) : (
-                          <div className="text-white/50 text-lg">-</div>
+                          <div className="text-2xl bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent">-</div>
                         )}
                       </div>
                     </div>
@@ -410,8 +462,10 @@ export default function MemberDashboard() {
 
               <div className="mt-6 pt-4 border-t border-white/20">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-white/80">Progress</span>
-                  <span className="font-medium text-white">{Math.round((paidMonths / 12) * 100)}%</span>
+                  <span className="bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent">Progress</span>
+                  <span className="font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
+                    {Math.round((paidMonths / 12) * 100)}%
+                  </span>
                 </div>
                 <div className="mt-2 bg-white/20 rounded-full h-2">
                   <div
@@ -422,10 +476,10 @@ export default function MemberDashboard() {
               </div>
 
               {pendingMonths > 0 && (
-                <div className="mt-4 p-3 bg-orange-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 hover:scale-[1.02]">
+                <div className="mt-4 p-3 bg-gradient-to-r from-orange-500/30 to-amber-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 hover:scale-[1.02]">
                   <div className="flex items-center space-x-2">
                     <AlertCircle className="h-4 w-4 text-orange-200" />
-                    <span className="text-sm font-medium text-orange-100">
+                    <span className="text-sm font-medium bg-gradient-to-r from-orange-100 to-amber-200 bg-clip-text text-transparent">
                       {pendingMonths} payment{pendingMonths > 1 ? 's' : ''} pending
                     </span>
                   </div>
@@ -437,7 +491,9 @@ export default function MemberDashboard() {
           {/* My Loans Card */}
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
             <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm">
-              <h3 className="text-lg font-semibold text-white drop-shadow">My Loans</h3>
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
+                My Loans
+              </h3>
             </div>
             <div className="p-6">
               {myLoans.length > 0 ? (
@@ -449,55 +505,71 @@ export default function MemberDashboard() {
                     
                     return (
                       <div key={loan.id} className={`p-4 rounded-lg backdrop-blur-sm border transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg ${
-                        loan.status === 'repaid' ? 'bg-green-500/30 border-green-400/50' :
-                        isOverdue ? 'bg-red-500/30 border-red-400/50' :
-                        'bg-blue-500/30 border-blue-400/50'
+                        loan.status === 'repaid' ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/50' :
+                        isOverdue ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border-red-400/50' :
+                        'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-blue-400/50'
                       }`}>
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <p className="font-semibold text-white">LKR {loan.amount.toLocaleString()}</p>
-                            <p className="text-sm text-white/80">
+                            <p className="font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                              LKR {loan.amount.toLocaleString()}
+                            </p>
+                            <p className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">
                               Issued: {new Date(loan.issueDate).toLocaleDateString()}
                             </p>
                           </div>
                           <div className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
-                            loan.status === 'repaid' ? 'bg-green-500/40 text-green-100' :
-                            isOverdue ? 'bg-red-500/40 text-red-100' :
-                            'bg-orange-500/40 text-orange-100'
+                            loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500/40 to-emerald-500/40' :
+                            isOverdue ? 'bg-gradient-to-r from-red-500/40 to-pink-500/40' :
+                            'bg-gradient-to-r from-orange-500/40 to-amber-500/40'
                           }`}>
-                            {loan.status === 'repaid' ? 'Repaid' : isOverdue ? 'Overdue' : 'Active'}
+                            <span className={`bg-clip-text text-transparent ${
+                              loan.status === 'repaid' ? 'bg-gradient-to-r from-green-100 to-emerald-200' :
+                              isOverdue ? 'bg-gradient-to-r from-red-100 to-pink-200' :
+                              'bg-gradient-to-r from-orange-100 to-amber-200'
+                            }`}>
+                              {loan.status === 'repaid' ? 'Repaid' : isOverdue ? 'Overdue' : 'Active'}
+                            </span>
                           </div>
                         </div>
                         
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-white/80">Repaid</span>
-                            <span className="font-medium text-white">LKR {loan.repaidAmount.toLocaleString()}</span>
+                            <span className="bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">Repaid</span>
+                            <span className="font-medium bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                              LKR {loan.repaidAmount.toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-white/80">Outstanding</span>
-                            <span className="font-medium text-white">LKR {outstanding.toLocaleString()}</span>
+                            <span className="bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">Outstanding</span>
+                            <span className="font-medium bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                              LKR {outstanding.toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-white/80">Due Date</span>
-                            <span className={`font-medium ${isOverdue ? 'text-red-200' : 'text-white'}`}>
+                            <span className="bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">Due Date</span>
+                            <span className={`font-medium ${
+                              isOverdue 
+                                ? 'bg-gradient-to-r from-red-200 to-pink-300 bg-clip-text text-transparent' 
+                                : 'bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent'
+                            }`}>
                               {new Date(loan.dueDate).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
 
                         <div className="mt-3">
-                          <div className="flex justify-between text-xs text-white/70 mb-1">
-                            <span>Progress</span>
-                            <span>{Math.round(progress)}%</span>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="bg-gradient-to-r from-white/70 to-blue-200/70 bg-clip-text text-transparent">Progress</span>
+                            <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">{Math.round(progress)}%</span>
                           </div>
                           <div className="bg-white/20 rounded-full h-1.5 backdrop-blur-sm">
                             <div
-                                  className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
-                                    loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                                  }`}
-                                  style={{ width: `${progress}%` }}
-                                ></div>
+                              className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
+                                loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                              }`}
+                              style={{ width: `${progress}%` }}
+                            ></div>
                           </div>
                         </div>
                       </div>
@@ -506,11 +578,15 @@ export default function MemberDashboard() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div className="bg-white/10 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
-                    <CreditCard className="h-12 w-12 text-white/50" />
+                  <div className="bg-gradient-to-br from-white/10 to-white/5 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
+                    <CreditCard className="h-12 w-12 bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent" />
                   </div>
-                  <h3 className="text-lg font-medium text-white mb-2">No loans</h3>
-                  <p className="text-white/70">You don't have any active or past loans.</p>
+                  <h3 className="text-lg font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2">
+                    No loans
+                  </h3>
+                  <p className="bg-gradient-to-r from-white/70 to-purple-200/70 bg-clip-text text-transparent">
+                    You don't have any active or past loans.
+                  </p>
                 </div>
               )}
             </div>
@@ -519,22 +595,34 @@ export default function MemberDashboard() {
 
         {/* Group Info Card */}
         <div className="mt-6 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300">
-          <h3 className="text-lg font-semibold text-white mb-6 drop-shadow flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+          <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-6 drop-shadow flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 animate-pulse" />
             Group Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="text-center p-6 rounded-xl bg-blue-500/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
-              <div className="text-3xl font-bold text-white drop-shadow-lg group-hover:scale-110 transition-transform">{groupStats.totalMembers}</div>
-              <div className="text-sm text-white/80 mt-2">Total Members</div>
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
+              <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform">
+                {groupStats.totalMembers}
+              </div>
+              <div className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent mt-2">
+                Total Members
+              </div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-green-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
-              <div className="text-2xl font-bold text-white drop-shadow-lg group-hover:scale-110 transition-transform">LKR {groupStats.monthlyCollection.toLocaleString()}</div>
-              <div className="text-sm text-white/80 mt-2">This Month Collection</div>
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
+              <div className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform">
+                LKR {groupStats.monthlyCollection.toLocaleString()}
+              </div>
+              <div className="text-sm bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent mt-2">
+                This Month Collection
+              </div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-purple-500/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
-              <div className="text-3xl font-bold text-white drop-shadow-lg group-hover:scale-110 transition-transform">{groupStats.activeLoans}</div>
-              <div className="text-sm text-white/80 mt-2">Active Loans</div>
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group">
+              <div className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform">
+                {groupStats.activeLoans}
+              </div>
+              <div className="text-sm bg-gradient-to-r from-white/80 to-purple-200/80 bg-clip-text text-transparent mt-2">
+                Active Loans
+              </div>
             </div>
           </div>
         </div>
