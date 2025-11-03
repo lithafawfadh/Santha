@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, PiggyBank } from 'lucide-react';
+import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart, HeartHandshake } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlassCard from './common/GlassCard';
 import GlassButton from './common/GlassButton';
@@ -116,14 +116,14 @@ export default function Login() {
               <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-emerald-500 opacity-20" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
               
               <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-violet-400/30 shadow-2xl backdrop-blur-xl">
-                <PiggyBank className="h-12 w-12 text-violet-600 animate-bounce" style={{ animationDuration: '3s' }} />
+                <HeartHandshake className="h-12 w-12 text-violet-600 animate-bounce" style={{ animationDuration: '3s' }} />
                 <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-ping" />
               </GlassCard>
             </div>
             
             <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif">
               <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 bg-clip-text text-transparent">
-                Santha
+                F.O.R.T
               </span>
             </h1>
             <h2 className="text-2xl font-light text-slate-700 dark:text-gray-300 mb-4 tracking-widest">
@@ -132,7 +132,7 @@ export default function Login() {
             <div className="flex items-center justify-center space-x-2 mb-4">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
               <p className="text-slate-600 dark:text-gray-400 font-light tracking-wider text-sm">
-                Our Financial Future, Together
+                Friends Organization for Resllience & Trust
               </p>
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
