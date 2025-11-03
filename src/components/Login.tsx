@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart, HeartHandshake } from 'lucide-react';
+import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, PiggyBank } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlassCard from './common/GlassCard';
 import GlassButton from './common/GlassButton';
@@ -67,25 +67,22 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-      {/* Dynamic gradient background - Fixed for dark mode */}
+      {/* Dynamic gradient background */}
       <div 
-        className="absolute inset-0 transition-all duration-1000 ease-out"
+        className="absolute inset-0 opacity-80 transition-all duration-1000 ease-out"
         style={{
           background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, 
-            rgba(99, 102, 241, 0.2) 0%, 
-            rgba(139, 92, 246, 0.15) 25%, 
-            rgba(59, 130, 246, 0.1) 50%, 
+            rgba(99, 102, 241, 0.15) 0%, 
+            rgba(139, 92, 246, 0.1) 25%, 
+            rgba(59, 130, 246, 0.08) 50%, 
             transparent 70%),
             linear-gradient(135deg, 
-              rgb(248, 250, 252) 0%, 
-              rgb(226, 232, 240) 25%, 
-              rgb(203, 213, 225) 50%, 
-              rgb(148, 163, 184) 100%)`
+              #f8fafc 0%, 
+              #e2e8f0 25%, 
+              #cbd5e1 50%, 
+              #94a3b8 100%)`
         }}
       />
-
-      {/* Dark mode overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:opacity-95 opacity-0 transition-opacity duration-500" />
 
       {/* Floating particles */}
       {activeParticles.map(particle => (
@@ -100,44 +97,44 @@ export default function Login() {
         />
       ))}
 
-      {/* Morphing shapes - Adjusted for dark mode */}
+      {/* Morphing shapes */}
       <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-violet-500/30 to-indigo-600/30 dark:from-violet-500/20 dark:to-indigo-600/20 rounded-full blur-3xl animate-pulse transform rotate-12"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-br from-blue-500/25 to-cyan-500/25 dark:from-blue-500/15 dark:to-cyan-500/15 rounded-full blur-3xl animate-pulse transform -rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 dark:from-emerald-500/10 dark:to-blue-500/10 rounded-full blur-3xl animate-bounce transform rotate-45" style={{ animationDuration: '6s' }}></div>
+        <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-violet-400/20 to-indigo-600/20 rounded-full blur-3xl animate-pulse transform rotate-12"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-br from-blue-400/15 to-cyan-500/15 rounded-full blur-3xl animate-pulse transform -rotate-12"></div>
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-emerald-400/10 to-blue-500/10 rounded-full blur-3xl animate-bounce transform rotate-45" style={{ animationDuration: '6s' }}></div>
       </div>
 
-      {/* Main card - Fixed contrast */}
+      {/* Main card */}
       <GlassCard variant="gradient" className="max-w-lg w-full relative z-10 overflow-hidden">
-        <div className="absolute -inset-2 bg-gradient-to-r from-violet-500/40 via-blue-500/40 to-emerald-500/40 dark:from-violet-500/30 dark:via-blue-500/30 dark:to-emerald-500/30 rounded-3xl blur-xl animate-pulse"></div>
+        <div className="absolute -inset-2 bg-gradient-to-r from-violet-500/40 via-blue-500/40 to-emerald-500/40 rounded-3xl blur-xl animate-pulse"></div>
         
-        <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl border border-white/30 dark:border-slate-700/50 rounded-2xl p-12 shadow-2xl">
+        <div className="relative bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-12 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-10">
             <div className="relative mb-8">
               <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-violet-500 to-blue-500 opacity-30" style={{ animationDuration: '8s' }}></div>
               <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-emerald-500 opacity-20" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
               
-              <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/30 to-blue-600/30 dark:from-violet-500/40 dark:to-blue-500/40 border border-violet-400/40 dark:border-violet-400/30 shadow-2xl backdrop-blur-xl">
-                <HeartHandshake className="h-12 w-12 text-violet-600 dark:text-violet-400 animate-bounce" style={{ animationDuration: '3s' }} />
+              <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-violet-400/30 shadow-2xl backdrop-blur-xl">
+                <PiggyBank className="h-12 w-12 text-violet-600 animate-bounce" style={{ animationDuration: '3s' }} />
                 <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-ping" />
               </GlassCard>
             </div>
             
-            <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif drop-shadow-lg">
-              <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-300 dark:to-blue-300 bg-clip-text text-transparent">
-                F.O.R.T
+            <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif">
+              <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 bg-clip-text text-transparent">
+                Santha
               </span>
             </h1>
-            <h2 className="text-2xl font-light text-slate-700 dark:text-slate-200 mb-4 tracking-widest drop-shadow">
+            <h2 className="text-2xl font-light text-slate-700 dark:text-gray-300 mb-4 tracking-widest">
               COLLECTIVE
             </h2>
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-              <p className="text-slate-600 dark:text-slate-300 font-light tracking-wider text-sm drop-shadow">
-                Friends Organization for Resilience & Trust
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <p className="text-slate-600 dark:text-gray-400 font-light tracking-wider text-sm">
+                Our Financial Future, Together
               </p>
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
           </div>
 
@@ -145,7 +142,7 @@ export default function Login() {
             <div className="space-y-6">
               {/* Username */}
               <div className="group">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
+                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-4 tracking-widest uppercase">
                   Identity
                 </label>
                 <div className="relative">
@@ -155,7 +152,7 @@ export default function Login() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
+                    className="w-full px-6 py-5 backdrop-blur-2xl bg-white/30 dark:bg-gray-900/40 border border-white/40 placeholder-slate-500 dark:placeholder-gray-500 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/40"
                     placeholder="Enter your unique identifier"
                   />
                 </div>
@@ -164,7 +161,7 @@ export default function Login() {
               {/* Password */}
               {role === 'admin' && (
                 <div className="group animate-fadeIn">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-4 tracking-widest uppercase">
                     Security Key
                   </label>
                   <div className="relative">
@@ -174,7 +171,7 @@ export default function Login() {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
+                      className="w-full px-6 py-5 backdrop-blur-2xl bg-white/30 dark:bg-gray-900/40 border border-white/40 placeholder-slate-500 dark:placeholder-gray-500 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/40"
                       placeholder="Enter your secure passphrase"
                     />
                   </div>
@@ -183,7 +180,7 @@ export default function Login() {
 
               {/* Role Selector */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-6 tracking-widest uppercase text-center">
+                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-6 tracking-widest uppercase text-center">
                   Choose Your Path
                 </label>
                 <div className="grid grid-cols-2 gap-6">
@@ -194,13 +191,13 @@ export default function Login() {
                       onClick={() => setRole('admin')}
                       className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
                         role === 'admin'
-                          ? 'ring-2 ring-violet-500/50 dark:ring-violet-400/50 bg-gradient-to-br from-violet-500/30 to-purple-600/30 dark:from-violet-500/40 dark:to-purple-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
+                          ? 'ring-2 ring-violet-500/40 bg-gradient-to-br from-violet-500/20 to-purple-600/20'
+                          : 'hover:bg-white/20'
                       }`}
                     >
-                      <Shield className={`h-8 w-8 mb-3 ${role === 'admin' ? 'text-violet-600 dark:text-violet-300 animate-pulse' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Guardian</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Administrator</span>
+                      <Shield className={`h-8 w-8 mb-3 ${role === 'admin' ? 'text-violet-600 animate-pulse' : 'text-slate-600 dark:text-gray-400'}`} />
+                      <span className="text-sm text-slate-800 dark:text-white">Guardian</span>
+                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-gray-400">Administrator</span>
                     </GlassButton>
                   </div>
                   
@@ -211,13 +208,13 @@ export default function Login() {
                       onClick={() => setRole('member')}
                       className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
                         role === 'member'
-                          ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50 bg-gradient-to-br from-blue-500/30 to-cyan-600/30 dark:from-blue-500/40 dark:to-cyan-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
+                          ? 'ring-2 ring-blue-500/40 bg-gradient-to-br from-blue-500/20 to-cyan-600/20'
+                          : 'hover:bg-white/20'
                       }`}
                     >
-                      <UserCheck className={`h-8 w-8 mb-3 ${role === 'member' ? 'text-blue-600 dark:text-blue-300 animate-bounce' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Builder</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Member</span>
+                      <UserCheck className={`h-8 w-8 mb-3 ${role === 'member' ? 'text-blue-600 animate-bounce' : 'text-slate-600 dark:text-gray-400'}`} />
+                      <span className="text-sm text-slate-800 dark:text-white">Builder</span>
+                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-gray-400">Member</span>
                     </GlassButton>
                   </div>
                 </div>
@@ -225,8 +222,8 @@ export default function Login() {
             </div>
 
             {error && (
-              <GlassCard className="p-6 bg-red-500/30 dark:bg-red-500/40 border-red-400/50 dark:border-red-400/60 border rounded-2xl backdrop-blur-2xl shadow-xl animate-shake">
-                <p className="text-sm text-red-700 dark:text-red-200 font-light tracking-wider text-center">{error}</p>
+              <GlassCard className="p-6 bg-red-500/20 border-red-400/40 border rounded-2xl backdrop-blur-2xl shadow-xl animate-shake">
+                <p className="text-sm text-red-700 dark:text-red-400 font-light tracking-wider text-center">{error}</p>
               </GlassCard>
             )}
 
@@ -235,7 +232,7 @@ export default function Login() {
               type="submit"
               variant="primary"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-6 text-lg font-light transition-all duration-500 hover:shadow-2xl rounded-2xl backdrop-blur-2xl shadow-xl tracking-widest uppercase hover:scale-105 bg-gradient-to-r from-violet-600/90 to-blue-600/90 dark:from-violet-500/80 dark:to-blue-500/80 border-2 border-white/40 dark:border-white/20 text-white"
+              className="w-full flex justify-center items-center py-6 text-lg font-light transition-all duration-500 hover:shadow-2xl rounded-2xl backdrop-blur-2xl shadow-xl tracking-widest uppercase hover:scale-105 bg-gradient-to-r from-violet-600/80 to-blue-600/80 border-2 border-white/30"
             >
               {isLoading ? (
                 <>
@@ -254,7 +251,7 @@ export default function Login() {
       </GlassCard>
 
       {/* Animations */}
-      <style>{`
+      <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(180deg); }

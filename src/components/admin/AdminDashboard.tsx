@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, ChevronDown, Menu, Moon, Sun, Edit3, Save, X, FileSpreadsheet } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
-import AnimatedNavBar from '../common/AnimatedNavBar';
 import PaymentGrid from './PaymentGrid';
 import LoanManagement from './LoanManagement';
 import MemberManagement from './MemberManagement';
 import Reports from './Reports';
 import DonationManagement from './DonationManagement';
-import ShaderBackground from '../common/ShaderBackground';
 
 export default function AdminDashboard() {
   const { groupStats, currentUser, logout, loading, isDarkMode, toggleDarkMode, updateAdminProfile } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
     name: currentUser?.name || '',
@@ -30,6 +29,13 @@ export default function AdminDashboard() {
     { id: 'members', label: 'Members', icon: Users },
     { id: 'reports', label: 'Reports', icon: FileText },
   ];
+
+  const activeTabData = tabs.find(tab => tab.id === activeTab);
+
+  const handleTabSelect = (tabId: string) => {
+    setActiveTab(tabId);
+    setIsDropdownOpen(false);
+  };
 
   const handleProfileUpdate = async () => {
     if (!profileForm.name.trim()) {
@@ -81,35 +87,30 @@ export default function AdminDashboard() {
     });
     setProfileMessage('');
   };
-
   const statsCards = [
     {
       title: 'Total Members',
       value: groupStats.totalMembers,
       icon: Users,
-      color: 'from-blue-500 to-blue-600',
-      iconBg: 'bg-blue-500',
+      color: 'bg-blue-500',
     },
     {
-      title: 'Available Group Funds',
+      title: 'Group Funds',
       value: `LKR ${groupStats.totalFunds.toLocaleString()}`,
       icon: DollarSign,
-      color: 'from-green-500 to-green-600',
-      iconBg: 'bg-green-500',
+      color: 'bg-green-500',
     },
     {
       title: 'This Month Collection',
       value: `LKR ${groupStats.monthlyCollection.toLocaleString()}`,
       icon: Calendar,
-      color: 'from-purple-500 to-purple-600',
-      iconBg: 'bg-purple-500',
+      color: 'bg-purple-500',
     },
     {
       title: 'Active Loans',
       value: `${groupStats.activeLoans} (LKR ${groupStats.totalLoanAmount.toLocaleString()})`,
       icon: CreditCard,
-      color: 'from-orange-500 to-orange-600',
-      iconBg: 'bg-orange-500',
+      color: 'bg-orange-500',
     },
   ];
 
@@ -125,16 +126,20 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Shader Background */}
-      <ShaderBackground />
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-20"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-400 to-orange-500 rounded-full opacity-20"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-green-400 to-blue-500 rounded-full opacity-10"></div>
+      </div>
 
       {/* Header */}
-      <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-10">
+      <header className="backdrop-blur-lg bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 shadow-lg relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4 flex-1">
-              <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center transform transition-transform duration-300 hover:rotate-12 shadow-lg">
+              <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center transform transition-transform duration-300 hover:rotate-12">
                 <Settings className="h-5 w-5 text-white drop-shadow-sm" />
               </div>
               <div className="flex-1">
@@ -145,7 +150,7 @@ export default function AdminDashboard() {
                         type="text"
                         value={profileForm.name}
                         onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                        className="px-3 py-1 text-lg font-semibold backdrop-blur-xl bg-white/20 dark:bg-gray-800/30 border border-white/30 dark:border-gray-600/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                        className="px-3 py-1 text-lg font-semibold backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
                         placeholder="Enter your name"
                         disabled={isUpdatingProfile}
                       />
@@ -170,7 +175,7 @@ export default function AdminDashboard() {
                       type="password"
                       value={profileForm.password}
                       onChange={(e) => setProfileForm({ ...profileForm, password: e.target.value })}
-                      className="px-3 py-1 text-sm backdrop-blur-xl bg-white/20 dark:bg-gray-800/30 border border-white/30 dark:border-gray-600/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                      className="px-3 py-1 text-sm backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
                       placeholder="New password (optional)"
                       disabled={isUpdatingProfile}
                     />
@@ -178,8 +183,8 @@ export default function AdminDashboard() {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <div>
-                      <h1 className="text-xl font-semibold text-white drop-shadow-lg">Admin Portal</h1>
-                      <p className="text-sm text-white/80 drop-shadow">Welcome, {currentUser?.name}</p>
+                      <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Admin Portal</h1>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Welcome, {currentUser?.name}</p>
                     </div>
                     <GlassButton
                       variant="secondary"
@@ -207,9 +212,9 @@ export default function AdminDashboard() {
                 className="p-2"
               >
                 {isDarkMode ? (
-                  <Sun className="h-4 w-4 text-yellow-400" />
+                  <Sun className="h-4 w-4 text-yellow-500" />
                 ) : (
-                  <Moon className="h-4 w-4 text-white" />
+                  <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 )}
               </GlassButton>
               
@@ -220,7 +225,7 @@ export default function AdminDashboard() {
                 className="p-2"
                 title="Open Google Sheet"
               >
-                <FileSpreadsheet className="h-4 w-4 text-green-400" />
+                <FileSpreadsheet className="h-4 w-4 text-green-600 dark:text-green-400" />
               </GlassButton>
               
               <GlassButton
@@ -238,78 +243,102 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* Profile Update Message */}
         {profileMessage && (
-          <div className={`mb-6 p-4 rounded-xl backdrop-blur-xl border shadow-xl ${
-            profileMessage.includes('successfully')
-              ? 'text-green-100 bg-green-500/20 border-green-400/50'
-              : 'text-red-100 bg-red-500/20 border-red-400/50'
-          }`}>
+          <GlassCard className={`mb-6 p-4 ${
+            profileMessage.includes('successfully') 
+              ? 'text-green-800 dark:text-green-200 bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 border-green-400 dark:border-green-600' 
+              : 'text-red-800 dark:text-red-200 bg-red-500 bg-opacity-20 dark:bg-red-600 dark:bg-red-600 border-red-400 dark:border-red-600'
+          } border border-opacity-30 dark:border-opacity-30 backdrop-blur-sm`}>
             {profileMessage}
-          </div>
+          </GlassCard>
         )}
 
-        {/* Animated Navigation Bar */}
-        <AnimatedNavBar
-          items={tabs}
-          activeItem={activeTab}
-          onItemSelect={setActiveTab}
-          className="mb-6"
-        />
+        {/* Navigation Dropdown */}
+        <GlassCard className="relative mb-6 w-fit z-[100]">
+          <GlassButton
+            variant="secondary"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center px-4 py-2"
+          >
+            <Menu className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
+            {activeTabData && (
+              <>
+                <activeTabData.icon className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{activeTabData.label}</span>
+              </>
+            )}
+            <ChevronDown className={`h-4 w-4 ml-2 text-gray-600 dark:text-gray-400 transition-transform duration-300 ${
+              isDropdownOpen ? 'rotate-180' : ''
+            }`} />
+          </GlassButton>
+
+          {isDropdownOpen && (
+            <div className="absolute left-0 mt-2 w-56 backdrop-blur-lg bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 border border-white border-opacity-30 dark:border-gray-700 dark:border-opacity-30 rounded-lg shadow-lg z-[200] transition-all duration-300 transform origin-top-left">
+              <div className="py-2">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabSelect(tab.id)}
+                      className={`w-full flex items-center px-4 py-2 text-sm font-medium text-left transition-all duration-200 backdrop-blur-sm ${
+                        activeTab === tab.id
+                          ? 'bg-blue-500 bg-opacity-20 dark:bg-blue-600 dark:bg-opacity-20 text-blue-700 dark:text-blue-300'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white hover:bg-opacity-20 dark:hover:bg-gray-700 dark:hover:bg-opacity-20'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 mr-3 transition-transform duration-300" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </GlassCard>
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Glass Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {statsCards.map((card, index) => {
                 const Icon = card.icon;
                 return (
-                  <div
+                  <GlassCard
                     key={index}
-                    className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15"
+                    variant="gradient"
+                    className="p-6"
                   >
-                    {/* Gradient overlay on hover */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                    
-                    <div className="relative p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-white/70 mb-1">{card.title}</p>
-                          <p className="text-2xl font-bold text-white drop-shadow-lg">{card.value}</p>
-                        </div>
-                        <div className={`${card.iconBg} bg-opacity-80 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl`}>
-                          <Icon className="h-6 w-6 text-white" />
-                        </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{card.title}</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</p>
+                      </div>
+                      <div className={`${card.color} bg-opacity-80 dark:bg-opacity-60 p-3 rounded-lg transform transition-transform duration-300 hover:scale-110 backdrop-blur-sm shadow-lg`}>
+                        <Icon className="h-6 w-6 text-white" />
                       </div>
                     </div>
-
-                    {/* Bottom shine effect */}
-                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                  </div>
+                  </GlassCard>
                 );
               })}
             </div>
 
-            {/* Recent Activity Card */}
-            <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300">
-              <h3 className="text-lg font-semibold text-white mb-4 drop-shadow flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                Recent Activity
-              </h3>
+            <GlassCard variant="gradient" className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-green-500/20 rounded-xl hover:bg-green-500/30 transition-all duration-300 backdrop-blur-sm border border-green-300/30 shadow-lg group">
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Monthly collection target achieved</span>
-                  <span className="text-xs text-green-300 bg-green-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">Today</span>
+                <div className="flex items-center justify-between p-3 bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 rounded-lg hover:bg-opacity-30 dark:hover:bg-opacity-30 transition-colors duration-300 backdrop-blur-sm border border-green-300 border-opacity-30 dark:border-green-600 dark:border-opacity-30">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Monthly collection target achieved</span>
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-800 bg-opacity-50 dark:bg-opacity-50 px-2 py-1 rounded-full backdrop-blur-sm">Today</span>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-blue-500/20 rounded-xl hover:bg-blue-500/30 transition-all duration-300 backdrop-blur-sm border border-blue-300/30 shadow-lg group">
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">New member added to the group</span>
-                  <span className="text-xs text-blue-300 bg-blue-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">2 days ago</span>
+                <div className="flex items-center justify-between p-3 bg-blue-500 bg-opacity-20 dark:bg-blue-600 dark:bg-opacity-20 rounded-lg hover:bg-opacity-30 dark:hover:bg-opacity-30 transition-colors duration-300 backdrop-blur-sm border border-blue-300 border-opacity-30 dark:border-blue-600 dark:border-opacity-30">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">New member added to the group</span>
+                  <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800 bg-opacity-50 dark:bg-opacity-50 px-2 py-1 rounded-full backdrop-blur-sm">2 days ago</span>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-orange-500/20 rounded-xl hover:bg-orange-500/30 transition-all duration-300 backdrop-blur-sm border border-orange-300/30 shadow-lg group">
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Loan repayment received</span>
-                  <span className="text-xs text-orange-300 bg-orange-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">3 days ago</span>
+                <div className="flex items-center justify-between p-3 bg-orange-500 bg-opacity-20 dark:bg-orange-600 dark:bg-opacity-20 rounded-lg hover:bg-opacity-30 dark:hover:bg-opacity-30 transition-colors duration-300 backdrop-blur-sm border border-orange-300 border-opacity-30 dark:border-orange-600 dark:border-opacity-30">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Loan repayment received</span>
+                  <span className="text-xs text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-800 bg-opacity-50 dark:bg-opacity-50 px-2 py-1 rounded-full backdrop-blur-sm">3 days ago</span>
                 </div>
               </div>
-            </div>
+            </GlassCard>
           </div>
         )}
 
