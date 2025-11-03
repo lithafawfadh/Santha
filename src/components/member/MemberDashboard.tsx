@@ -141,11 +141,9 @@ export default function MemberDashboard() {
               </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
-                  Member Portal
-                </h1>
-                <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent drop-shadow hidden sm:block">
                   Welcome, {currentUser?.name}
-                </p>
+                </h1>
+              
               </div>
             </div>
             
@@ -297,7 +295,7 @@ export default function MemberDashboard() {
               : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-400/50'
           }`}>
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine" />
             <p className={`text-sm font-medium bg-clip-text text-transparent relative z-10 ${
               usernameMessage.includes('successfully') 
                 ? 'bg-gradient-to-r from-green-100 to-emerald-200'
@@ -313,7 +311,7 @@ export default function MemberDashboard() {
           {/* Months Paid Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
             <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -336,7 +334,7 @@ export default function MemberDashboard() {
           {/* Amount Paid Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -359,7 +357,7 @@ export default function MemberDashboard() {
           {/* Group Funds Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -382,7 +380,7 @@ export default function MemberDashboard() {
           {/* Outstanding Loans Card */}
           <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -408,7 +406,7 @@ export default function MemberDashboard() {
           {/* Payment Status Card */}
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
             <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center relative z-10">
               <div>
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
@@ -449,7 +447,7 @@ export default function MemberDashboard() {
                       }`}
                     >
                       {/* Mini Border Shine for Month Cards */}
-                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-700" />
                       <div className={`text-xs font-medium relative z-10 ${
                         isPaid ? 'bg-gradient-to-r from-green-100 to-emerald-200 bg-clip-text text-transparent' :
                         isCurrent ? 'bg-gradient-to-r from-yellow-100 to-amber-200 bg-clip-text text-transparent' :
@@ -492,7 +490,7 @@ export default function MemberDashboard() {
               {pendingMonths > 0 && (
                 <div className="mt-4 p-3 bg-gradient-to-r from-orange-500/30 to-amber-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 hover:scale-[1.02] relative overflow-hidden">
                   {/* Border Shine for Alert */}
-                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-orange-200/30 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-orange-200/20 to-transparent transform -skew-x-12 animate-shine" />
                   <div className="flex items-center space-x-2 relative z-10">
                     <AlertCircle className="h-4 w-4 text-orange-200" />
                     <span className="text-sm font-medium bg-gradient-to-r from-orange-100 to-amber-200 bg-clip-text text-transparent">
@@ -507,7 +505,7 @@ export default function MemberDashboard() {
           {/* My Loans Card */}
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
             {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine-sweep" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
             <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
                 My Loans
@@ -528,7 +526,7 @@ export default function MemberDashboard() {
                         'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-blue-400/50'
                       }`}>
                         {/* Border Shine for Loan Items */}
-                        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/25 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+                        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-700" />
                         <div className="flex justify-between items-start mb-3 relative z-10">
                           <div>
                             <p className="font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
@@ -600,7 +598,7 @@ export default function MemberDashboard() {
                 <div className="text-center py-8 relative">
                   <div className="bg-gradient-to-br from-white/10 to-white/5 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit relative overflow-hidden">
                     {/* Border Shine for Empty State */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-shine" />
                     <CreditCard className="h-12 w-12 bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent relative z-10" />
                   </div>
                   <h3 className="text-lg font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2 relative z-10">
@@ -618,7 +616,7 @@ export default function MemberDashboard() {
         {/* Group Info Card */}
         <div className="mt-6 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300 relative">
           {/* Border Shine Effect */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine-sweep" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
           <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-6 drop-shadow flex items-center gap-2 relative z-10">
             <div className="h-2 w-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 animate-pulse" />
             Group Information
@@ -626,7 +624,7 @@ export default function MemberDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
             <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
               {/* Border Shine for Group Stats */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/25 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.totalMembers}
               </div>
@@ -636,7 +634,7 @@ export default function MemberDashboard() {
             </div>
             <div className="text-center p-6 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
               {/* Border Shine for Group Stats */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/25 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
               <div className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 LKR {groupStats.monthlyCollection.toLocaleString()}
               </div>
@@ -646,7 +644,7 @@ export default function MemberDashboard() {
             </div>
             <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
               {/* Border Shine for Group Stats */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/25 to-transparent transform -skew-x-12 animate-shine-sweep-fast" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.activeLoans}
               </div>
@@ -660,7 +658,7 @@ export default function MemberDashboard() {
 
       {/* Add custom animation for the shine effect */}
       <style jsx>{`
-        @keyframes shine-sweep {
+        @keyframes shine {
           0% {
             transform: translateX(-100%) skewX(-12deg);
           }
@@ -668,19 +666,8 @@ export default function MemberDashboard() {
             transform: translateX(200%) skewX(-12deg);
           }
         }
-        @keyframes shine-sweep-fast {
-          0% {
-            transform: translateX(-100%) skewX(-12deg);
-          }
-          100% {
-            transform: translateX(200%) skewX(-12deg);
-          }
-        }
-        .animate-shine-sweep {
-          animation: shine-sweep 4s ease-in-out infinite;
-        }
-        .animate-shine-sweep-fast {
-          animation: shine-sweep-fast 2s ease-in-out infinite;
+        .animate-shine {
+          animation: shine 3s infinite;
         }
       `}</style>
     </div>
