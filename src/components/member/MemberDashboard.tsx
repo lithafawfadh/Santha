@@ -174,7 +174,7 @@ export default function MemberDashboard() {
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-300 bg-clip-text text-transparent drop-shadow-lg">
                   <MorphingWelcomeText userName={currentUser?.name || ''} />
                 </h1>
                 
