@@ -420,7 +420,7 @@ export default function MemberDashboard() {
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-orange-200/70 bg-clip-text text-transparent mb-1">
+                  <p className="text-sm font-medium bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent mb-1">
                     Outstanding Loans
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent drop-shadow-lg">
