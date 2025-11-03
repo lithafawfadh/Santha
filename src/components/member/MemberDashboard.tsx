@@ -657,7 +657,7 @@ export default function MemberDashboard() {
             Group Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
               {/* Border Shine for Group Stats */}
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
