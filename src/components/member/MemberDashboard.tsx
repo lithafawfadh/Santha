@@ -7,6 +7,44 @@ import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import ShaderBackground from '../common/ShaderBackground';
 
+// MorphingText Component for the welcome message
+const MorphingWelcomeText = ({ userName }: { userName: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayText, setDisplayText] = useState(`Welcome, ${userName}`);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const welcomeTexts = useMemo(() => [
+    `Welcome, ${userName}`,
+    `Hello, ${userName}`,
+    `Greetings, ${userName}`,
+    `Good to see you, ${userName}`,
+    `Welcome back, ${userName}`,
+    `Hi there, ${userName}`,
+    `Nice to see you, ${userName}`
+  ], [userName]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % welcomeTexts.length);
+        setDisplayText(welcomeTexts[(currentIndex + 1) % welcomeTexts.length]);
+        setIsAnimating(false);
+      }, 300); // Text change duration
+    }, 3000); // Change every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [currentIndex, welcomeTexts]);
+
+  return (
+    <span className={`inline-block bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent transition-all duration-500 ${
+      isAnimating ? 'opacity-0 transform scale-95' : 'opacity-100 transform scale-100'
+    }`}>
+      {displayText}
+    </span>
+  );
+};
+
 export default function MemberDashboard() {
   const { currentUser, payments, loans, groupStats, logout, loading, updateUsername, isDarkMode, toggleDarkMode } = useApp();
   
@@ -141,9 +179,11 @@ export default function MemberDashboard() {
               </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
-                  Welcome, {currentUser?.name}
+                  Member Portal
                 </h1>
-              
+                <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent drop-shadow hidden sm:block">
+                  <MorphingWelcomeText userName={currentUser?.name || ''} />
+                </p>
               </div>
             </div>
             
@@ -182,6 +222,7 @@ export default function MemberDashboard() {
         </div>
       </header>
 
+      {/* Rest of the component remains exactly the same... */}
       {/* Dropdown Menu - Positioned outside header */}
       {showUserMenu && (
         <div 
@@ -667,7 +708,7 @@ export default function MemberDashboard() {
           }
         }
         .animate-shine {
-          animation: shine 7s infinite;
+          animation: shine 3s infinite;
         }
       `}</style>
     </div>
