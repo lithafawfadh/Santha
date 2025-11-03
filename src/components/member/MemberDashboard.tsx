@@ -114,6 +114,7 @@ export default function MemberDashboard() {
       <ShaderBackground />
       
       {/* Header - Single Row with Dropdown */}
+      {/* The header has z-10 */}
       <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3">
@@ -144,7 +145,8 @@ export default function MemberDashboard() {
               </GlassButton>
               
               {/* User Profile Dropdown */}
-              <div className="relative" ref={userMenuRef}>
+              {/* Added z-50 here to ensure it stacks above other z-indexed elements, like the z-20 dashboard content below */}
+              <div className="relative z-50" ref={userMenuRef}> 
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
@@ -157,6 +159,7 @@ export default function MemberDashboard() {
                 </button>
 
                 {/* Dropdown Menu */}
+                {/* Ensure this internal div also has a high z-index, although z-50 on the parent should suffice. */}
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-72 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     {/* User Info */}
