@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard, Edit3, Save, X, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
@@ -12,9 +12,13 @@ export default function MemberDashboard() {
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [newUsername, setNewUsername] = useState(currentUser?.username || '');
   const [usernameMessage, setUsernameMessage] = useState('');
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
+  
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   
@@ -43,6 +47,40 @@ export default function MemberDashboard() {
 
   const getCurrentMonthIndex = () => new Date().getMonth();
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      
+      if (userMenuRef.current && !userMenuRef.current.contains(target) && 
+          dropdownRef.current && !dropdownRef.current.contains(target)) {
+        setShowUserMenu(false);
+        setIsEditingUsername(false);
+        setNewUsername(currentUser?.username || '');
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu, currentUser?.username]);
+
+  // Prevent body scroll when dropdown is open
+  useEffect(() => {
+    if (showUserMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showUserMenu]);
+
   const handleUsernameUpdate = async () => {
     if (!newUsername.trim() || newUsername.trim() === currentUser?.username) {
       setIsEditingUsername(false);
@@ -58,6 +96,7 @@ export default function MemberDashboard() {
       if (success) {
         setUsernameMessage('Username updated successfully!');
         setIsEditingUsername(false);
+        setShowUserMenu(false);
         setTimeout(() => setUsernameMessage(''), 3000);
       } else {
         setUsernameMessage('Error: Username already taken or invalid.');
@@ -92,21 +131,22 @@ export default function MemberDashboard() {
       <ShaderBackground />
       
       {/* Header */}
-      <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 shadow-lg">
+      <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-3">
+            {/* Left - Branding */}
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-white drop-shadow-lg">Member Portal</h1>
-                <p className="text-sm text-white/80 drop-shadow">Welcome, {currentUser?.name}</p>
+                <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">Member Portal</h1>
+                <p className="text-xs text-white/70 drop-shadow hidden sm:block">Welcome, {currentUser?.name}</p>
               </div>
             </div>
             
-            {/* Profile Settings */}
-            <div className="flex items-center space-x-4">
+            {/* Right - Actions */}
+            <div className="flex items-center space-x-2">
               {/* Dark Mode Toggle */}
               <GlassButton
                 variant="secondary"
@@ -120,63 +160,120 @@ export default function MemberDashboard() {
                 )}
               </GlassButton>
               
-              <div className="px-4 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg">
-                <div className="flex items-center space-x-2">
+              {/* User Profile Dropdown Trigger */}
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg relative z-50"
+                >
                   <User className="h-4 w-4 text-white/70" />
-                  {isEditingUsername ? (
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        className="px-2 py-2 text-sm backdrop-blur-xl bg-white/20 border border-white/30 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50"
-                        placeholder="Enter new username"
-                        disabled={isUpdatingUsername}
-                      />
-                      <GlassButton
-                        variant="primary"
-                        onClick={handleUsernameUpdate}
-                        disabled={isUpdatingUsername}
-                        className="p-1"
-                      >
-                        <Save className="h-4 w-4" />
-                      </GlassButton>
-                      <GlassButton
-                        variant="secondary"
-                        onClick={cancelUsernameEdit}
-                        disabled={isUpdatingUsername}
-                        className="p-1"
-                      >
-                        <X className="h-4 w-4" />
-                      </GlassButton>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-white/90">@{currentUser?.username}</span>
-                      <GlassButton
-                        variant="secondary"
-                        onClick={() => setIsEditingUsername(true)}
-                        className="p-1"
-                      >
-                        <Edit3 className="h-3 w-3" />
-                      </GlassButton>
-                    </div>
-                  )}
-                </div>
+                  <span className="text-sm text-white/90 hidden sm:inline">@{currentUser?.username}</span>
+                  <svg className={`h-3 w-3 text-white/70 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
             </div>
-            
-            <GlassButton
-              variant="secondary"
-              onClick={logout}
-              className="px-3 py-2 text-sm font-medium"
-            >
-              Logout
-            </GlassButton>
           </div>
         </div>
       </header>
 
+      {/* Dropdown Menu - Positioned outside header */}
+      {showUserMenu && (
+        <div 
+          ref={dropdownRef}
+          className="fixed inset-0 z-[9999]"
+          style={{ pointerEvents: 'none' }}
+        >
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/10"
+            style={{ pointerEvents: 'auto' }}
+            onClick={() => setShowUserMenu(false)}
+          />
+          
+          {/* Dropdown Content */}
+          <div 
+            className="absolute right-4 top-20 w-72 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+            style={{ 
+              pointerEvents: 'auto',
+              zIndex: 10000
+            }}
+          >
+            {/* User Info */}
+            <div className="p-4 border-b border-white/20 bg-gradient-to-r from-green-500/20 to-emerald-500/20">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                  <User className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{currentUser?.name}</p>
+                  <p className="text-xs text-white/70 truncate">@{currentUser?.username}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Username Section */}
+            <div className="p-4">
+              {isEditingUsername ? (
+                <div className="space-y-3">
+                  <label className="text-xs font-medium text-white/80">Change Username</label>
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="w-full px-3 py-2 text-sm backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50"
+                    placeholder="Enter new username"
+                    disabled={isUpdatingUsername}
+                    autoFocus
+                  />
+                  <div className="flex space-x-2">
+                    <GlassButton
+                      variant="primary"
+                      onClick={handleUsernameUpdate}
+                      disabled={isUpdatingUsername}
+                      className="flex-1 py-2 text-sm"
+                    >
+                      {isUpdatingUsername ? 'Saving...' : 'Save'}
+                    </GlassButton>
+                    <GlassButton
+                      variant="secondary"
+                      onClick={cancelUsernameEdit}
+                      disabled={isUpdatingUsername}
+                      className="px-3 py-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </GlassButton>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsEditingUsername(true)}
+                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-200 group"
+                >
+                  <Edit3 className="h-4 w-4 text-white/70 group-hover:text-white transition-colors" />
+                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Edit Username</span>
+                </button>
+              )}
+            </div>
+
+            {/* Logout Button */}
+            <div className="p-4 border-t border-white/20">
+              <button
+                onClick={() => {
+                  setShowUserMenu(false);
+                  logout();
+                }}
+                className="w-full px-3 py-2 rounded-lg bg-red-500/20 border border-red-400/50 text-red-100 hover:bg-red-500/30 transition-all duration-200 text-sm font-medium"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* Username Update Message */}
         {usernameMessage && (
@@ -397,11 +494,11 @@ export default function MemberDashboard() {
                           </div>
                           <div className="bg-white/20 rounded-full h-1.5 backdrop-blur-sm">
                             <div
-                              className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
-                                loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                              }`}
-                              style={{ width: `${progress}%` }}
-                            ></div>
+                                  className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
+                                    loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                                  }`}
+                                  style={{ width: `${progress}%` }}
+                                ></div>
                           </div>
                         </div>
                       </div>
