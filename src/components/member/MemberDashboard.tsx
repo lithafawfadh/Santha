@@ -91,22 +91,23 @@ export default function MemberDashboard() {
       {/* Animated Shader Background */}
       <ShaderBackground />
       
-      {/* Header - Mobile Optimized */}
+      {/* Header */}
       <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-10">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          {/* Top Row - Branding and Actions */}
-          <div className="flex justify-between items-center py-3">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <div className="h-8 w-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 shadow-lg">
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">Member Portal</h1>
-                <p className="text-xs text-white/70 drop-shadow">Welcome back!</p>
+                <h1 className="text-xl font-semibold text-white drop-shadow-lg">Member Portal</h1>
+                <p className="text-sm text-white/80 drop-shadow">Welcome, {currentUser?.name}</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            {/* Profile Settings */}
+            <div className="flex items-center space-x-4">
+              {/* Dark Mode Toggle */}
               <GlassButton
                 variant="secondary"
                 onClick={toggleDarkMode}
@@ -119,69 +120,59 @@ export default function MemberDashboard() {
                 )}
               </GlassButton>
               
-              <GlassButton
-                variant="secondary"
-                onClick={logout}
-                className="px-3 py-2 text-xs sm:text-sm font-medium"
-              >
-                Logout
-              </GlassButton>
-            </div>
-          </div>
-
-          {/* Bottom Row - User Info */}
-          <div className="pb-3">
-            <div className="rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 flex-1 min-w-0">
-                  <User className="h-4 w-4 text-white/70 flex-shrink-0" />
+              <div className="px-4 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <User className="h-4 w-4 text-white/70" />
                   {isEditingUsername ? (
-                    <div className="flex items-center space-x-2 flex-1">
+                    <div className="flex items-center space-x-2">
                       <input
                         type="text"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
-                        className="px-3 py-2 text-sm flex-1 min-w-0 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50"
-                        placeholder="Enter username"
+                        className="px-2 py-2 text-sm backdrop-blur-xl bg-white/20 border border-white/30 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50"
+                        placeholder="Enter new username"
                         disabled={isUpdatingUsername}
                       />
-                      <div className="flex space-x-1 flex-shrink-0">
-                        <GlassButton
-                          variant="primary"
-                          onClick={handleUsernameUpdate}
-                          disabled={isUpdatingUsername}
-                          className="p-2"
-                        >
-                          <Save className="h-4 w-4" />
-                        </GlassButton>
-                        <GlassButton
-                          variant="secondary"
-                          onClick={cancelUsernameEdit}
-                          disabled={isUpdatingUsername}
-                          className="p-2"
-                        >
-                          <X className="h-4 w-4" />
-                        </GlassButton>
-                      </div>
+                      <GlassButton
+                        variant="primary"
+                        onClick={handleUsernameUpdate}
+                        disabled={isUpdatingUsername}
+                        className="p-1"
+                      >
+                        <Save className="h-4 w-4" />
+                      </GlassButton>
+                      <GlassButton
+                        variant="secondary"
+                        onClick={cancelUsernameEdit}
+                        disabled={isUpdatingUsername}
+                        className="p-1"
+                      >
+                        <X className="h-4 w-4" />
+                      </GlassButton>
                     </div>
                   ) : (
-                    <>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{currentUser?.name}</p>
-                        <p className="text-xs text-white/70 truncate">@{currentUser?.username}</p>
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-white/90">@{currentUser?.username}</span>
                       <GlassButton
                         variant="secondary"
                         onClick={() => setIsEditingUsername(true)}
-                        className="p-2 flex-shrink-0"
+                        className="p-1"
                       >
                         <Edit3 className="h-3 w-3" />
                       </GlassButton>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
+            
+            <GlassButton
+              variant="secondary"
+              onClick={logout}
+              className="px-3 py-2 text-sm font-medium"
+            >
+              Logout
+            </GlassButton>
           </div>
         </div>
       </header>
