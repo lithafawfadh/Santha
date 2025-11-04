@@ -275,7 +275,8 @@ export default function PaymentGrid() {
               </p>
             </div>
             <AlertTriangle className="h-10 w-10 text-orange-300" />
-            </div>
+          </div>
+        </div>
 
         {/* Completion Rate Card */}
         <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-green-500/20 border border-green-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
@@ -369,7 +370,7 @@ export default function PaymentGrid() {
                 <option key={year} value={year} className="bg-slate-800">{year}</option>
               ))}
             </select>
-        </div>
+          </div>
         </div>
       </div>
 
@@ -536,7 +537,7 @@ export default function PaymentGrid() {
               ) : (
                 filteredMembers.map((member, memberIndex) => {
                   const { paidCountTotal, streak, unpaidCount, totalPaid } = getMemberStats(member.id);
-                  // MODIFIED: Calculate percentage based on 12 months total
+                  // Calculate percentage based on 12 months total
                   const percentage = Math.round((paidCountTotal / 12) * 100);
                   const isAllPaidYTD = getMemberStats(member.id).paidCountYTD === currentMonthIndex + 1;
                   
@@ -642,7 +643,7 @@ All Paid!
                       <td className="px-6 py-5 whitespace-nowrap text-center sticky right-0 bg-white/5 group-hover:bg-white/15 backdrop-blur-xl z-10">
                         <div className="space-y-2">
                           <div className="text-lg font-bold text-white drop-shadow">
-                            {/* MODIFIED: Always show progress out of 12 */}
+                            {/* Always show progress out of 12 */}
                             **{paidCountTotal}/12**
                           </div>
                           <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
