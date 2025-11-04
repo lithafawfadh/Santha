@@ -351,7 +351,7 @@ export default function MemberDashboard() {
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-1">
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-emerald-200/70 bg-clip-text text-transparent mb-1">
                     Months Paid
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
@@ -374,7 +374,7 @@ export default function MemberDashboard() {
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-1">
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-blue-200/70 bg-clip-text text-transparent mb-1">
                     Amount Paid
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg">
@@ -397,7 +397,7 @@ export default function MemberDashboard() {
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-1">
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-purple-200/70 bg-clip-text text-transparent mb-1">
                     Group Funds
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg">
@@ -420,7 +420,7 @@ export default function MemberDashboard() {
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent mb-1">
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-orange-200/70 bg-clip-text text-transparent mb-1">
                     Outstanding Loans
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent drop-shadow-lg">
@@ -447,7 +447,7 @@ export default function MemberDashboard() {
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
                   Payment Status - {selectedYear}
                 </h3>
-                <p className="text-sm bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
+                <p className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent drop-shadow">
                   Monthly contribution: LKR {MONTHLY_CONTRIBUTION}
                 </p>
               </div>
@@ -509,7 +509,7 @@ export default function MemberDashboard() {
 
               <div className="mt-6 pt-4 border-t border-white/20">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">Progress</span>
+                  <span className="bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent">Progress</span>
                   <span className="font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
                     {Math.round((paidMonths / 12) * 100)}%
                   </span>
@@ -541,7 +541,7 @@ export default function MemberDashboard() {
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
             {/* Border Shine Effect */}
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
-            <div className="px-6 py-4 border-b border-white bg-gradient-to-r from-purple-500 to-pink-500/20 backdrop-blur-sm relative z-10">
+            <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
                 My Loans
               </h3>
@@ -657,7 +657,7 @@ export default function MemberDashboard() {
             Group Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
               {/* Border Shine for Group Stats */}
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
