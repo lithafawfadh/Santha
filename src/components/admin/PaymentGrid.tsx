@@ -272,7 +272,7 @@ export default function PaymentGrid() {
             </div>
             <AlertTriangle className="h-10 w-10 text-orange-300" />
           </div>
-          </div>
+        </div>
 
         {/* Completion Rate Card */}
         <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-green-500/20 border border-green-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
@@ -496,7 +496,7 @@ export default function PaymentGrid() {
               <tr className="bg-gradient-to-r from-red-500/20 to-pink-500/20 border-b-2 border-red-300/50 backdrop-blur-sm sticky top-[121px] z-10">
                 <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-xl z-20">
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-bold text-red-200 drop-shadow">Gross</div>
+                    <div className="text-sm font-bold text-red-200 drop-shadow">Total</div>
                     <div className="px-2 py-0.5 bg-red-500/40 text-red-100 text-xs rounded-full">Cumulative</div>
                   </div>
                 </td>
@@ -584,6 +584,7 @@ All Paid!
 </div>
 </div>
 </div>
+                        </div>
                       </td>
                       
                       {/* Payment Checkboxes */}
