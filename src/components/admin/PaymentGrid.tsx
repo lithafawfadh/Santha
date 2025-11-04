@@ -599,7 +599,7 @@ All Paid!
                             <div className="flex items-center justify-center">
                               <button
                                 onClick={() => togglePayment(member.id, month)}
-                                disabled={status === 'future'}
+                                // REMOVED: disabled={status === 'future'}
                                 aria-label={`${isPaid ? 'Unmark' : 'Mark'} ${member.name}'s payment for ${month} as ${isPaid ? 'unpaid' : 'paid'}`}
                                 className={`relative w-9 h-9 rounded-lg border-2 transition-all duration-200 flex items-center justify-center shadow-md hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed focus:ring-2 focus:ring-white/50 focus:outline-none ${
                                   isPaid
