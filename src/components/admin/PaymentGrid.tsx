@@ -101,8 +101,12 @@ export default function PaymentGrid() {
 
   // Get member stats
   const getMemberStats = (memberId: string) => {
+    // Only count payments up to the current month to correctly calculate YTD paid count
     const paidMonths = months.slice(0, currentMonthIndex + 1).filter(month => paymentMatrix[memberId]?.[month]);
-    const paidCount = paidMonths.length;
+    const paidCountYTD = paidMonths.length;
+    
+    // Get total paid count for the entire year (12 months)
+    const paidCountTotal = months.filter(month => paymentMatrix[memberId]?.[month]).length;
     
     // Calculate streak (consecutive months from most recent)
     let streak = 0;
@@ -122,7 +126,7 @@ export default function PaymentGrid() {
       .filter(p => p.memberId === memberId && p.year === selectedYear && p.paid)
       .reduce((sum, p) => sum + p.amount, 0);
     
-    return { paidCount, streak, unpaidCount, totalPaid };
+    return { paidCountYTD, paidCountTotal, streak, unpaidCount, totalPaid };
   };
 
   const togglePayment = async (memberId: string, month: string) => {
@@ -172,12 +176,12 @@ export default function PaymentGrid() {
   const exportToCSV = () => {
     const headers = ['Member', ...months, 'Total Paid', 'Percentage'];
     const rows = filteredMembers.map(member => {
-      const { paidCount } = getMemberStats(member.id);
-      const percentage = Math.round((paidCount / 12) * 100);
+      const { paidCountTotal } = getMemberStats(member.id);
+      const percentage = Math.round((paidCountTotal / 12) * 100);
       return [
         member.name,
         ...months.map(month => paymentMatrix[member.id]?.[month] ? 'Paid' : 'Unpaid'),
-        paidCount,
+        paidCountTotal,
         `${percentage}%`
       ];
     });
@@ -218,7 +222,7 @@ export default function PaymentGrid() {
     return sum + (unpaid * 300);
   }, 0);
   const overallCompletionRate = Math.round(
-    (members.reduce((sum, member) => sum + getMemberStats(member.id).paidCount, 0) / (members.length * (currentMonthIndex + 1))) * 100
+    (members.reduce((sum, member) => sum + getMemberStats(member.id).paidCountYTD, 0) / (members.length * (currentMonthIndex + 1))) * 100
   );
 
   return (
@@ -271,8 +275,7 @@ export default function PaymentGrid() {
               </p>
             </div>
             <AlertTriangle className="h-10 w-10 text-orange-300" />
-          </div>
-        </div>
+            </div>
 
         {/* Completion Rate Card */}
         <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-green-500/20 border border-green-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
@@ -366,7 +369,7 @@ export default function PaymentGrid() {
                 <option key={year} value={year} className="bg-slate-800">{year}</option>
               ))}
             </select>
-          </div>
+        </div>
         </div>
       </div>
 
@@ -532,9 +535,10 @@ export default function PaymentGrid() {
                 </tr>
               ) : (
                 filteredMembers.map((member, memberIndex) => {
-                  const { paidCount, streak, unpaidCount, totalPaid } = getMemberStats(member.id);
-                  const percentage = Math.round((paidCount / (currentMonthIndex + 1)) * 100);
-                  const isAllPaid = paidCount === currentMonthIndex + 1;
+                  const { paidCountTotal, streak, unpaidCount, totalPaid } = getMemberStats(member.id);
+                  // MODIFIED: Calculate percentage based on 12 months total
+                  const percentage = Math.round((paidCountTotal / 12) * 100);
+                  const isAllPaidYTD = getMemberStats(member.id).paidCountYTD === currentMonthIndex + 1;
                   
                   return (
                     <tr 
@@ -557,13 +561,13 @@ export default function PaymentGrid() {
                                 <div className="text-sm font-semibold text-white truncate">
                                   {member.name}
                                 </div>
-                                {isAllPaid && (
+                                {isAllPaidYTD && (
                                   <div className="flex-shrink-0 px-2 py-0.5 bg-gradient-to-r from-green-500/40 to-emerald-500/40 text-green-100 text-xs rounded-full font-medium flex items-center gap-1 animate-pulse">
 <Sparkles className="h-3 w-3" />
 All Paid!
 </div>
 )}
-{unpaidCount >= 3 && !isAllPaid && (
+{unpaidCount >= 3 && !isAllPaidYTD && (
 <div className="flex-shrink-0 px-2 py-0.5 bg-red-500/40 text-red-100 text-xs rounded-full font-medium flex items-center gap-1">
 <AlertTriangle className="h-3 w-3" />
 {unpaidCount} overdue
@@ -599,7 +603,6 @@ All Paid!
                             <div className="flex items-center justify-center">
                               <button
                                 onClick={() => togglePayment(member.id, month)}
-                                // REMOVED: disabled={status === 'future'}
                                 aria-label={`${isPaid ? 'Unmark' : 'Mark'} ${member.name}'s payment for ${month} as ${isPaid ? 'unpaid' : 'paid'}`}
                                 className={`relative w-9 h-9 rounded-lg border-2 transition-all duration-200 flex items-center justify-center shadow-md hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed focus:ring-2 focus:ring-white/50 focus:outline-none ${
                                   isPaid
@@ -639,7 +642,8 @@ All Paid!
                       <td className="px-6 py-5 whitespace-nowrap text-center sticky right-0 bg-white/5 group-hover:bg-white/15 backdrop-blur-xl z-10">
                         <div className="space-y-2">
                           <div className="text-lg font-bold text-white drop-shadow">
-                            {paidCount}/{currentMonthIndex + 1}
+                            {/* MODIFIED: Always show progress out of 12 */}
+                            **{paidCountTotal}/12**
                           </div>
                           <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                             <div
