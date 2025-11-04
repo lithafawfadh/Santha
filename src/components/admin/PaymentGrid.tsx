@@ -644,7 +644,7 @@ All Paid!
                         <div className="space-y-2">
                           <div className="text-lg font-bold text-white drop-shadow">
                             {/* Always show progress out of 12 */}
-                            **{paidCountTotal}/12**
+                            {paidCountTotal}/12
                           </div>
                           <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                             <div
