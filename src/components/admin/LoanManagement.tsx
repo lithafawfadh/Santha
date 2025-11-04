@@ -66,8 +66,8 @@ export default function LoanManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Loan Management</h2>
-          <p className="text-gray-600 dark:text-gray-400">Manage member loans and track repayments</p>
+          <h2 className="text-2xl font-bold text-white drop-shadow-lg">Loan Management</h2>
+          <p className="text-white/80 drop-shadow">Manage member loans and track repayments</p>
         </div>
         <GlassButton
           variant="primary"
@@ -81,52 +81,52 @@ export default function LoanManagement() {
 
       {/* Add Loan Modal */}
       {showAddLoan && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <GlassCard variant="gradient" className="p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Issue New Loan</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-white drop-shadow-lg mb-4">Issue New Loan</h3>
             <form onSubmit={handleAddLoan} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Member</label>
+                <label className="block text-sm font-medium text-white/90 mb-1">Member</label>
                 <select
                   value={loanForm.memberId}
                   onChange={(e) => setLoanForm({ ...loanForm, memberId: e.target.value })}
-                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
                   required
                 >
-                  <option value="">Select Member</option>
+                  <option value="" className="bg-slate-800">Select Member</option>
                   {members.map(member => (
-                    <option key={member.id} value={member.id}>{member.name}</option>
+                    <option key={member.id} value={member.id} className="bg-slate-800">{member.name}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Amount (LKR)</label>
+                <label className="block text-sm font-medium text-white/90 mb-1">Loan Amount (LKR)</label>
                 <input
                   type="number"
                   value={loanForm.amount}
                   onChange={(e) => setLoanForm({ ...loanForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-white/50"
                   placeholder="Enter amount"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Received Date</label>
+                <label className="block text-sm font-medium text-white/90 mb-1">Loan Received Date</label>
                 <input
                   type="date"
                   value={loanForm.issueDate}
                   onChange={(e) => setLoanForm({ ...loanForm, issueDate: e.target.value })}
-                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
+                <label className="block text-sm font-medium text-white/90 mb-1">Due Date</label>
                 <input
                   type="date"
                   value={loanForm.dueDate}
                   onChange={(e) => setLoanForm({ ...loanForm, dueDate: e.target.value })}
-                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
                   required
                 />
               </div>
@@ -147,30 +147,30 @@ export default function LoanManagement() {
                 </GlassButton>
               </div>
             </form>
-          </GlassCard>
+          </div>
         </div>
       )}
 
       {/* Loans List */}
-      <GlassCard variant="gradient" className="overflow-hidden">
-        <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-purple-500 from-opacity-10 to-pink-500 to-opacity-10 dark:from-purple-600 dark:from-opacity-10 dark:to-pink-600 dark:to-opacity-10 backdrop-blur-sm">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Loans</h3>
+      <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
+        <div className="px-6 py-4 border-b border-white/20 bg-purple-500/20 backdrop-blur-sm">
+          <h3 className="text-lg font-semibold text-white drop-shadow-lg">All Loans</h3>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 backdrop-blur-sm">
+          <table className="min-w-full divide-y divide-white/20">
+            <thead className="bg-white/10 backdrop-blur-sm">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Loan Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Repaid</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outstanding</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Member</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Loan Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Repaid</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Outstanding</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Due Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white bg-opacity-5 dark:bg-gray-800 dark:bg-opacity-5 divide-y divide-white divide-opacity-20 dark:divide-gray-700 dark:divide-opacity-20 backdrop-blur-sm">
+            <tbody className="bg-white/5 divide-y divide-white/20 backdrop-blur-sm">
               {loans.map((loan) => {
                 const member = members.find(m => m.id === loan.memberId);
                 const outstanding = loan.amount - loan.repaidAmount;
@@ -178,36 +178,36 @@ export default function LoanManagement() {
                 const actualStatus = overdue ? 'overdue' : loan.status;
 
                 return (
-                  <tr key={loan.id} className="hover:bg-white hover:bg-opacity-10 dark:hover:bg-gray-700 dark:hover:bg-opacity-10 transition-colors duration-200">
+                  <tr key={loan.id} className="hover:bg-white/10 transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <div className="h-8 w-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
                           <span className="text-xs font-medium text-white">
                             {member?.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{member?.name}</div>
+                          <div className="text-sm font-medium text-white">{member?.name}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                       LKR {loan.amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-300">
                       LKR {loan.repaidAmount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                       LKR {outstanding.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80">
                       {new Date(loan.dueDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        actualStatus === 'active' ? 'bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200' :
-                        actualStatus === 'repaid' ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200' :
-                        'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200'
+                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium backdrop-blur-sm ${
+                        actualStatus === 'active' ? 'bg-orange-500/40 text-orange-200' :
+                        actualStatus === 'repaid' ? 'bg-green-500/40 text-green-200' :
+                        'bg-red-500/40 text-red-200'
                       }`}>
                         {getStatusIcon(actualStatus)}
                         <span className="ml-1 capitalize">{actualStatus}</span>
@@ -223,7 +223,7 @@ export default function LoanManagement() {
                                 value={repaymentAmount}
                                 onChange={(e) => setRepaymentAmount(e.target.value)}
                                 placeholder="Amount"
-                                className="w-20 px-2 py-1 text-xs backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded focus:ring-1 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                                className="w-20 px-2 py-1 text-xs backdrop-blur-lg bg-white/20 border border-white/30 rounded focus:ring-1 focus:ring-blue-500 text-white placeholder-white/50"
                               />
                               <GlassButton
                                 variant="primary"
@@ -261,14 +261,14 @@ export default function LoanManagement() {
 
         {loans.length === 0 && (
           <div className="text-center py-12">
-            <div className="bg-gray-500 bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-20 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
-              <DollarSign className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+            <div className="bg-white/10 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
+              <DollarSign className="h-12 w-12 text-white/50" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No loans issued yet</h3>
-            <p className="text-gray-500 dark:text-gray-400">Start by issuing your first loan to a member.</p>
+            <h3 className="text-lg font-medium text-white mb-2">No loans issued yet</h3>
+            <p className="text-white/70">Start by issuing your first loan to a member.</p>
           </div>
         )}
-      </GlassCard>
+      </div>
     </div>
   );
 }
