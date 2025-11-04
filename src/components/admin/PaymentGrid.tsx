@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Check, X, Calendar } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import GlassCard from '../common/GlassCard';
 
 export default function PaymentGrid() {
   const { payments, updatePayment, currentUser, allUsers } = useApp();
