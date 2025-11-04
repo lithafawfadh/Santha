@@ -738,5 +738,5 @@ All Paid!
       background-size: 1000px 100%;
     }
   `}</style>
-</div>)
+</div>
 }
