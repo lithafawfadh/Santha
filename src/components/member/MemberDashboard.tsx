@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard, Edit3, Save, X, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
@@ -7,8 +7,8 @@ import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import ShaderBackground from '../common/ShaderBackground';
 
-// MorphingText Component for the welcome message
-const MorphingWelcomeText = ({ userName }: { userName: string }) => {
+// MorphingText Component for the welcome message - Optimized
+const MorphingWelcomeText = React.memo(({ userName }: { userName: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState(`Welcome, ${userName}`);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -26,8 +26,8 @@ const MorphingWelcomeText = ({ userName }: { userName: string }) => {
         setCurrentIndex((prev) => (prev + 1) % welcomeTexts.length);
         setDisplayText(welcomeTexts[(currentIndex + 1) % welcomeTexts.length]);
         setIsAnimating(false);
-      }, 300); // Text change duration
-    }, 3000); // Change every 3 seconds
+      }, 300);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [currentIndex, welcomeTexts]);
@@ -39,7 +39,9 @@ const MorphingWelcomeText = ({ userName }: { userName: string }) => {
       {displayText}
     </span>
   );
-};
+});
+
+MorphingWelcomeText.displayName = 'MorphingWelcomeText';
 
 export default function MemberDashboard() {
   const { currentUser, payments, loans, groupStats, logout, loading, updateUsername, isDarkMode, toggleDarkMode } = useApp();
@@ -54,7 +56,7 @@ export default function MemberDashboard() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const months = useMemo(() => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], []);
   
   const availableYears = useMemo(() => {
     const years = [...new Set(payments
@@ -64,22 +66,46 @@ export default function MemberDashboard() {
     return years.length > 0 ? years : [new Date().getFullYear()];
   }, [payments, currentUser?.id]);
   
-  const myPayments = payments.filter(p => p.memberId === currentUser?.id && p.year === selectedYear);
-  const myLoans = loans.filter(l => l.memberId === currentUser?.id);
+  // Memoize filtered data
+  const myPayments = useMemo(() => 
+    payments.filter(p => p.memberId === currentUser?.id && p.year === selectedYear),
+    [payments, currentUser?.id, selectedYear]
+  );
   
-  const paidMonths = myPayments.filter(p => p.paid).length;
-  const pendingMonths = myPayments.filter(p => !p.paid).length;
-  const totalPaid = myPayments.filter(p => p.paid).reduce((sum, p) => sum + p.amount, 0);
+  const myLoans = useMemo(() => 
+    loans.filter(l => l.memberId === currentUser?.id),
+    [loans, currentUser?.id]
+  );
   
-  const activeLoans = myLoans.filter(l => l.status === 'active');
-  const totalLoanAmount = activeLoans.reduce((sum, l) => sum + (l.amount - l.repaidAmount), 0);
+  // Memoize computed values
+  const stats = useMemo(() => {
+    const paidMonths = myPayments.filter(p => p.paid).length;
+    const pendingMonths = myPayments.filter(p => !p.paid).length;
+    const totalPaid = myPayments.filter(p => p.paid).reduce((sum, p) => sum + p.amount, 0);
+    const activeLoans = myLoans.filter(l => l.status === 'active');
+    const totalLoanAmount = activeLoans.reduce((sum, l) => sum + (l.amount - l.repaidAmount), 0);
+    
+    return {
+      paidMonths,
+      pendingMonths,
+      totalPaid,
+      activeLoans,
+      totalLoanAmount
+    };
+  }, [myPayments, myLoans]);
 
-  const getPaymentStatus = (month: string) => {
+  const getPaymentStatus = useCallback((month: string) => {
     const payment = myPayments.find(p => p.month === month);
     return payment?.paid || false;
-  };
+  }, [myPayments]);
 
-  const getCurrentMonthIndex = () => new Date().getMonth();
+  const getCurrentMonthIndex = useCallback(() => new Date().getMonth(), []);
+
+  // Memoize current date calculations
+  const currentDate = useMemo(() => ({
+    month: new Date().getMonth(),
+    year: new Date().getFullYear()
+  }), []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -115,7 +141,7 @@ export default function MemberDashboard() {
     };
   }, [showUserMenu]);
 
-  const handleUsernameUpdate = async () => {
+  const handleUsernameUpdate = useCallback(async () => {
     if (!newUsername.trim() || newUsername.trim() === currentUser?.username) {
       setIsEditingUsername(false);
       setNewUsername(currentUser?.username || '');
@@ -140,13 +166,13 @@ export default function MemberDashboard() {
     } finally {
       setIsUpdatingUsername(false);
     }
-  };
+  }, [newUsername, currentUser, updateUsername]);
 
-  const cancelUsernameEdit = () => {
+  const cancelUsernameEdit = useCallback(() => {
     setIsEditingUsername(false);
     setNewUsername(currentUser?.username || '');
     setUsernameMessage('');
-  };
+  }, [currentUser?.username]);
 
   if (loading) {
     return (
@@ -177,7 +203,6 @@ export default function MemberDashboard() {
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-300 bg-clip-text text-transparent drop-shadow-lg">
                   <MorphingWelcomeText userName={currentUser?.name || ''} />
                 </h1>
-                
               </div>
             </div>
             
@@ -216,7 +241,6 @@ export default function MemberDashboard() {
         </div>
       </header>
 
-      {/* Rest of the component remains exactly the same... */}
       {/* Dropdown Menu - Positioned outside header */}
       {showUserMenu && (
         <div 
@@ -329,8 +353,6 @@ export default function MemberDashboard() {
               ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/50'
               : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-400/50'
           }`}>
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine" />
             <p className={`text-sm font-medium bg-clip-text text-transparent relative z-10 ${
               usernameMessage.includes('successfully') 
                 ? 'bg-gradient-to-r from-green-100 to-emerald-200'
@@ -341,12 +363,10 @@ export default function MemberDashboard() {
           </div>
         )}
 
-        {/* Stats Cards - Glassmorphism with Border Shine */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Months Paid Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -355,21 +375,18 @@ export default function MemberDashboard() {
                     Months Paid
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
-                    {paidMonths}/12
+                    {stats.paidMonths}/12
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
 
           {/* Amount Paid Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -378,21 +395,18 @@ export default function MemberDashboard() {
                     Amount Paid
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg">
-                    LKR {totalPaid.toLocaleString()}
+                    LKR {stats.totalPaid.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
                   <DollarSign className="h-6 w-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
 
           {/* Group Funds Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -404,18 +418,15 @@ export default function MemberDashboard() {
                     LKR {groupStats.totalFunds.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
                   <TrendingUp className="h-6 w-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
 
           {/* Outstanding Loans Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15">
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/50 transition-all duration-1000" />
+          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -424,15 +435,14 @@ export default function MemberDashboard() {
                     Outstanding Loans
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent drop-shadow-lg">
-                    LKR {totalLoanAmount.toLocaleString()}
+                    LKR {stats.totalLoanAmount.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-xl">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
                   <CreditCard className="h-6 w-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
         </div>
 
@@ -440,8 +450,6 @@ export default function MemberDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Payment Status Card */}
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
             <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center relative z-10">
               <div>
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
@@ -465,13 +473,13 @@ export default function MemberDashboard() {
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                 {months.map((month, index) => {
                   const isPaid = getPaymentStatus(month);
-                  const isCurrent = index === getCurrentMonthIndex() && selectedYear === new Date().getFullYear();
-                  const isPast = selectedYear < new Date().getFullYear() || (selectedYear === new Date().getFullYear() && index < getCurrentMonthIndex());
+                  const isCurrent = index === currentDate.month && selectedYear === currentDate.year;
+                  const isPast = selectedYear < currentDate.year || (selectedYear === currentDate.year && index < currentDate.month);
                   
                   return (
                     <div
                       key={month}
-                      className={`p-3 rounded-lg backdrop-blur-sm border text-center transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden ${
+                      className={`p-3 rounded-lg backdrop-blur-sm border text-center transition-all duration-300 will-change-transform hover:scale-105 hover:shadow-lg relative overflow-hidden ${
                         isPaid
                           ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/50'
                           : isCurrent
@@ -481,8 +489,6 @@ export default function MemberDashboard() {
                           : 'bg-white/10 border-white/20'
                       }`}
                     >
-                      {/* Mini Border Shine for Month Cards */}
-                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-700" />
                       <div className={`text-xs font-medium relative z-10 ${
                         isPaid ? 'bg-gradient-to-r from-green-100 to-emerald-200 bg-clip-text text-transparent' :
                         isCurrent ? 'bg-gradient-to-r from-yellow-100 to-amber-200 bg-clip-text text-transparent' :
@@ -511,25 +517,23 @@ export default function MemberDashboard() {
                 <div className="flex justify-between items-center text-sm">
                   <span className="bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent">Progress</span>
                   <span className="font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                    {Math.round((paidMonths / 12) * 100)}%
+                    {Math.round((stats.paidMonths / 12) * 100)}%
                   </span>
                 </div>
                 <div className="mt-2 bg-white/20 rounded-full h-2">
                   <div
                     className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
-                    style={{ width: `${(paidMonths / 12) * 100}%` }}
+                    style={{ width: `${(stats.paidMonths / 12) * 100}%` }}
                   ></div>
                 </div>
               </div>
 
-              {pendingMonths > 0 && (
-                <div className="mt-4 p-3 bg-gradient-to-r from-orange-500/30 to-amber-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 hover:scale-[1.02] relative overflow-hidden">
-                  {/* Border Shine for Alert */}
-                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-orange-200/20 to-transparent transform -skew-x-12 animate-shine" />
+              {stats.pendingMonths > 0 && (
+                <div className="mt-4 p-3 bg-gradient-to-r from-orange-500/30 to-amber-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 will-change-transform hover:scale-[1.02] relative overflow-hidden">
                   <div className="flex items-center space-x-2 relative z-10">
                     <AlertCircle className="h-4 w-4 text-orange-200" />
                     <span className="text-sm font-medium bg-gradient-to-r from-orange-100 to-amber-200 bg-clip-text text-transparent">
-                      {pendingMonths} payment{pendingMonths > 1 ? 's' : ''} pending
+                      {stats.pendingMonths} payment{stats.pendingMonths > 1 ? 's' : ''} pending
                     </span>
                   </div>
                 </div>
@@ -539,8 +543,6 @@ export default function MemberDashboard() {
 
           {/* My Loans Card */}
           <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
-            {/* Border Shine Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
             <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
                 My Loans
@@ -551,17 +553,15 @@ export default function MemberDashboard() {
                 <div className="space-y-4">
                   {myLoans.map((loan) => {
                     const outstanding = loan.amount - loan.repaidAmount;
-                    const progress = (loan.repaidAmount / loan.amount) * 100;
+                    const progress = (loan.repaidAmount / loan.amount) *100;
                     const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
                     
                     return (
-                      <div key={loan.id} className={`p-4 rounded-lg backdrop-blur-sm border transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${
+                      <div key={loan.id} className={`p-4 rounded-lg backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${
                         loan.status === 'repaid' ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/50' :
                         isOverdue ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border-red-400/50' :
                         'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-blue-400/50'
                       }`}>
-                        {/* Border Shine for Loan Items */}
-                        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-700" />
                         <div className="flex justify-between items-start mb-3 relative z-10">
                           <div>
                             <p className="font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
@@ -632,8 +632,6 @@ export default function MemberDashboard() {
               ) : (
                 <div className="text-center py-8 relative">
                   <div className="bg-gradient-to-br from-white/10 to-white/5 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit relative overflow-hidden">
-                    {/* Border Shine for Empty State */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-shine" />
                     <CreditCard className="h-12 w-12 bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent relative z-10" />
                   </div>
                   <h3 className="text-lg font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2 relative z-10">
@@ -650,16 +648,12 @@ export default function MemberDashboard() {
 
         {/* Group Info Card */}
         <div className="mt-6 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300 relative">
-          {/* Border Shine Effect */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine opacity-0 hover:opacity-100 transition-opacity duration-1000" />
           <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-6 drop-shadow flex items-center gap-2 relative z-10">
             <div className="h-2 w-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 animate-pulse" />
             Group Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
-              {/* Border Shine for Group Stats */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden">
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.totalMembers}
               </div>
@@ -667,9 +661,7 @@ export default function MemberDashboard() {
                 Total Members
               </div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
-              {/* Border Shine for Group Stats */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden">
               <div className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 LKR {groupStats.monthlyCollection.toLocaleString()}
               </div>
@@ -677,9 +669,7 @@ export default function MemberDashboard() {
                 This Month Collection
               </div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 hover:scale-105 shadow-lg group relative overflow-hidden">
-              {/* Border Shine for Group Stats */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 animate-shine group-hover:via-white/25 transition-all duration-700" />
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden">
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.activeLoans}
               </div>
@@ -690,21 +680,6 @@ export default function MemberDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Add custom animation for the shine effect */}
-      <style jsx>{`
-        @keyframes shine {
-          0% {
-            transform: translateX(-100%) skewX(-12deg);
-          }
-          100% {
-            transform: translateX(200%) skewX(-12deg);
-          }
-        }
-        .animate-shine {
-          animation: shine 7s infinite;
-        }
-      `}</style>
     </div>
   );
 }
