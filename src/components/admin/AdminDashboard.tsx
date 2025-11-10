@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet, TrendingUp, TrendingDown, AlertCircle, CheckCircle, Clock, Award, Target } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
@@ -12,7 +12,7 @@ import DonationManagement from './DonationManagement';
 import ShaderBackground from '../common/ShaderBackground';
 
 export default function AdminDashboard() {
-  const { groupStats, currentUser, logout, loading, isDarkMode, toggleDarkMode, updateAdminProfile } = useApp();
+  const { groupStats, currentUser, logout, loading, isDarkMode, toggleDarkMode, updateAdminProfile, payments, loans, allUsers, donations } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -30,6 +30,86 @@ export default function AdminDashboard() {
     { id: 'members', label: 'Members', icon: Users },
     { id: 'reports', label: 'Reports', icon: FileText },
   ];
+
+  // Calculate advanced analytics
+  const analytics = useMemo(() => {
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    const currentYear = new Date().getFullYear();
+    const members = allUsers.filter(user => user.role === 'member');
+    
+    // Payment compliance
+    const currentMonthPayments = payments.filter(p => 
+      p.month === currentMonth && 
+      p.year === currentYear
+    );
+    const paidCurrentMonth = currentMonthPayments.filter(p => p.paid).length;
+    const complianceRate = members.length > 0 ? (paidCurrentMonth / members.length) * 100 : 0;
+    
+    // Members who haven't paid this month
+    const unpaidMembers = members.filter(member => {
+      const payment = currentMonthPayments.find(p => p.memberId === member.id);
+      return !payment?.paid;
+    });
+    
+    // Overdue loans
+    const today = new Date();
+    const overdueLoans = loans.filter(loan => 
+      loan.status === 'active' && 
+      new Date(loan.dueDate) < today
+    );
+    
+    // Top contributors (members with most payments this year)
+    const yearPayments = payments.filter(p => p.year === currentYear && p.paid);
+    const memberPaymentCount = members.map(member => ({
+      member,
+      paymentsCount: yearPayments.filter(p => p.memberId === member.id).length,
+      totalPaid: yearPayments
+        .filter(p => p.memberId === member.id)
+        .reduce((sum, p) => sum + p.amount, 0)
+    })).sort((a, b) => b.paymentsCount - a.paymentsCount);
+    
+    const topContributor = memberPaymentCount[0];
+    
+    // Average payment time (days)
+    const paidPaymentsWithDate = payments.filter(p => p.paid && p.paidDate);
+    
+    // Collection rate trend
+    const lastMonthName = new Date(currentYear, new Date().getMonth() - 1).toLocaleString('default', { month: 'long' });
+    const lastMonthPayments = payments.filter(p => 
+      p.month === lastMonthName && 
+      p.year === currentYear && 
+      p.paid
+    );
+    const lastMonthCollection = lastMonthPayments.length;
+    const trend = paidCurrentMonth - lastMonthCollection;
+    
+    // Total donations
+    const totalDonations = donations.reduce((sum, d) => sum + d.amount, 0);
+    const donationsThisMonth = donations.filter(d => {
+      const donationDate = new Date(d.date);
+      return donationDate.getMonth() === new Date().getMonth() && 
+             donationDate.getFullYear() === currentYear;
+    }).reduce((sum, d) => sum + d.amount, 0);
+    
+    // Loan recovery rate
+    const totalLoaned = loans.reduce((sum, l) => sum + l.amount, 0);
+    const totalRepaid = loans.reduce((sum, l) => sum + l.repaidAmount, 0);
+    const recoveryRate = totalLoaned > 0 ? (totalRepaid / totalLoaned) * 100 : 0;
+    
+    return {
+      complianceRate,
+      unpaidMembers,
+      overdueLoans,
+      topContributor,
+      trend,
+      totalDonations,
+      donationsThisMonth,
+      recoveryRate,
+      currentMonth,
+      paidCurrentMonth,
+      totalMembers: members.length
+    };
+  }, [payments, loans, allUsers, donations]);
 
   const handleProfileUpdate = async () => {
     if (!profileForm.name.trim()) {
@@ -115,22 +195,26 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center animate-pulse">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
+          <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4 ${isDarkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
+          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className={`min-h-screen relative overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
       {/* Animated Shader Background */}
       <ShaderBackground />
 
       {/* Header */}
-      <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-10">
+      <header className={`backdrop-blur-xl border-b shadow-2xl relative z-10 ${
+        isDarkMode 
+          ? 'bg-gray-900/30 border-gray-700/30' 
+          : 'bg-white/10 border-white/20'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4 flex-1">
@@ -145,7 +229,11 @@ export default function AdminDashboard() {
                         type="text"
                         value={profileForm.name}
                         onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                        className="px-3 py-1 text-lg font-semibold backdrop-blur-xl bg-white/20 dark:bg-gray-800/30 border border-white/30 dark:border-gray-600/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                        className={`px-3 py-1 text-lg font-semibold backdrop-blur-xl border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-600 dark:placeholder-gray-400 ${
+                          isDarkMode
+                            ? 'bg-gray-800/50 border-gray-600/50 text-white'
+                            : 'bg-white/20 border-white/30 text-gray-900'
+                        }`}
                         placeholder="Enter your name"
                         disabled={isUpdatingProfile}
                       />
@@ -170,7 +258,11 @@ export default function AdminDashboard() {
                       type="password"
                       value={profileForm.password}
                       onChange={(e) => setProfileForm({ ...profileForm, password: e.target.value })}
-                      className="px-3 py-1 text-sm backdrop-blur-xl bg-white/20 dark:bg-gray-800/30 border border-white/30 dark:border-gray-600/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+                      className={`px-3 py-1 text-sm backdrop-blur-xl border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-600 dark:placeholder-gray-400 ${
+                        isDarkMode
+                          ? 'bg-gray-800/50 border-gray-600/50 text-white'
+                          : 'bg-white/20 border-white/30 text-gray-900'
+                      }`}
                       placeholder="New password (optional)"
                       disabled={isUpdatingProfile}
                     />
@@ -179,7 +271,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center space-x-2">
                     <div>
                       <h1 className="text-xl font-semibold text-white drop-shadow-lg">Admin Portal</h1>
-                      <p className="text-sm text-white drop-shadow">Welcome</p>
+                      <p className="text-sm text-white drop-shadow">Welcome, {currentUser?.name}</p>
                     </div>
                     <GlassButton
                       variant="secondary"
@@ -265,9 +357,12 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={index}
-                    className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15"
+                    className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 ${
+                      isDarkMode
+                        ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                        : 'bg-white/10 border-white/20 hover:bg-white/15'
+                    }`}
                   >
-                    {/* Gradient overlay on hover */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
                     
                     <div className="relative p-6">
@@ -282,31 +377,250 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* Bottom shine effect */}
                     <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
                   </div>
                 );
               })}
             </div>
 
-            {/* Recent Activity Card */}
-            <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300">
+            {/* Quick Insights Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Payment Compliance */}
+              <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
+                isDarkMode
+                  ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                  : 'bg-white/10 border-white/20 hover:bg-white/15'
+              }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white drop-shadow flex items-center gap-2">
+                    <Target className="h-5 w-5 text-blue-400" />
+                    Payment Compliance
+                  </h3>
+                  {analytics.trend > 0 ? (
+                    <TrendingUp className="h-5 w-5 text-green-400" />
+                  ) : analytics.trend < 0 ? (
+                    <TrendingDown className="h-5 w-5 text-red-400" />
+                  ) : (
+                    <div className="h-5 w-5" />
+                  )}
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-white/70">{analytics.currentMonth} {new Date().getFullYear()}</span>
+                      <span className="font-medium text-white">{analytics.paidCurrentMonth}/{analytics.totalMembers}</span>
+                    </div>
+                    <div className={`rounded-full h-2 ${isDarkMode ? 'bg-gray-700/50' : 'bg-white/20'}`}>
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
+                        style={{ width: `${analytics.complianceRate}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-white/10">
+                    <p className="text-2xl font-bold text-white">{Math.round(analytics.complianceRate)}%</p>
+                    <p className="text-xs text-white/60">Compliance Rate</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loan Recovery */}
+              <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
+                isDarkMode
+                  ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                  : 'bg-white/10 border-white/20 hover:bg-white/15'
+              }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white drop-shadow flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-purple-400" />
+                    Loan Recovery
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-white/70">Recovery Rate</span>
+                      <span className="font-medium text-white">{Math.round(analytics.recoveryRate)}%</span>
+                    </div>
+                    <div className={`rounded-full h-2 ${isDarkMode ? 'bg-gray-700/50' : 'bg-white/20'}`}>
+                      <div
+                        className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
+                        style={{ width: `${analytics.recoveryRate}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  {analytics.overdueLoans.length > 0 && (
+                    <div className="pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-400" />
+                        <p className="text-sm text-red-300">{analytics.overdueLoans.length} overdue loan{analytics.overdueLoans.length > 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Donations Summary */}
+              <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
+                isDarkMode
+                  ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                  : 'bg-white/10 border-white/20 hover:bg-white/15'
+              }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white drop-shadow flex items-center gap-2">
+                    <Gift className="h-5 w-5 text-pink-400" />
+                    Donations
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-white/70 mb-1">Total Donations</p>
+                    <p className="text-2xl font-bold text-white">LKR {analytics.totalDonations.toLocaleString()}</p>
+                  </div>
+                  {analytics.donationsThisMonth > 0 && (
+                    <div className="pt-2 border-t border-white/10">
+                      <p className="text-sm text-white/70">This Month</p>
+                      <p className="text-lg font-semibold text-green-300">LKR {analytics.donationsThisMonth.toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Alerts & Top Contributor Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Alerts & Actions */}
+              <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
+                isDarkMode
+                  ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                  : 'bg-white/10 border-white/20 hover:bg-white/15'
+              }`}>
+                <h3 className="text-lg font-semibold text-white mb-4 drop-shadow flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-400" />
+                  Alerts & Actions Required
+                </h3>
+                <div className="space-y-3">
+                  {analytics.unpaidMembers.length > 0 && (
+                    <div className="p-4 bg-yellow-500/20 rounded-xl border border-yellow-400/50 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <Clock className="h-5 w-5 text-yellow-300 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-yellow-100 mb-1">Pending Payments</p>
+                          <p className="text-xs text-yellow-200/80">
+                            {analytics.unpaidMembers.length} member{analytics.unpaidMembers.length > 1 ? 's have' : ' has'} not paid for {analytics.currentMonth}
+                          </p>
+                          {analytics.unpaidMembers.length <= 3 && (
+                            <div className="mt-2 space-y-1">
+                              {analytics.unpaidMembers.map(member => (
+                                <p key={member.id} className="text-xs text-yellow-200/70">• {member.name}</p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analytics.overdueLoans.length > 0 && (
+                    <div className="p-4 bg-red-500/20 rounded-xl border border-red-400/50 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-red-300 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-red-100 mb-1">Overdue Loans</p>
+                          <p className="text-xs text-red-200/80">
+                            {analytics.overdueLoans.length} loan{analytics.overdueLoans.length > 1 ? 's are' : ' is'} past due date
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analytics.unpaidMembers.length === 0 && analytics.overdueLoans.length === 0 && (
+                    <div className="p-4 bg-green-500/20 rounded-xl border border-green-400/50 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-300" />
+                        <div>
+                          <p className="text-sm font-medium text-green-100">All Clear!</p>
+                          <p className="text-xs text-green-200/80">No pending actions required</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Top Contributor */}
+              <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
+                isDarkMode
+                  ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                  : 'bg-white/10 border-white/20 hover:bg-white/15'
+              }`}>
+                <h3 className="text-lg font-semibold text-white mb-4 drop-shadow flex items-center gap-2">
+                  <Award className="h-5 w-5 text-yellow-400" />
+                  Top Contributor {new Date().getFullYear()}
+                </h3>
+                {analytics.topContributor && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-16 w-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-xl">
+                        <Users className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xl font-bold text-white">{analytics.topContributor.member.name}</p>
+                        <p className="text-sm text-white/70">@{analytics.topContributor.member.username}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                      <div>
+                        <p className="text-sm text-white/70 mb-1">Payments Made</p>
+                        <p className="text-2xl font-bold text-white">{analytics.topContributor.paymentsCount}/12</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-white/70 mb-1">Total Paid</p>
+                        <p className="text-lg font-bold text-green-300">LKR {analytics.topContributor.totalPaid.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
+              isDarkMode
+                ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+                : 'bg-white/10 border-white/20 hover:bg-white/15'
+            }`}>
               <h3 className="text-lg font-semibold text-white mb-4 drop-shadow flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                Recent Activity
+                Quick Stats Summary
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-green-500/20 rounded-xl hover:bg-green-500/30 transition-all duration-300 backdrop-blur-sm border border-green-300/30 shadow-lg group">
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Monthly collection target achieved</span>
-                  <span className="text-xs text-green-300 bg-green-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">Today</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-blue-500/20 rounded-xl border border-blue-300/30 backdrop-blur-sm">
+                  <p className="text-sm text-white/70 mb-1">Monthly Target</p>
+                  <p className="text-2xl font-bold text-white">
+                    {analytics.paidCurrentMonth}/{analytics.totalMembers}
+                  </p>
+                  <p className="text-xs text-blue-300 mt-1">
+                    {analytics.totalMembers - analytics.paidCurrentMonth} remaining</p>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-blue-500/20 rounded-xl hover:bg-blue-500/30 transition-all duration-300 backdrop-blur-sm border border-blue-300/30 shadow-lg group">
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">New member added to the group</span>
-                  <span className="text-xs text-blue-300 bg-blue-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">2 days ago</span>
+                <div className="p-4 bg-purple-500/20 rounded-xl border border-purple-300/30 backdrop-blur-sm">
+                  <p className="text-sm text-white/70 mb-1">Active Loans Value</p>
+                  <p className="text-2xl font-bold text-white">
+                    LKR {groupStats.totalLoanAmount.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-purple-300 mt-1">
+                    {groupStats.activeLoans} active loan{groupStats.activeLoans !== 1 ? 's' : ''}
+                  </p>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-orange-500/20 rounded-xl hover:bg-orange-500/30 transition-all duration-300 backdrop-blur-sm border border-orange-300/30 shadow-lg group">
-                  <span className="text-sm text-white/90 group-hover:text-white transition-colors">Loan repayment received</span>
-                  <span className="text-xs text-orange-300 bg-orange-600/40 px-3 py-1 rounded-full backdrop-blur-sm font-medium">3 days ago</span>
+                <div className="p-4 bg-green-500/20 rounded-xl border border-green-300/30 backdrop-blur-sm">
+                  <p className="text-sm text-white/70 mb-1">Available Funds</p>
+                  <p className="text-2xl font-bold text-white">
+                    LKR {groupStats.totalFunds.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-green-300 mt-1">
+                    Ready for disbursement
+                  </p>
                 </div>
               </div>
             </div>
