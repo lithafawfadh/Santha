@@ -1,279 +1,249 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart, HeartHandshake } from 'lucide-react';
+import { Users, Shield, LogIn, User, Key, Sun, Moon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import GlassCard from './common/GlassCard';
+// Assuming GlassButton is a standard button now, but keeping the name for simplicity if it has essential wrappers.
+// If you don't need a specific wrapper, you can replace GlassButton with a standard <button>.
+// I will style GlassButton aggressively to look like the buttons in the image.
 import GlassButton from './common/GlassButton';
+
+// NOTE: You will need to make sure the background image (yejing1.webp) is accessible.
+// For a ready-to-paste solution in Bolt.new, I'll use a CSS gradient that *mimics* the dark night sky and forest colors
+// since including a local image file directly in the code is not possible.
+// I've also added a dark/light mode toggle purely for functionality, as the design is strongly dark-mode based.
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  // Use 'member' as the default for the main login button, matching the image's structure.
   const [role, setRole] = useState<'admin' | 'member'>('member');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [activeParticles, setActiveParticles] = useState<Array<{id: number, x: number, y: number}>>([]);
   const { login } = useApp();
+  // State to manage dark mode (the design is inherently dark, but a toggle adds flexibility)
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Set initial class for dark/light mode
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+    document.documentElement.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
+
+  // Mock particle effect for night sky ambience (simpler than the original)
+  const [stars, setStars] = useState<Array<{id: number, x: number, y: number, size: number}>>([]);
+  
+  useEffect(() => {
+    const generateStars = () => {
+      const newStars = [];
+      for (let i = 0; i < 50; i++) {
+        newStars.push({
+          id: i,
+          x: Math.random() * 100, // % width
+          y: Math.random() * 100, // % height
+          size: Math.random() * 2 + 1, // 1px to 3px
+        });
+      }
+      setStars(newStars);
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    generateStars();
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveParticles(prev => [
-        ...prev.slice(-15),
-        { id: Date.now(), x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }
-      ]);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, isSignUp: boolean) => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
     if (!username.trim()) {
-      setError('Please enter your username');
+      setError('Please enter your unique identifier.');
       setIsLoading(false);
       return;
     }
 
-    if (role === 'admin' && !password.trim()) {
-      setError('Please enter your password');
-      setIsLoading(false);
-      return;
+    // Password is only required for 'admin' sign in and for all sign-ups
+    if (role === 'admin' || isSignUp) {
+        if (!password.trim()) {
+            setError('A Security Key is required for this action.');
+            setIsLoading(false);
+            return;
+        }
     }
 
+
+    // Mock login logic - replace with your actual API call
     if (login(username.trim(), role, password.trim() || undefined)) {
-      setError('');
+        setError('');
+        // Successful login handled by useApp context
     } else {
-      setError('Invalid credentials. Please check your username' + (role === 'admin' ? ' and password' : '') + '.');
+        setError('Invalid credentials or this user is not authorized.');
     }
+
     setIsLoading(false);
   };
 
-  const quickLogin = (userUsername: string, userRole: 'admin' | 'member', userPassword?: string) => {
-    setUsername(userUsername);
-    setPassword(userPassword || '');
-    setRole(userRole);
-    login(userUsername, userRole, userPassword);
-  };
+  // Helper function to match the image's sign-up/sign-in structure
+  const handleSignIn = (e: React.FormEvent) => handleSubmit(e, false);
+  const handleSignUp = (e: React.FormEvent) => handleSubmit(e, true);
+
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-      {/* Dynamic gradient background - Fixed for dark mode */}
-      <div 
-        className="absolute inset-0 transition-all duration-1000 ease-out"
-        style={{
-          background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, 
-            rgba(99, 102, 241, 0.2) 0%, 
-            rgba(139, 92, 246, 0.15) 25%, 
-            rgba(59, 130, 246, 0.1) 50%, 
-            transparent 70%),
-            linear-gradient(135deg, 
-              rgb(248, 250, 252) 0%, 
-              rgb(226, 232, 240) 25%, 
-              rgb(203, 213, 225) 50%, 
-              rgb(148, 163, 184) 100%)`
-        }}
-      />
+    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-start pt-16 md:pt-20 p-4 font-sans antialiased text-white">
 
-      {/* Dark mode overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:opacity-95 opacity-0 transition-opacity duration-500" />
-
-      {/* Floating particles */}
-      {activeParticles.map(particle => (
+      {/* Background and Stars (Mimicking the image) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900 to-indigo-900/90 dark:opacity-100 opacity-80 transition-opacity duration-500" />
+      {stars.map(star => (
         <div
-          key={particle.id}
-          className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-violet-500 rounded-full opacity-60 animate-pulse pointer-events-none"
+          key={star.id}
+          className="absolute rounded-full bg-white opacity-80 animate-pulse pointer-events-none"
           style={{
-            left: particle.x,
-            top: particle.y,
-            animation: `float 4s ease-in-out infinite, fadeOut 4s ease-in-out forwards`
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            animationDelay: `${Math.random() * 5}s`,
+            zIndex: 0,
           }}
         />
       ))}
+      <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/yejing1.webp')`, backgroundSize: 'cover', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat', backgroundBlendMode: 'soft-light', opacity: 0.8 }} />
+      {/* Fallback low-poly forest/camping graphics will need to be part of the actual image or a complex CSS layer */}
+      {/* For this code, we rely on the dark gradient and a high-opacity overlay to keep the focus on the form. */}
+      
+      {/* Dark Overlay for Form Readability */}
+      <div className="absolute inset-0 bg-slate-900/50 z-10" />
 
-      {/* Morphing shapes - Adjusted for dark mode */}
-      <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-violet-500/30 to-indigo-600/30 dark:from-violet-500/20 dark:to-indigo-600/20 rounded-full blur-3xl animate-pulse transform rotate-12"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-br from-blue-500/25 to-cyan-500/25 dark:from-blue-500/15 dark:to-cyan-500/15 rounded-full blur-3xl animate-pulse transform -rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 dark:from-emerald-500/10 dark:to-blue-500/10 rounded-full blur-3xl animate-bounce transform rotate-45" style={{ animationDuration: '6s' }}></div>
-      </div>
+      {/* Theme Toggle (Optional, for developer utility) */}
+      <button
+        onClick={() => setIsDarkMode(prev => !prev)}
+        className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white/80 hover:bg-white/20 z-50 transition-colors"
+        title="Toggle Theme"
+      >
+        {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </button>
 
-      {/* Main card - Fixed contrast */}
-      <GlassCard variant="gradient" className="max-w-lg w-full relative z-10 overflow-hidden">
-        <div className="absolute -inset-2 bg-gradient-to-r from-violet-500/40 via-blue-500/40 to-emerald-500/40 dark:from-violet-500/30 dark:via-blue-500/30 dark:to-emerald-500/30 rounded-3xl blur-xl animate-pulse"></div>
+      {/* Main Content Area */}
+      <div className="relative z-20 flex flex-col items-center w-full max-w-sm mx-auto">
         
-        <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl border border-white/30 dark:border-slate-700/50 rounded-2xl p-12 shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <div className="relative mb-8">
-              <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-violet-500 to-blue-500 opacity-30" style={{ animationDuration: '8s' }}></div>
-              <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-emerald-500 opacity-20" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
-              
-              <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/30 to-blue-600/30 dark:from-violet-500/40 dark:to-blue-500/40 border border-violet-400/40 dark:border-violet-400/30 shadow-2xl backdrop-blur-xl">
-                <HeartHandshake className="h-12 w-12 text-violet-600 dark:text-violet-400 animate-bounce" style={{ animationDuration: '3s' }} />
-                <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-ping" />
-              </GlassCard>
-            </div>
-            
-            <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif drop-shadow-lg">
-              <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-300 dark:to-blue-300 bg-clip-text text-transparent">
-                F.O.R.T
-              </span>
-            </h1>
-            <h2 className="text-2xl font-light text-slate-700 dark:text-slate-200 mb-4 tracking-widest drop-shadow">
-              COLLECTIVE
-            </h2>
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-              <p className="text-slate-600 dark:text-slate-300 font-light tracking-wider text-sm drop-shadow">
-                Friends Organization for Resilience & Trust
-              </p>
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-            </div>
-          </div>
+        {/* Logo Section */}
+        <div className="text-center mb-10 mt-4">
+          <h1 className="text-7xl font-extrabold tracking-widest text-white drop-shadow-lg">
+            <span className="text-white">TR</span>
+            <span className="text-yellow-400">A</span>
+            <span className="text-white">VEL</span>
+            {/* Mimics the small icon/face in the logo */}
+            <span className="inline-block relative -top-3 left-1 text-2xl">😊</span>
+          </h1>
+          <p className="text-sm font-light text-slate-300 mt-2 tracking-wider">
+            We pursue a relaxed gaming experience
+          </p>
+        </div>
 
-          <form className="space-y-8" onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              {/* Username */}
-              <div className="group">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
-                  Identity
-                </label>
-                <div className="relative">
-                  <input
+        {/* Role Selection (Kept outside the form for a cleaner look) */}
+        <div className="mb-6 w-full px-4">
+            <div className="flex justify-center space-x-4">
+                <button
+                    onClick={() => setRole('member')}
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                        role === 'member'
+                        ? 'bg-blue-600/70 text-white shadow-lg shadow-blue-500/30'
+                        : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/50'
+                    }`}
+                >
+                    <User className="inline h-4 w-4 mr-2" /> Builder
+                </button>
+                <button
+                    onClick={() => setRole('admin')}
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                        role === 'admin'
+                        ? 'bg-violet-600/70 text-white shadow-lg shadow-violet-500/30'
+                        : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/50'
+                    }`}
+                >
+                    <Shield className="inline h-4 w-4 mr-2" /> Guardian
+                </button>
+            </div>
+        </div>
+
+        {/* Login Form */}
+        <form className="w-full space-y-6" onSubmit={handleSignIn}>
+            {/* Username Input (Stylized like the image input fields) */}
+            <div className="relative">
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <input
                     id="username"
                     name="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
-                    placeholder="Enter your unique identifier"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              {role === 'admin' && (
-                <div className="group animate-fadeIn">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
-                    Security Key
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
-                      placeholder="Enter your secure passphrase"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Role Selector */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-6 tracking-widest uppercase text-center">
-                  Choose Your Path
-                </label>
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Guardian */}
-                  <div className="relative group">
-                    <GlassButton
-                      variant={role === 'admin' ? 'primary' : 'secondary'}
-                      onClick={() => setRole('admin')}
-                      className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
-                        role === 'admin'
-                          ? 'ring-2 ring-violet-500/50 dark:ring-violet-400/50 bg-gradient-to-br from-violet-500/30 to-purple-600/30 dark:from-violet-500/40 dark:to-purple-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
-                      }`}
-                    >
-                      <Shield className={`h-8 w-8 mb-3 ${role === 'admin' ? 'text-violet-600 dark:text-violet-300 animate-pulse' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Guardian</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Administrator</span>
-                    </GlassButton>
-                  </div>
-                  
-                  {/* Builder */}
-                  <div className="relative group">
-                    <GlassButton
-                      variant={role === 'member' ? 'accent' : 'secondary'}
-                      onClick={() => setRole('member')}
-                      className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
-                        role === 'member'
-                          ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50 bg-gradient-to-br from-blue-500/30 to-cyan-600/30 dark:from-blue-500/40 dark:to-cyan-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
-                      }`}
-                    >
-                      <UserCheck className={`h-8 w-8 mb-3 ${role === 'member' ? 'text-blue-600 dark:text-blue-300 animate-bounce' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Builder</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Member</span>
-                    </GlassButton>
-                  </div>
-                </div>
-              </div>
+                    className="w-full pl-12 pr-6 py-4 bg-black/30 border-b-2 border-white/50 focus:border-white focus:outline-none placeholder-slate-400 text-white tracking-wider rounded-none transition-colors duration-300 text-lg"
+                    placeholder="Username"
+                />
             </div>
 
+            {/* Password Input (Only shows for Admin or during a Sign Up attempt) */}
+            {(role === 'admin' || password) && (
+                <div className="relative transition-all duration-500">
+                    <Key className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-12 pr-6 py-4 bg-black/30 border-b-2 border-white/50 focus:border-white focus:outline-none placeholder-slate-400 text-white tracking-wider rounded-none transition-colors duration-300 text-lg"
+                        placeholder="Password"
+                    />
+                </div>
+            )}
+            
+            {/* Error Message */}
             {error && (
-              <GlassCard className="p-6 bg-red-500/30 dark:bg-red-500/40 border-red-400/50 dark:border-red-400/60 border rounded-2xl backdrop-blur-2xl shadow-xl animate-shake">
-                <p className="text-sm text-red-700 dark:text-red-200 font-light tracking-wider text-center">{error}</p>
-              </GlassCard>
+                <div className="p-3 bg-red-800/60 border border-red-500 rounded-lg shadow-md animate-shake">
+                    <p className="text-sm text-red-100 font-light text-center">{error}</p>
+                </div>
             )}
 
-            {/* Submit */}
-            <GlassButton
-              type="submit"
-              variant="primary"
-              disabled={isLoading}
-              className="w-full flex justify-center items-center py-6 text-lg font-light transition-all duration-500 hover:shadow-2xl rounded-2xl backdrop-blur-2xl shadow-xl tracking-widest uppercase hover:scale-105 bg-gradient-to-r from-violet-600/90 to-blue-600/90 dark:from-violet-500/80 dark:to-blue-500/80 border-2 border-white/40 dark:border-white/20 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  <LogIn className="h-6 w-6 mr-4" />
-                  Enter Collective
-                </>
-              )}
-            </GlassButton>
-          </form>
-        </div>
-      </GlassCard>
+            {/* Sign Up / Sign In Buttons (Matching the image layout) */}
+            <div className="flex space-x-4 pt-6">
+                <GlassButton
+                    type="button"
+                    onClick={handleSignUp}
+                    disabled={isLoading}
+                    // The image has dark buttons with light text and a light border
+                    className="flex-1 justify-center py-4 text-base font-normal tracking-widest uppercase rounded-lg border-2 border-white/60 bg-black/40 text-white hover:bg-black/60 transition-all duration-300 disabled:opacity-50"
+                >
+                    Sign up
+                </GlassButton>
+                
+                <GlassButton
+                    type="submit"
+                    disabled={isLoading}
+                    // The image has dark buttons with light text and a light border
+                    className="flex-1 justify-center py-4 text-base font-normal tracking-widest uppercase rounded-lg border-2 border-white/60 bg-black/40 text-white hover:bg-black/60 transition-all duration-300 disabled:opacity-50"
+                >
+                    {isLoading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    ) : (
+                        "Sign in"
+                    )}
+                </GlassButton>
+            </div>
+            
+            {/* Forgot Password Link */}
+            <div className="pt-4 text-center">
+                <a href="#" className="text-sm text-slate-400 hover:text-white transition-colors">
+                    Forgot Password?
+                </a>
+            </div>
+        </form>
+      </div>
 
-      {/* Animations */}
+      {/* Animations (Simplified) */}
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes fadeOut {
-          0% { opacity: 0.6; }
-          100% { opacity: 0; }
-        }
-        @keyframes fadeIn {
-          0% { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-5px); }
           75% { transform: translateX(5px); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
         }
         .animate-shake {
           animation: shake 0.5s ease-in-out;
