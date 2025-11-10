@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useApp } from '../../context/AppContext';
 
 export default function ShaderBackground() {
   const [isMobile, setIsMobile] = useState(false);
+  const { isDarkMode } = useApp();
 
   useEffect(() => {
     // Detect mobile devices
@@ -17,9 +19,15 @@ export default function ShaderBackground() {
 
   return (
     <>
-      <div className="fixed inset-0 -z-10 overflow-hidden bg-black">
-        {/* Base animated gradient - simplified for mobile */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-purple-950 to-black" 
+      <div className={`fixed inset-0 -z-10 overflow-hidden transition-colors duration-500 ${
+        isDarkMode ? 'bg-gray-900' : 'bg-black'
+      }`}>
+        {/* Base animated gradient - changes with dark mode */}
+        <div className={`absolute inset-0 transition-all duration-500 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+            : 'bg-gradient-to-br from-indigo-950 via-purple-950 to-black'
+        }`}
              style={{ 
                animation: isMobile ? 'none' : 'gradient-shift 20s ease infinite',
                backgroundSize: '400% 400%'
@@ -32,13 +40,21 @@ export default function ShaderBackground() {
           </div>
         )}
         
-        {/* Animated plasma orbs - reduced for mobile */}
-        <div className="absolute top-0 -left-32 w-96 h-96 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-full blur-3xl opacity-40" 
+        {/* Animated plasma orbs - reduced for mobile and changes with dark mode */}
+        <div className={`absolute top-0 -left-32 w-96 h-96 rounded-full blur-3xl transition-all duration-500 ${
+          isDarkMode
+            ? 'bg-gradient-to-br from-blue-600 to-cyan-700 opacity-20'
+            : 'bg-gradient-to-br from-cyan-500 to-blue-700 opacity-40'
+        }`}
              style={{ 
                animation: isMobile ? 'none' : 'float-1 25s ease-in-out infinite',
                willChange: isMobile ? 'auto' : 'transform'
              }} />
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-full blur-3xl opacity-40" 
+        <div className={`absolute bottom-0 left-1/4 w-96 h-96 rounded-full blur-3xl transition-all duration-500 ${
+          isDarkMode
+            ? 'bg-gradient-to-br from-purple-700 to-fuchsia-800 opacity-20'
+            : 'bg-gradient-to-br from-violet-600 to-fuchsia-600 opacity-40'
+        }`}
              style={{ 
                animation: isMobile ? 'none' : 'float-3 23s ease-in-out infinite 4s',
                willChange: isMobile ? 'auto' : 'transform'
@@ -80,8 +96,8 @@ export default function ShaderBackground() {
           <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: '#06b6d4', stopOpacity: 0.8 }}>
-                  <animate attributeName="stop-color" values="#06b6d4; #8b5cf6; #06b6d4" dur="8s" repeatCount="indefinite" />
+                <stop offset="0%" style={{ stopColor: isDarkMode ? '#3b82f6' : '#06b6d4', stopOpacity: 0.8 }}>
+                  <animate attributeName="stop-color" values={isDarkMode ? '#3b82f6; #8b5cf6; #3b82f6' : '#06b6d4; #8b5cf6; #06b6d4'} dur="8s" repeatCount="indefinite" />
                 </stop>
                 <stop offset="100%" style={{ stopColor: '#8b5cf6', stopOpacity: 0.3 }}>
                   <animate attributeName="stop-color" values="#8b5cf6; #06b6d4; #8b5cf6" dur="8s" repeatCount="indefinite" />
@@ -102,8 +118,12 @@ export default function ShaderBackground() {
         {/* Glowing orbs - reduced on mobile */}
         {!isMobile && (
           <>
-            <div className="glow-orb glow-orb-1" />
-            <div className="glow-orb glow-orb-2" />
+            <div className={`glow-orb glow-orb-1 transition-all duration-500 ${
+              isDarkMode ? 'opacity-50' : 'opacity-100'
+            }`} />
+            <div className={`glow-orb glow-orb-2 transition-all duration-500 ${
+              isDarkMode ? 'opacity-50' : 'opacity-100'
+            }`} />
           </>
         )}
         
@@ -115,10 +135,14 @@ export default function ShaderBackground() {
         )}
         
         {/* Vignette with color shift */}
-        <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black opacity-70" />
+        <div className={`absolute inset-0 bg-gradient-radial from-transparent via-transparent transition-all duration-500 ${
+          isDarkMode ? 'to-gray-900 opacity-80' : 'to-black opacity-70'
+        }`} />
         
         {/* Top glow - simplified for mobile */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60" 
+        <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent to-transparent transition-all duration-500 ${
+          isDarkMode ? 'via-blue-500 opacity-40' : 'via-cyan-400 opacity-60'
+        }`}
              style={{ animation: isMobile ? 'none' : 'pulse-slow 3s ease-in-out infinite' }} />
       </div>
 
