@@ -448,7 +448,7 @@ export default function MemberDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-purple-200/70 bg-clip-text text-transparent mb-1">
-                    Group Funds
+                    Available Group Funds
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg">
                     LKR {groupStats.totalFunds.toLocaleString()}
