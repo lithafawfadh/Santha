@@ -66,7 +66,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useLocalStorage('darkMode', false);
+  
+  // Create a user-specific dark mode key that changes when user changes
+  const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
+  const [isDarkMode, setIsDarkMode] = useLocalStorage(darkModeKey, false);
+  
   const [groupStats, setGroupStats] = useState<GroupStats>({
     totalMembers: 0,
     totalFunds: 0,
