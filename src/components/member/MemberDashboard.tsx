@@ -176,22 +176,26 @@ export default function MemberDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your data...</p>
+          <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4 ${isDarkMode ? 'border-green-400' : 'border-green-600'}`}></div>
+          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Loading your data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className={`min-h-screen relative overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
       {/* Animated Shader Background */}
       <ShaderBackground />
       
       {/* Header */}
-      <header className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/20 border-b border-white/20 dark:border-gray-700/30 shadow-2xl relative z-40">
+      <header className={`backdrop-blur-xl border-b shadow-2xl relative z-40 ${
+        isDarkMode 
+          ? 'bg-gray-900/30 border-gray-700/30' 
+          : 'bg-white/10 border-white/20'
+      }`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3">
             {/* Left - Branding */}
@@ -209,23 +213,30 @@ export default function MemberDashboard() {
             {/* Right - Actions */}
             <div className="flex items-center space-x-2">
               {/* Dark Mode Toggle */}
-              <GlassButton
-                variant="secondary"
+              <button
                 onClick={toggleDarkMode}
-                className="p-2"
+                className={`p-2 rounded-xl backdrop-blur-xl border transition-all duration-300 shadow-lg ${
+                  isDarkMode
+                    ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-700/50'
+                    : 'bg-white/10 border-white/20 hover:bg-white/20'
+                }`}
               >
                 {isDarkMode ? (
                   <Sun className="h-4 w-4 text-yellow-400" />
                 ) : (
                   <Moon className="h-4 w-4 text-white" />
                 )}
-              </GlassButton>
+              </button>
               
               {/* User Profile Dropdown Trigger */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg relative z-50"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl border transition-all duration-300 shadow-lg relative z-50 ${
+                    isDarkMode
+                      ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-700/50'
+                      : 'bg-white/10 border-white/20 hover:bg-white/20'
+                  }`}
                 >
                   <User className="h-4 w-4 text-white/70" />
                   <span className="text-sm bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent hidden sm:inline">
@@ -241,30 +252,33 @@ export default function MemberDashboard() {
         </div>
       </header>
 
-      {/* Dropdown Menu - Positioned outside header */}
+      {/* Dropdown Menu */}
       {showUserMenu && (
         <div 
           ref={dropdownRef}
           className="fixed inset-0 z-[9999]"
           style={{ pointerEvents: 'none' }}
         >
-          {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/10"
             style={{ pointerEvents: 'auto' }}
             onClick={() => setShowUserMenu(false)}
           />
           
-          {/* Dropdown Content */}
           <div 
-            className="absolute right-4 top-20 w-72 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+            className={`absolute right-4 top-20 w-72 rounded-xl backdrop-blur-xl border shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${
+              isDarkMode
+                ? 'bg-gray-800/90 border-gray-600/50'
+                : 'bg-white/10 border-white/20'
+            }`}
             style={{ 
               pointerEvents: 'auto',
               zIndex: 10000
             }}
           >
-            {/* User Info */}
-            <div className="p-4 border-b border-white/20 bg-gradient-to-r from-green-500/20 to-emerald-500/20">
+            <div className={`p-4 border-b bg-gradient-to-r from-green-500/20 to-emerald-500/20 ${
+              isDarkMode ? 'border-gray-700/50' : 'border-white/20'
+            }`}>
               <div className="flex items-center space-x-3">
                 <div className="h-12 w-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                   <User className="h-6 w-6 text-white" />
@@ -280,7 +294,6 @@ export default function MemberDashboard() {
               </div>
             </div>
 
-            {/* Edit Username Section */}
             <div className="p-4">
               {isEditingUsername ? (
                 <div className="space-y-3">
@@ -291,34 +304,46 @@ export default function MemberDashboard() {
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    className="w-full px-3 py-2 text-sm backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50"
+                    className={`w-full px-3 py-2 text-sm backdrop-blur-xl border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50 ${
+                      isDarkMode
+                        ? 'bg-gray-700/50 border-gray-600/50'
+                        : 'bg-white/20 border-white/30'
+                    }`}
                     placeholder="Enter new username"
                     disabled={isUpdatingUsername}
                     autoFocus
                   />
                   <div className="flex space-x-2">
-                    <GlassButton
-                      variant="primary"
+                    <button
                       onClick={handleUsernameUpdate}
                       disabled={isUpdatingUsername}
-                      className="flex-1 py-2 text-sm"
+                      className={`flex-1 py-2 text-sm rounded-lg backdrop-blur-xl border transition-all duration-300 ${
+                        isDarkMode
+                          ? 'bg-green-600/50 border-green-500/50 hover:bg-green-600/70'
+                          : 'bg-green-500/30 border-green-400/50 hover:bg-green-500/50'
+                      } text-white font-medium`}
                     >
                       {isUpdatingUsername ? 'Saving...' : 'Save'}
-                    </GlassButton>
-                    <GlassButton
-                      variant="secondary"
+                    </button>
+                    <button
                       onClick={cancelUsernameEdit}
                       disabled={isUpdatingUsername}
-                      className="px-3 py-2"
+                      className={`px-3 py-2 rounded-lg backdrop-blur-xl border transition-all duration-300 ${
+                        isDarkMode
+                          ? 'bg-gray-700/50 border-gray-600/50 hover:bg-gray-600/50'
+                          : 'bg-white/20 border-white/30 hover:bg-white/30'
+                      }`}
                     >
-                      <X className="h-4 w-4" />
-                    </GlassButton>
+                      <X className="h-4 w-4 text-white" />
+                    </button>
                   </div>
                 </div>
               ) : (
                 <button
                   onClick={() => setIsEditingUsername(true)}
-                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-200 group"
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
+                    isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-white/10'
+                  }`}
                 >
                   <Edit3 className="h-4 w-4 text-white/70 group-hover:text-white transition-colors" />
                   <span className="text-sm bg-gradient-to-r from-white/90 to-emerald-200/90 bg-clip-text text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-emerald-200 transition-all">
@@ -328,8 +353,7 @@ export default function MemberDashboard() {
               )}
             </div>
 
-            {/* Logout Button */}
-            <div className="p-4 border-t border-white/20">
+            <div className={`p-4 border-t ${isDarkMode ? 'border-gray-700/50' : 'border-white/20'}`}>
               <button
                 onClick={() => {
                   setShowUserMenu(false);
@@ -366,7 +390,11 @@ export default function MemberDashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Months Paid Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
             <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -386,7 +414,11 @@ export default function MemberDashboard() {
           </div>
 
           {/* Amount Paid Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -406,7 +438,11 @@ export default function MemberDashboard() {
           </div>
 
           {/* Group Funds Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -426,7 +462,11 @@ export default function MemberDashboard() {
           </div>
 
           {/* Outstanding Loans Card */}
-          <div className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 hover:bg-white/15">
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
             <div className="relative p-6 z-10">
               <div className="flex items-center justify-between">
@@ -449,8 +489,14 @@ export default function MemberDashboard() {
         {/* Payment Status & Loans */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Payment Status Card */}
-          <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
-            <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center relative z-10">
+          <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl overflow-hidden transition-all duration-300 relative ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
+            <div className={`px-6 py-4 border-b bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center relative z-10 ${
+              isDarkMode ? 'border-gray-700/50' : 'border-white/20'
+            }`}>
               <div>
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
                   Payment Status - {selectedYear}
@@ -462,7 +508,11 @@ export default function MemberDashboard() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="px-3 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-sm font-medium text-white hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+                className={`px-3 py-2 backdrop-blur-xl border rounded-lg text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 ${
+                  isDarkMode
+                    ? 'bg-gray-700/50 border-gray-600/50 hover:bg-gray-600/50'
+                    : 'bg-white/20 border-white/30 hover:bg-white/30'
+                }`}
               >
                 {availableYears.map(year => (
                   <option key={year} value={year} className="bg-slate-800">{year}</option>
@@ -486,6 +536,8 @@ export default function MemberDashboard() {
                           ? 'bg-gradient-to-br from-yellow-500/30 to-amber-500/30 border-yellow-400/50'
                           : isPast
                           ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border-red-400/50'
+                          : isDarkMode
+                          ? 'bg-gray-700/30 border-gray-600/30'
                           : 'bg-white/10 border-white/20'
                       }`}
                     >
@@ -504,8 +556,7 @@ export default function MemberDashboard() {
                           <div className="text-2xl bg-gradient-to-r from-yellow-200 to-amber-300 bg-clip-text text-transparent">○</div>
                         ) : isPast ? (
                           <div className="text-2xl bg-gradient-to-r from-red-200 to-pink-300 bg-clip-text text-transparent">✗</div>
-                        ) : (
-                          <div className="text-2xl bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent">-</div>
+                        ) : (<div className="text-2xl bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent">-</div>
                         )}
                       </div>
                     </div>
@@ -513,14 +564,14 @@ export default function MemberDashboard() {
                 })}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-white/20">
+              <div className={`mt-6 pt-4 border-t ${isDarkMode ? 'border-gray-700/50' : 'border-white/20'}`}>
                 <div className="flex justify-between items-center text-sm">
                   <span className="bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent">Progress</span>
                   <span className="font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
                     {Math.round((stats.paidMonths / 12) * 100)}%
                   </span>
                 </div>
-                <div className="mt-2 bg-white/20 rounded-full h-2">
+                <div className={`mt-2 rounded-full h-2 ${isDarkMode ? 'bg-gray-700/50' : 'bg-white/20'}`}>
                   <div
                     className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
                     style={{ width: `${(stats.paidMonths / 12) * 100}%` }}
@@ -542,8 +593,14 @@ export default function MemberDashboard() {
           </div>
 
           {/* My Loans Card */}
-          <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 relative">
-            <div className="px-6 py-4 border-b border-white/20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10">
+          <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl overflow-hidden transition-all duration-300 relative ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
+            <div className={`px-6 py-4 border-b bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10 ${
+              isDarkMode ? 'border-gray-700/50' : 'border-white/20'
+            }`}>
               <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
                 My Loans
               </h3>
@@ -553,7 +610,7 @@ export default function MemberDashboard() {
                 <div className="space-y-4">
                   {myLoans.map((loan) => {
                     const outstanding = loan.amount - loan.repaidAmount;
-                    const progress = (loan.repaidAmount / loan.amount) *100;
+                    const progress = (loan.repaidAmount / loan.amount) * 100;
                     const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
                     
                     return (
@@ -616,7 +673,7 @@ export default function MemberDashboard() {
                             <span className="bg-gradient-to-r from-white/70 to-blue-200/70 bg-clip-text text-transparent">Progress</span>
                             <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">{Math.round(progress)}%</span>
                           </div>
-                          <div className="bg-white/20 rounded-full h-1.5 backdrop-blur-sm">
+                          <div className={`rounded-full h-1.5 backdrop-blur-sm ${isDarkMode ? 'bg-gray-700/50' : 'bg-white/20'}`}>
                             <div
                               className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
                                 loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
@@ -631,7 +688,9 @@ export default function MemberDashboard() {
                 </div>
               ) : (
                 <div className="text-center py-8 relative">
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit relative overflow-hidden">
+                  <div className={`p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit relative overflow-hidden ${
+                    isDarkMode ? 'bg-gray-700/30' : 'bg-gradient-to-br from-white/10 to-white/5'
+                  }`}>
                     <CreditCard className="h-12 w-12 bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent relative z-10" />
                   </div>
                   <h3 className="text-lg font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2 relative z-10">
@@ -647,13 +706,21 @@ export default function MemberDashboard() {
         </div>
 
         {/* Group Info Card */}
-        <div className="mt-6 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6 hover:bg-white/15 transition-all duration-300 relative">
+        <div className={`mt-6 rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 relative ${
+          isDarkMode
+            ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+            : 'bg-white/10 border-white/20 hover:bg-white/15'
+        }`}>
           <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-6 drop-shadow flex items-center gap-2 relative z-10">
             <div className="h-2 w-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 animate-pulse" />
             Group Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden">
+            <div className={`text-center p-6 rounded-xl backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden ${
+              isDarkMode
+                ? 'bg-blue-900/30 border-blue-700/40'
+                : 'bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-blue-300/30'
+            }`}>
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.totalMembers}
               </div>
@@ -661,7 +728,11 @@ export default function MemberDashboard() {
                 Total Members
               </div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden">
+            <div className={`text-center p-6 rounded-xl backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden ${
+              isDarkMode
+                ? 'bg-green-900/30 border-green-700/40'
+                : 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-300/30'
+            }`}>
               <div className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 LKR {groupStats.monthlyCollection.toLocaleString()}
               </div>
@@ -669,7 +740,11 @@ export default function MemberDashboard() {
                 This Month Collection
               </div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-300/30 transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden">
+            <div className={`text-center p-6 rounded-xl backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden ${
+              isDarkMode
+                ? 'bg-purple-900/30 border-purple-700/40'
+                : 'bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-purple-300/30'
+            }`}>
               <div className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.activeLoans}
               </div>
