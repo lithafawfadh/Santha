@@ -7,7 +7,7 @@ import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import ShaderBackground from '../common/ShaderBackground';
 
-// Optimized MorphingText - Reduced animation frequency
+// MorphingText Component for the welcome message - Optimized
 const MorphingWelcomeText = React.memo(({ userName }: { userName: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState(`Welcome, ${userName}`);
@@ -27,14 +27,14 @@ const MorphingWelcomeText = React.memo(({ userName }: { userName: string }) => {
         setDisplayText(welcomeTexts[(currentIndex + 1) % welcomeTexts.length]);
         setIsAnimating(false);
       }, 300);
-    }, 4000); // Increased from 3000 to 4000
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [currentIndex, welcomeTexts]);
 
   return (
-    <span className={`inline-block transition-opacity duration-300 ${
-      isAnimating ? 'opacity-0' : 'opacity-100'
+    <span className={`inline-block bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent transition-all duration-500 ${
+      isAnimating ? 'opacity-0 transform scale-95' : 'opacity-100 transform scale-100'
     }`}>
       {displayText}
     </span>
@@ -42,183 +42,6 @@ const MorphingWelcomeText = React.memo(({ userName }: { userName: string }) => {
 });
 
 MorphingWelcomeText.displayName = 'MorphingWelcomeText';
-
-// Optimized StatCard component
-const StatCard = React.memo(({ 
-  title, 
-  value, 
-  icon: Icon, 
-  gradientFrom, 
-  gradientTo,
-  isDarkMode 
-}: {
-  title: string;
-  value: string | number;
-  icon: any;
-  gradientFrom: string;
-  gradientTo: string;
-  isDarkMode: boolean;
-}) => (
-  <div className={`relative overflow-hidden rounded-2xl border shadow-lg transition-transform duration-300 hover:scale-105 ${
-    isDarkMode
-      ? 'bg-gray-800/50 border-gray-600/50'
-      : 'bg-white border-gray-200'
-  }`}>
-    <div className="relative p-6 z-10">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className={`text-sm font-medium mb-1 ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>
-            {title}
-          </p>
-          <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            {value}
-          </p>
-        </div>
-        <div className={`bg-gradient-to-br ${gradientFrom} ${gradientTo} p-3 rounded-xl shadow-lg`}>
-          <Icon className="h-6 w-6 text-white" />
-        </div>
-      </div>
-    </div>
-  </div>
-));
-
-StatCard.displayName = 'StatCard';
-
-// Optimized MonthCard component
-const MonthCard = React.memo(({ 
-  month, 
-  isPaid, 
-  isCurrent, 
-  isPast,
-  isDarkMode 
-}: {
-  month: string;
-  isPaid: boolean;
-  isCurrent: boolean;
-  isPast: boolean;
-  isDarkMode: boolean;
-}) => (
-  <div
-    className={`p-3 rounded-lg border text-center transition-transform duration-200 hover:scale-105 ${
-      isPaid
-        ? isDarkMode ? 'bg-green-500/20 border-green-400/50' : 'bg-green-100 border-green-300'
-        : isCurrent
-        ? isDarkMode ? 'bg-yellow-500/20 border-yellow-400/50' : 'bg-yellow-100 border-yellow-300'
-        : isPast
-        ? isDarkMode ? 'bg-red-500/20 border-red-400/50' : 'bg-red-100 border-red-300'
-        : isDarkMode
-        ? 'bg-gray-700/30 border-gray-600/30'
-        : 'bg-gray-100 border-gray-200'
-    }`}
-  >
-    <div className={`text-xs font-medium ${
-      isPaid ? isDarkMode ? 'text-green-200' : 'text-green-700' :
-      isCurrent ? isDarkMode ? 'text-yellow-200' : 'text-yellow-700' :
-      isPast ? isDarkMode ? 'text-red-200' : 'text-red-700' :
-      isDarkMode ? 'text-white/70' : 'text-gray-600'
-    }`}>
-      {month.slice(0, 3)}
-    </div>
-    <div className="mt-1">
-      {isPaid ? (
-        <div className={`text-2xl ${isDarkMode ? 'text-green-200' : 'text-green-600'}`}>✓</div>
-      ) : isCurrent ? (
-        <div className={`text-2xl ${isDarkMode ? 'text-yellow-200' : 'text-yellow-600'}`}>○</div>
-      ) : isPast ? (
-        <div className={`text-2xl ${isDarkMode ? 'text-red-200' : 'text-red-600'}`}>✗</div>
-      ) : (
-        <div className={`text-2xl ${isDarkMode ? 'text-white/50' : 'text-gray-400'}`}>-</div>
-      )}
-    </div>
-  </div>
-));
-
-MonthCard.displayName = 'MonthCard';
-
-// Optimized LoanCard component
-const LoanCard = React.memo(({ 
-  loan, 
-  isDarkMode 
-}: {
-  loan: any;
-  isDarkMode: boolean;
-}) => {
-  const outstanding = loan.amount - loan.repaidAmount;
-  const progress = (loan.repaidAmount / loan.amount) * 100;
-  const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
-  
-  return (
-    <div className={`p-4 rounded-lg border transition-transform duration-200 hover:scale-[1.02] ${
-      loan.status === 'repaid' 
-        ? isDarkMode ? 'bg-green-500/20 border-green-400/50' : 'bg-green-100 border-green-300'
-        : isOverdue 
-        ? isDarkMode ? 'bg-red-500/20 border-red-400/50' : 'bg-red-100 border-red-300'
-        : isDarkMode ? 'bg-blue-500/20 border-blue-400/50' : 'bg-blue-100 border-blue-300'
-    }`}>
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            LKR {loan.amount.toLocaleString()}
-          </p>
-          <p className={`text-sm ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>
-            Issued: {new Date(loan.issueDate).toLocaleDateString()}
-          </p>
-        </div>
-        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-          loan.status === 'repaid' 
-            ? isDarkMode ? 'bg-green-500/40 text-green-100' : 'bg-green-200 text-green-800'
-            : isOverdue 
-            ? isDarkMode ? 'bg-red-500/40 text-red-100' : 'bg-red-200 text-red-800'
-            : isDarkMode ? 'bg-orange-500/40 text-orange-100' : 'bg-orange-200 text-orange-800'
-        }`}>
-          {loan.status === 'repaid' ? 'Repaid' : isOverdue ? 'Overdue' : 'Active'}
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Repaid</span>
-          <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            LKR {loan.repaidAmount.toLocaleString()}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Outstanding</span>
-          <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            LKR {outstanding.toLocaleString()}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Due Date</span>
-          <span className={`font-medium ${
-            isOverdue 
-              ? isDarkMode ? 'text-red-200' : 'text-red-600'
-              : isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            {new Date(loan.dueDate).toLocaleDateString()}
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-3">
-        <div className="flex justify-between text-xs mb-1">
-          <span className={isDarkMode ? 'text-white/70' : 'text-gray-600'}>Progress</span>
-          <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>{Math.round(progress)}%</span>
-        </div>
-        <div className={`rounded-full h-1.5 ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-200'}`}>
-          <div
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              loan.status === 'repaid' ? 'bg-green-500' : 'bg-blue-500'
-            }`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-});
-
-LoanCard.displayName = 'LoanCard';
 
 export default function MemberDashboard() {
   const { currentUser, payments, loans, groupStats, logout, loading, updateUsername, isDarkMode, toggleDarkMode } = useApp();
@@ -275,6 +98,8 @@ export default function MemberDashboard() {
     const payment = myPayments.find(p => p.month === month);
     return payment?.paid || false;
   }, [myPayments]);
+
+  const getCurrentMonthIndex = useCallback(() => new Date().getMonth(), []);
 
   // Memoize current date calculations
   const currentDate = useMemo(() => ({
@@ -362,19 +187,14 @@ export default function MemberDashboard() {
 
   return (
     <div className={`min-h-screen relative overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
-      {/* Simplified Background - Only show on desktop */}
-      <div className="hidden md:block">
-        <ShaderBackground />
-      </div>
-      
-      {/* Solid color background for mobile */}
-      <div className={`md:hidden fixed inset-0 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`} />
+      {/* Animated Shader Background */}
+      <ShaderBackground />
       
       {/* Header */}
-      <header className={`border-b shadow-lg relative z-40 ${
+      <header className={`backdrop-blur-xl border-b shadow-2xl relative z-40 ${
         isDarkMode 
-          ? 'bg-gray-900/95 border-gray-700/30' 
-          : 'bg-white border-gray-200'
+          ? 'bg-gray-900/30 border-gray-700/30' 
+          : 'bg-white/10 border-white/20'
       }`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3">
@@ -384,7 +204,7 @@ export default function MemberDashboard() {
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-emerald-300 bg-clip-text text-transparent drop-shadow-lg">
                   <MorphingWelcomeText userName={currentUser?.name || ''} />
                 </h1>
               </div>
@@ -395,16 +215,16 @@ export default function MemberDashboard() {
               {/* Dark Mode Toggle */}
               <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-xl border transition-all duration-200 ${
+                className={`p-2 rounded-xl backdrop-blur-xl border transition-all duration-300 shadow-lg ${
                   isDarkMode
                     ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-700/50'
-                    : 'bg-gray-100 border-gray-200 hover:bg-gray-200'
+                    : 'bg-white/10 border-white/20 hover:bg-white/20'
                 }`}
               >
                 {isDarkMode ? (
                   <Sun className="h-4 w-4 text-yellow-400" />
                 ) : (
-                  <Moon className="h-4 w-4 text-gray-700" />
+                  <Moon className="h-4 w-4 text-white" />
                 )}
               </button>
               
@@ -412,17 +232,17 @@ export default function MemberDashboard() {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-xl border transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-xl backdrop-blur-xl border transition-all duration-300 shadow-lg relative z-50 ${
                     isDarkMode
                       ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-700/50'
-                      : 'bg-gray-100 border-gray-200 hover:bg-gray-200'
+                      : 'bg-white/10 border-white/20 hover:bg-white/20'
                   }`}
                 >
-                  <User className={`h-4 w-4 ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`} />
-                  <span className={`text-sm hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <User className="h-4 w-4 text-white/70" />
+                  <span className="text-sm bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent hidden sm:inline">
                     @{currentUser?.username}
                   </span>
-                  <svg className={`h-3 w-3 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''} ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`h-3 w-3 text-white/70 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -446,28 +266,28 @@ export default function MemberDashboard() {
           />
           
           <div 
-            className={`absolute right-4 top-20 w-72 rounded-xl border shadow-2xl overflow-hidden ${
+            className={`absolute right-4 top-20 w-72 rounded-xl backdrop-blur-xl border shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${
               isDarkMode
-                ? 'bg-gray-800/95 border-gray-600/50'
-                : 'bg-white/95 border-white/20'
+                ? 'bg-gray-800/90 border-gray-600/50'
+                : 'bg-white/10 border-white/20'
             }`}
             style={{ 
               pointerEvents: 'auto',
               zIndex: 10000
             }}
           >
-            <div className={`p-4 border-b ${
-              isDarkMode ? 'bg-green-900/30 border-gray-700/50' : 'bg-green-100 border-white/20'
+            <div className={`p-4 border-b bg-gradient-to-r from-green-500/20 to-emerald-500/20 ${
+              isDarkMode ? 'border-gray-700/50' : 'border-white/20'
             }`}>
               <div className="flex items-center space-x-3">
                 <div className="h-12 w-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                   <User className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">
+                  <p className="text-sm font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent truncate">
                     {currentUser?.name}
                   </p>
-                  <p className="text-xs text-white/70 truncate">
+                  <p className="text-xs bg-gradient-to-r from-white/70 to-emerald-100/70 bg-clip-text text-transparent truncate">
                     @{currentUser?.username}
                   </p>
                 </div>
@@ -477,14 +297,14 @@ export default function MemberDashboard() {
             <div className="p-4">
               {isEditingUsername ? (
                 <div className="space-y-3">
-                  <label className="text-xs font-medium text-white/80">
+                  <label className="text-xs font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
                     Change Username
                   </label>
                   <input
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white ${
+                    className={`w-full px-3 py-2 text-sm backdrop-blur-xl border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-white placeholder-white/50 ${
                       isDarkMode
                         ? 'bg-gray-700/50 border-gray-600/50'
                         : 'bg-white/20 border-white/30'
@@ -497,10 +317,10 @@ export default function MemberDashboard() {
                     <button
                       onClick={handleUsernameUpdate}
                       disabled={isUpdatingUsername}
-                      className={`flex-1 py-2 text-sm rounded-lg border transition-all duration-200 ${
+                      className={`flex-1 py-2 text-sm rounded-lg backdrop-blur-xl border transition-all duration-300 ${
                         isDarkMode
-                          ? 'bg-green-600/50 border-green-500/50'
-                          : 'bg-green-500/30 border-green-400/50'
+                          ? 'bg-green-600/50 border-green-500/50 hover:bg-green-600/70'
+                          : 'bg-green-500/30 border-green-400/50 hover:bg-green-500/50'
                       } text-white font-medium`}
                     >
                       {isUpdatingUsername ? 'Saving...' : 'Save'}
@@ -508,10 +328,10 @@ export default function MemberDashboard() {
                     <button
                       onClick={cancelUsernameEdit}
                       disabled={isUpdatingUsername}
-                      className={`px-3 py-2 rounded-lg border transition-all duration-200 ${
+                      className={`px-3 py-2 rounded-lg backdrop-blur-xl border transition-all duration-300 ${
                         isDarkMode
-                          ? 'bg-gray-700/50 border-gray-600/50'
-                          : 'bg-white/20 border-white/30'
+                          ? 'bg-gray-700/50 border-gray-600/50 hover:bg-gray-600/50'
+                          : 'bg-white/20 border-white/30 hover:bg-white/30'
                       }`}
                     >
                       <X className="h-4 w-4 text-white" />
@@ -521,12 +341,12 @@ export default function MemberDashboard() {
               ) : (
                 <button
                   onClick={() => setIsEditingUsername(true)}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
                     isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-white/10'
                   }`}
                 >
-                  <Edit3 className="h-4 w-4 text-white/70" />
-                  <span className="text-sm text-white/90">
+                  <Edit3 className="h-4 w-4 text-white/70 group-hover:text-white transition-colors" />
+                  <span className="text-sm bg-gradient-to-r from-white/90 to-emerald-200/90 bg-clip-text text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-emerald-200 transition-all">
                     Edit Username
                   </span>
                 </button>
@@ -539,7 +359,7 @@ export default function MemberDashboard() {
                   setShowUserMenu(false);
                   logout();
                 }}
-                className="w-full px-3 py-2 rounded-lg bg-red-500/20 border border-red-400/50 text-red-100 hover:bg-red-500/30 transition-all duration-200 text-sm font-medium"
+                className="w-full px-3 py-2 rounded-lg bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-400/50 text-red-100 hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-sm font-medium"
               >
                 Logout
               </button>
@@ -552,91 +372,154 @@ export default function MemberDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* Username Update Message */}
         {usernameMessage && (
-          <div className={`mb-6 p-4 rounded-xl border shadow-lg ${
+          <div className={`mb-6 p-4 rounded-xl backdrop-blur-xl border shadow-xl relative overflow-hidden ${
             usernameMessage.includes('successfully') 
-              ? isDarkMode ? 'bg-green-500/20 border-green-400/50' : 'bg-green-100 border-green-300'
-              : isDarkMode ? 'bg-red-500/20 border-red-400/50' : 'bg-red-100 border-red-300'
+              ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/50'
+              : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-400/50'
           }`}>
-            <p className={`text-sm font-medium ${
+            <p className={`text-sm font-medium bg-clip-text text-transparent relative z-10 ${
               usernameMessage.includes('successfully') 
-                ? isDarkMode ? 'text-green-100' : 'text-green-800'
-                : isDarkMode ? 'text-red-100' : 'text-red-800'
+                ? 'bg-gradient-to-r from-green-100 to-emerald-200'
+                : 'bg-gradient-to-r from-red-100 to-pink-200'
             }`}>
               {usernameMessage}
             </p>
           </div>
         )}
 
-        {/* Stats Cards - Using optimized component */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            title="Months Paid"
-            value={`${stats.paidMonths}/12`}
-            icon={Calendar}
-            gradientFrom="from-green-500"
-            gradientTo="to-emerald-600"
-            isDarkMode={isDarkMode}
-          />
-          <StatCard
-            title="Amount Paid"
-            value={`LKR ${stats.totalPaid.toLocaleString()}`}
-            icon={DollarSign}
-            gradientFrom="from-blue-500"
-            gradientTo="to-blue-600"
-            isDarkMode={isDarkMode}
-          />
-          <StatCard
-            title="Available Group Funds"
-            value={`LKR ${groupStats.totalFunds.toLocaleString()}`}
-            icon={TrendingUp}
-            gradientFrom="from-purple-500"
-            gradientTo="to-purple-600"
-            isDarkMode={isDarkMode}
-          />
-          <StatCard
-            title="Outstanding Loans"
-            value={`LKR ${stats.totalLoanAmount.toLocaleString()}`}
-            icon={CreditCard}
-            gradientFrom="from-orange-500"
-            gradientTo="to-orange-600"
-            isDarkMode={isDarkMode}
-          />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Months Paid Card */}
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6 z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-emerald-200/70 bg-clip-text text-transparent mb-1">
+                    Months Paid
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
+                    {stats.paidMonths}/12
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Amount Paid Card */}
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6 z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-blue-200/70 bg-clip-text text-transparent mb-1">
+                    Amount Paid
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg">
+                    LKR {stats.totalPaid.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
+                  <DollarSign className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Group Funds Card */}
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6 z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-purple-200/70 bg-clip-text text-transparent mb-1">
+                    Available Group Funds
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg">
+                    LKR {groupStats.totalFunds.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Outstanding Loans Card */}
+          <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-xl border shadow-2xl hover:shadow-3xl transition-all duration-500 will-change-transform hover:scale-105 ${
+            isDarkMode
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
+          }`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+            <div className="relative p-6 z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium bg-gradient-to-r from-white/70 to-orange-200/70 bg-clip-text text-transparent mb-1">
+                    Outstanding Loans
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent drop-shadow-lg">
+                    LKR {stats.totalLoanAmount.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-xl transform transition-transform duration-300 group-hover:scale-110 shadow-xl">
+                  <CreditCard className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Payment Status & Loans */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Payment Status Card */}
-          <div className={`rounded-2xl border shadow-lg overflow-hidden ${
+          <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl overflow-hidden transition-all duration-300 relative ${
             isDarkMode
-              ? 'bg-gray-800/50 border-gray-600/50'
-              : 'bg-white border-gray-200'
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
           }`}>
-            <div className={`px-6 py-4 border-b flex justify-between items-center ${
-              isDarkMode ? 'bg-blue-900/30 border-gray-700/50' : 'bg-blue-50 border-gray-200'
+            <div className={`px-6 py-4 border-b bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex justify-between items-center relative z-10 ${
+              isDarkMode ? 'border-gray-700/50' : 'border-white/20'
             }`}>
               <div>
-                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow">
                   Payment Status - {selectedYear}
                 </h3>
-                <p className={`text-sm ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>
+                <p className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent drop-shadow">
                   Monthly contribution: LKR {MONTHLY_CONTRIBUTION}
                 </p>
               </div>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className={`px-3 py-2 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                className={`px-3 py-2 backdrop-blur-xl border rounded-lg text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 ${
                   isDarkMode
-                    ? 'bg-gray-700/50 border-gray-600/50 text-white'
-                    : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-gray-700/50 border-gray-600/50 hover:bg-gray-600/50'
+                    : 'bg-white/20 border-white/30 hover:bg-white/30'
                 }`}
               >
                 {availableYears.map(year => (
-                  <option key={year} value={year} className={isDarkMode ? 'bg-slate-800' : 'bg-white'}>{year}</option>
+                  <option key={year} value={year} className="bg-slate-800">{year}</option>
                 ))}
               </select>
             </div>
-            <div className="p-6">
+            <div className="p-6 relative z-10">
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                 {months.map((month, index) => {
                   const isPaid = getPaymentStatus(month);
@@ -644,42 +527,63 @@ export default function MemberDashboard() {
                   const isPast = selectedYear < currentDate.year || (selectedYear === currentDate.year && index < currentDate.month);
                   
                   return (
-                    <MonthCard
+                    <div
                       key={month}
-                      month={month}
-                      isPaid={isPaid}
-                      isCurrent={isCurrent}
-                      isPast={isPast}
-                      isDarkMode={isDarkMode}
-                    />
+                      className={`p-3 rounded-lg backdrop-blur-sm border text-center transition-all duration-300 will-change-transform hover:scale-105 hover:shadow-lg relative overflow-hidden ${
+                        isPaid
+                          ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/50'
+                          : isCurrent
+                          ? 'bg-gradient-to-br from-yellow-500/30 to-amber-500/30 border-yellow-400/50'
+                          : isPast
+                          ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border-red-400/50'
+                          : isDarkMode
+                          ? 'bg-gray-700/30 border-gray-600/30'
+                          : 'bg-white/10 border-white/20'
+                      }`}
+                    >
+                      <div className={`text-xs font-medium relative z-10 ${
+                        isPaid ? 'bg-gradient-to-r from-green-100 to-emerald-200 bg-clip-text text-transparent' :
+                        isCurrent ? 'bg-gradient-to-r from-yellow-100 to-amber-200 bg-clip-text text-transparent' :
+                        isPast ? 'bg-gradient-to-r from-red-100 to-pink-200 bg-clip-text text-transparent' :
+                        'bg-gradient-to-r from-white/70 to-white/50 bg-clip-text text-transparent'
+                      }`}>
+                        {month.slice(0, 3)}
+                      </div>
+                      <div className="mt-1 relative z-10">
+                        {isPaid ? (
+                          <div className="text-2xl bg-gradient-to-r from-green-200 to-emerald-300 bg-clip-text text-transparent">✓</div>
+                        ) : isCurrent ? (
+                          <div className="text-2xl bg-gradient-to-r from-yellow-200 to-amber-300 bg-clip-text text-transparent">○</div>
+                        ) : isPast ? (
+                          <div className="text-2xl bg-gradient-to-r from-red-200 to-pink-300 bg-clip-text text-transparent">✗</div>
+                        ) : (<div className="text-2xl bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent">-</div>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
 
-              <div className={`mt-6 pt-4 border-t ${isDarkMode ? 'border-gray-700/50' : 'border-gray-200'}`}>
+              <div className={`mt-6 pt-4 border-t ${isDarkMode ? 'border-gray-700/50' : 'border-white/20'}`}>
                 <div className="flex justify-between items-center text-sm">
-                  <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Progress</span>
-                  <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <span className="bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent">Progress</span>
+                  <span className="font-medium bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
                     {Math.round((stats.paidMonths / 12) * 100)}%
                   </span>
                 </div>
-                <div className={`mt-2 rounded-full h-2 ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-200'}`}>
+                <div className={`mt-2 rounded-full h-2 ${isDarkMode ? 'bg-gray-700/50' : 'bg-white/20'}`}>
                   <div
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
                     style={{ width: `${(stats.paidMonths / 12) * 100}%` }}
-                  />
+                  ></div>
                 </div>
               </div>
 
               {stats.pendingMonths > 0 && (
-                <div className={`mt-4 p-3 border rounded-lg ${
-                  isDarkMode 
-                    ? 'bg-orange-500/20 border-orange-400/50'
-                    : 'bg-orange-100 border-orange-300'
-                }`}>
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className={`h-4 w-4 ${isDarkMode ? 'text-orange-200' : 'text-orange-600'}`} />
-                    <span className={`text-sm font-medium ${isDarkMode ? 'text-orange-100' : 'text-orange-800'}`}>
+                <div className="mt-4 p-3 bg-gradient-to-r from-orange-500/30 to-amber-500/30 border border-orange-400/50 rounded-lg backdrop-blur-sm transition-transform duration-300 will-change-transform hover:scale-[1.02] relative overflow-hidden">
+                  <div className="flex items-center space-x-2 relative z-10">
+                    <AlertCircle className="h-4 w-4 text-orange-200" />
+                    <span className="text-sm font-medium bg-gradient-to-r from-orange-100 to-amber-200 bg-clip-text text-transparent">
                       {stats.pendingMonths} payment{stats.pendingMonths > 1 ? 's' : ''} pending
                     </span>
                   </div>
@@ -689,36 +593,110 @@ export default function MemberDashboard() {
           </div>
 
           {/* My Loans Card */}
-          <div className={`rounded-2xl border shadow-lg overflow-hidden ${
+          <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl overflow-hidden transition-all duration-300 relative ${
             isDarkMode
-              ? 'bg-gray-800/50 border-gray-600/50'
-              : 'bg-white border-gray-200'
+              ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+              : 'bg-white/10 border-white/20 hover:bg-white/15'
           }`}>
-            <div className={`px-6 py-4 border-b ${
-              isDarkMode ? 'bg-purple-900/30 border-gray-700/50' : 'bg-purple-50 border-gray-200'
+            <div className={`px-6 py-4 border-b bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm relative z-10 ${
+              isDarkMode ? 'border-gray-700/50' : 'border-white/20'
             }`}>
-              <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow">
                 My Loans
               </h3>
             </div>
-            <div className="p-6">
+            <div className="p-6 relative z-10">
               {myLoans.length > 0 ? (
                 <div className="space-y-4">
-                  {myLoans.map((loan) => (
-                    <LoanCard key={loan.id} loan={loan} isDarkMode={isDarkMode} />
-                  ))}
+                  {myLoans.map((loan) => {
+                    const outstanding = loan.amount - loan.repaidAmount;
+                    const progress = (loan.repaidAmount / loan.amount) * 100;
+                    const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
+                    
+                    return (
+                      <div key={loan.id} className={`p-4 rounded-lg backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${
+                        loan.status === 'repaid' ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/50' :
+                        isOverdue ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border-red-400/50' :
+                        'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-blue-400/50'
+                      }`}>
+                        <div className="flex justify-between items-start mb-3 relative z-10">
+                          <div>
+                            <p className="font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                              LKR {loan.amount.toLocaleString()}
+                            </p>
+                            <p className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">
+                              Issued: {new Date(loan.issueDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
+                            loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500/40 to-emerald-500/40' :
+                            isOverdue ? 'bg-gradient-to-r from-red-500/40 to-pink-500/40' :
+                            'bg-gradient-to-r from-orange-500/40 to-amber-500/40'
+                          }`}>
+                            <span className={`bg-clip-text text-transparent ${
+                              loan.status === 'repaid' ? 'bg-gradient-to-r from-green-100 to-emerald-200' :
+                              isOverdue ? 'bg-gradient-to-r from-red-100 to-pink-200' :
+                              'bg-gradient-to-r from-orange-100 to-amber-200'
+                            }`}>
+                              {loan.status === 'repaid' ? 'Repaid' : isOverdue ? 'Overdue' : 'Active'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 relative z-10">
+                          <div className="flex justify-between text-sm">
+                            <span className="bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">Repaid</span>
+                            <span className="font-medium bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                              LKR {loan.repaidAmount.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">Outstanding</span>
+                            <span className="font-medium bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                              LKR {outstanding.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent">Due Date</span>
+                            <span className={`font-medium ${
+                              isOverdue 
+                                ? 'bg-gradient-to-r from-red-200 to-pink-300 bg-clip-text text-transparent' 
+                                : 'bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent'
+                            }`}>
+                              {new Date(loan.dueDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 relative z-10">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="bg-gradient-to-r from-white/70 to-blue-200/70 bg-clip-text text-transparent">Progress</span>
+                            <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">{Math.round(progress)}%</span>
+                          </div>
+                          <div className={`rounded-full h-1.5 backdrop-blur-sm ${isDarkMode ? 'bg-gray-700/50' : 'bg-white/20'}`}>
+                            <div
+                              className={`h-1.5 rounded-full transition-all duration-500 ease-out shadow-sm ${
+                                loan.status === 'repaid' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                              }`}
+                              style={{ width: `${progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${
-                    isDarkMode ? 'bg-gray-700/30' : 'bg-gray-100'
+                <div className="text-center py-8 relative">
+                  <div className={`p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit relative overflow-hidden ${
+                    isDarkMode ? 'bg-gray-700/30' : 'bg-gradient-to-br from-white/10 to-white/5'
                   }`}>
-                    <CreditCard className={`h-12 w-12 ${isDarkMode ? 'text-white/50' : 'text-gray-400'}`} />
+                    <CreditCard className="h-12 w-12 bg-gradient-to-r from-white/50 to-white/30 bg-clip-text text-transparent relative z-10" />
                   </div>
-                  <h3 className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h3 className="text-lg font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2 relative z-10">
                     No loans
                   </h3>
-                  <p className={isDarkMode ? 'text-white/70' : 'text-gray-600'}>
+                  <p className="bg-gradient-to-r from-white/70 to-purple-200/70 bg-clip-text text-transparent relative z-10">
                     You don't have any active or past loans.
                   </p>
                 </div>
@@ -728,49 +706,49 @@ export default function MemberDashboard() {
         </div>
 
         {/* Group Info Card */}
-        <div className={`mt-6 rounded-2xl border shadow-lg p-6 ${
+        <div className={`mt-6 rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 relative ${
           isDarkMode
-            ? 'bg-gray-800/50 border-gray-600/50'
-            : 'bg-white border-gray-200'
+            ? 'bg-gray-800/50 border-gray-600/50 hover:bg-gray-800/70'
+            : 'bg-white/10 border-white/20 hover:bg-white/15'
         }`}>
-          <h3 className={`text-lg font-semibold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            <div className="h-2 w-2 rounded-full bg-green-400" />
+          <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-6 drop-shadow flex items-center gap-2 relative z-10">
+            <div className="h-2 w-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 animate-pulse" />
             Group Information
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className={`text-center p-6 rounded-xl border transition-transform duration-200 hover:scale-105 ${
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
+            <div className={`text-center p-6 rounded-xl backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden ${
               isDarkMode
                 ? 'bg-blue-900/30 border-blue-700/40'
-                : 'bg-blue-50 border-blue-200'
+                : 'bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-blue-300/30'
             }`}>
-              <div className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <div className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.totalMembers}
               </div>
-              <div className={`text-sm mt-2 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>
+              <div className="text-sm bg-gradient-to-r from-white/80 to-blue-200/80 bg-clip-text text-transparent mt-2 relative z-10">
                 Total Members
               </div>
             </div>
-            <div className={`text-center p-6 rounded-xl border transition-transform duration-200 hover:scale-105 ${
+            <div className={`text-center p-6 rounded-xl backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden ${
               isDarkMode
                 ? 'bg-green-900/30 border-green-700/40'
-                : 'bg-green-50 border-green-200'
+                : 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-300/30'
             }`}>
-              <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <div className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 LKR {groupStats.monthlyCollection.toLocaleString()}
               </div>
-              <div className={`text-sm mt-2 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>
+              <div className="text-sm bg-gradient-to-r from-white/80 to-emerald-200/80 bg-clip-text text-transparent mt-2 relative z-10">
                 This Month Collection
               </div>
             </div>
-            <div className={`text-center p-6 rounded-xl border transition-transform duration-200 hover:scale-105 ${
+            <div className={`text-center p-6 rounded-xl backdrop-blur-sm border transition-transform duration-300 will-change-transform hover:scale-105 shadow-lg group relative overflow-hidden ${
               isDarkMode
                 ? 'bg-purple-900/30 border-purple-700/40'
-                : 'bg-purple-50 border-purple-200'
+                : 'bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-purple-300/30'
             }`}>
-              <div className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <div className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-lg group-hover:scale-110 transition-transform relative z-10">
                 {groupStats.activeLoans}
               </div>
-              <div className={`text-sm mt-2 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>
+              <div className="text-sm bg-gradient-to-r from-white/80 to-purple-200/80 bg-clip-text text-transparent mt-2 relative z-10">
                 Active Loans
               </div>
             </div>
