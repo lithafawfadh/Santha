@@ -138,19 +138,24 @@ async permanentlyDeleteMember(memberId: string): Promise<boolean> {
     };
   },
 
-  async removeUser(userId: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId);
+async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('users')
+    .update({
+      status: 'inactive',
+      deactivated_at: new Date().toISOString(),
+      deactivated_by: deactivatedBy,
+      deactivation_reason: reason || 'No reason provided'
+    })
+    .eq('id', memberId);
 
-    if (error) {
-      console.error('Error removing user:', error);
-      return false;
-    }
+  if (error) {
+    console.error('Error deactivating member:', error);
+    return false;
+  }
 
-    return true;
-  },
+  return true;
+},
 
   async updateUserUsername(userId: string, newUsername: string): Promise<boolean> {
     const { error } = await supabase
