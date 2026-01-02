@@ -31,6 +31,7 @@ interface AppContextType {
   updateAdminProfile: (userId: string, updates: { name?: string; password?: string }) => Promise<boolean>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  updateLoanDueDate: (loanId: string, newDueDate: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
