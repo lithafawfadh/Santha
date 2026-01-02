@@ -26,6 +26,11 @@ interface AppContextType {
   updateAdminProfile: (userId: string, updates: { name?: string; password?: string }) => Promise<boolean>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  deactivateMember: (memberId: string, reason?: string) => Promise<void>;
+  reactivateMember: (memberId: string) => Promise<void>;
+  permanentlyDeleteMember: (memberId: string) => Promise<void>;
+  activeMembers: User[]; // Add this for easy filtering
+  inactiveMembers: User[]; // Add this
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
