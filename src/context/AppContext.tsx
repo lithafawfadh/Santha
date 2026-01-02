@@ -31,7 +31,6 @@ interface AppContextType {
   updateAdminProfile: (userId: string, updates: { name?: string; password?: string }) => Promise<boolean>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
-  updateLoanDueDate: (loanId: string, newDueDate: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -90,20 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     () => allUsers.filter(user => user.role === 'member' && user.status === 'inactive'),
     [allUsers]
   );
-const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
-  try {
-    const success = await dataService.updateLoanDueDate(loanId, newDueDate);
-    if (success) {
-      setLoans(prev => prev.map(loan => 
-        loan.id === loanId 
-          ? { ...loan, dueDate: newDueDate }
-          : loan
-      ));
-    }
-  } catch (error) {
-    console.error('Error updating loan due date:', error);
-  }
-};
+
   const calculateGroupStats = () => {
     const members = activeMembers;
     const currentMonth = new Date().getMonth();
@@ -400,7 +386,6 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
       updateUsername,
       updateAdminProfile,
       isDarkMode,
-      updateLoanDueDate,
       toggleDarkMode
     }}>
       {children}
