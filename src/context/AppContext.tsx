@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { User, Payment, Loan, GroupStats, Donation } from '../types';
 import { authService } from '../services/authService';
 import { dataService } from '../services/dataService';
@@ -11,6 +11,8 @@ interface AppContextType {
   loans: Loan[];
   donations: Donation[];
   allUsers: User[];
+  activeMembers: User[];
+  inactiveMembers: User[];
   groupStats: GroupStats;
   loading: boolean;
   login: (username: string, role: 'admin' | 'member', password?: string) => Promise<boolean>;
@@ -21,31 +23,26 @@ interface AppContextType {
   addDonation: (donation: Omit<Donation, 'id'>) => Promise<void>;
   addMember: (member: Omit<User, 'id'>) => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
+  deactivateMember: (memberId: string, reason?: string) => Promise<void>;
+  reactivateMember: (memberId: string) => Promise<void>;
+  permanentlyDeleteMember: (memberId: string) => Promise<void>;
   refreshData: () => Promise<void>;
   updateUsername: (userId: string, newUsername: string) => Promise<boolean>;
   updateAdminProfile: (userId: string, updates: { name?: string; password?: string }) => Promise<boolean>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
-  deactivateMember: (memberId: string, reason?: string) => Promise<void>;
-  reactivateMember: (memberId: string) => Promise<void>;
-  permanentlyDeleteMember: (memberId: string) => Promise<void>;
-  activeMembers: User[]; // Add this for easy filtering
-  inactiveMembers: User[]; // Add this
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Function to generate payment records for all members
 const generatePaymentsForMember = (memberId: string, memberJoinDate: string): Payment[] => {
   const payments: Payment[] = [];
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const joinDate = new Date(memberJoinDate);
   const currentYear = new Date().getFullYear();
   
-  // Generate payments from join year to current year + 1
   for (let year = joinDate.getFullYear(); year <= currentYear + 1; year++) {
     months.forEach((month, index) => {
-      // Skip months before join date
       if (year === joinDate.getFullYear() && index < joinDate.getMonth()) {
         return;
       }
@@ -71,78 +68,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const deactivateMember = async (memberId: string, reason?: string) => {
-  try {
-    const success = await dataService.deactivateMember(
-      memberId, 
-      currentUser?.id || '', 
-      reason
-    );
-    if (success) {
-      // Update the user in state instead of removing
-      setAllUsers(prev => prev.map(user => 
-        user.id === memberId 
-          ? { 
-              ...user, 
-              status: 'inactive',
-              deactivatedAt: new Date().toISOString(),
-              deactivatedBy: currentUser?.id,
-              deactivationReason: reason || 'No reason provided'
-            }
-          : user
-      ));
-    }
-  } catch (error) {
-    console.error('Error deactivating member:', error);
-  }
-};
-
-const reactivateMember = async (memberId: string) => {
-  try {
-    const success = await dataService.reactivateMember(memberId);
-    if (success) {
-      setAllUsers(prev => prev.map(user => 
-        user.id === memberId 
-          ? { 
-              ...user, 
-              status: 'active',
-              deactivatedAt: undefined,
-              deactivatedBy: undefined,
-              deactivationReason: undefined
-            }
-          : user
-      ));
-    }
-  } catch (error) {
-    console.error('Error reactivating member:', error);
-  }
-};
-
-const permanentlyDeleteMember = async (memberId: string) => {
-  try {
-    const success = await dataService.permanentlyDeleteMember(memberId);
-    if (success) {
-      setAllUsers(prev => prev.filter(user => user.id !== memberId));
-      setPayments(prev => prev.filter(payment => payment.memberId !== memberId));
-      setLoans(prev => prev.filter(loan => loan.memberId !== memberId));
-    }
-  } catch (error) {
-    console.error('Error permanently deleting member:', error);
-  }
-};
-
-// Compute active and inactive members
-const activeMembers = useMemo(
-  () => allUsers.filter(user => user.role === 'member' && user.status === 'active'),
-  [allUsers]
-);
-
-const inactiveMembers = useMemo(
-  () => allUsers.filter(user => user.role === 'member' && user.status === 'inactive'),
-  [allUsers]
-);
   
-  // Create a user-specific dark mode key that changes when user changes
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
   const [isDarkMode, setIsDarkMode] = useLocalStorage(darkModeKey, false);
   
@@ -154,15 +80,24 @@ const inactiveMembers = useMemo(
     totalLoanAmount: 0
   });
 
+  const activeMembers = useMemo(
+    () => allUsers.filter(user => user.role === 'member' && user.status === 'active'),
+    [allUsers]
+  );
+
+  const inactiveMembers = useMemo(
+    () => allUsers.filter(user => user.role === 'member' && user.status === 'inactive'),
+    [allUsers]
+  );
+
   const calculateGroupStats = () => {
-    const members = allUsers.filter(user => user.role === 'member');
+    const members = activeMembers;
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
     const paidPayments = payments.filter(payment => payment.paid);
     const totalFunds = paidPayments.reduce((sum, payment) => sum + payment.amount, 0);
     
-    // Add donations to total funds
     const totalDonations = donations.reduce((sum, donation) => sum + donation.amount, 0);
     
     const activeLoansData = loans.filter(loan => loan.status === 'active');
@@ -300,10 +235,8 @@ const inactiveMembers = useMemo(
       if (newMember) {
         setAllUsers(prev => [...prev, newMember]);
         
-        // Generate payment records for the new member
         const newPayments = generatePaymentsForMember(newMember.id, newMember.joinDate);
         
-        // Add payments to database
         const success = await dataService.addPayments(newPayments);
         if (success) {
           setPayments(prev => [...prev, ...newPayments]);
@@ -315,15 +248,65 @@ const inactiveMembers = useMemo(
   };
 
   const removeMember = async (memberId: string) => {
+    await deactivateMember(memberId, 'Member removed via removeMember function');
+  };
+
+  const deactivateMember = async (memberId: string, reason?: string) => {
     try {
-      const success = await dataService.removeUser(memberId);
+      const success = await dataService.deactivateMember(
+        memberId, 
+        currentUser?.id || '', 
+        reason
+      );
+      if (success) {
+        setAllUsers(prev => prev.map(user => 
+          user.id === memberId 
+            ? { 
+                ...user, 
+                status: 'inactive',
+                deactivatedAt: new Date().toISOString(),
+                deactivatedBy: currentUser?.id,
+                deactivationReason: reason || 'No reason provided'
+              }
+            : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error deactivating member:', error);
+    }
+  };
+
+  const reactivateMember = async (memberId: string) => {
+    try {
+      const success = await dataService.reactivateMember(memberId);
+      if (success) {
+        setAllUsers(prev => prev.map(user => 
+          user.id === memberId 
+            ? { 
+                ...user, 
+                status: 'active',
+                deactivatedAt: undefined,
+                deactivatedBy: undefined,
+                deactivationReason: undefined
+              }
+            : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error reactivating member:', error);
+    }
+  };
+
+  const permanentlyDeleteMember = async (memberId: string) => {
+    try {
+      const success = await dataService.permanentlyDeleteMember(memberId);
       if (success) {
         setAllUsers(prev => prev.filter(user => user.id !== memberId));
         setPayments(prev => prev.filter(payment => payment.memberId !== memberId));
         setLoans(prev => prev.filter(loan => loan.memberId !== memberId));
       }
     } catch (error) {
-      console.error('Error removing member:', error);
+      console.error('Error permanently deleting member:', error);
     }
   };
 
@@ -331,11 +314,9 @@ const inactiveMembers = useMemo(
     try {
       const success = await dataService.updateUserUsername(userId, newUsername);
       if (success) {
-        // Update current user if it's the same user
         if (currentUser?.id === userId) {
           setCurrentUser(prev => prev ? { ...prev, username: newUsername.toLowerCase() } : null);
         }
-        // Update in allUsers array
         setAllUsers(prev => prev.map(user => 
           user.id === userId ? { ...user, username: newUsername.toLowerCase() } : user
         ));
@@ -352,7 +333,6 @@ const inactiveMembers = useMemo(
     try {
       const success = await dataService.updateUser(userId, updates);
       if (success) {
-        // Update current user if it's the same user
         if (currentUser?.id === userId) {
           setCurrentUser(prev => prev ? { 
             ...prev, 
@@ -360,7 +340,6 @@ const inactiveMembers = useMemo(
             password: updates.password || prev.password
           } : null);
         }
-        // Update in allUsers array
         setAllUsers(prev => prev.map(user => 
           user.id === userId ? { 
             ...user, 
@@ -388,6 +367,8 @@ const inactiveMembers = useMemo(
       loans,
       donations,
       allUsers,
+      activeMembers,
+      inactiveMembers,
       groupStats,
       loading,
       login,
@@ -398,15 +379,13 @@ const inactiveMembers = useMemo(
       addDonation,
       addMember,
       removeMember,
+      deactivateMember,
+      reactivateMember,
+      permanentlyDeleteMember,
       refreshData,
       updateUsername,
       updateAdminProfile,
       isDarkMode,
-      deactivateMember,
-    reactivateMember,
-    permanentlyDeleteMember,
-    activeMembers,
-    inactiveMembers,
       toggleDarkMode
     }}>
       {children}
