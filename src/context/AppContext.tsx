@@ -400,6 +400,7 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
       updateUsername,
       updateAdminProfile,
       isDarkMode,
+      updateLoanDueDate,
       toggleDarkMode
     }}>
       {children}
