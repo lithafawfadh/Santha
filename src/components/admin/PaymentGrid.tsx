@@ -15,7 +15,7 @@ export default function PaymentGrid() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const members = allUsers.filter(user => user.role === 'member');
+  const members = allUsers.filter(user => user.role === 'member' && user.status === 'active');
   const currentMonthIndex = new Date().getMonth();
   const currentMonth = months[currentMonthIndex];
   
