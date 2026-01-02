@@ -3,110 +3,32 @@ import { User, Payment, Loan, Donation } from '../types';
 
 export const dataService = {
   // Users
-// Replace the existing getUsers function
-async getUsers(): Promise<User[]> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .order('created_at', { ascending: true });
+  async getUsers(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching users:', error);
-    return [];
-  }
+    if (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
 
-  return data.map(user => ({
-    id: user.id,
-    name: user.name,
-    username: user.username,
-    role: user.role as 'admin' | 'member',
-    email: user.email || undefined,
-    password: user.password || undefined,
-    joinDate: user.join_date,
-    avatarUrl: user.avatar_url || undefined,
-    status: user.status || 'active', // Add this
-    deactivatedAt: user.deactivated_at || undefined, // Add this
-    deactivatedBy: user.deactivated_by || undefined, // Add this
-    deactivationReason: user.deactivation_reason || undefined // Add this
-  }));
-},
-
-// Replace the existing removeUser function with deactivateMember
-async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('users')
-    .update({
-      status: 'inactive',
-      deactivated_at: new Date().toISOString(),
-      deactivated_by: deactivatedBy,
-      deactivation_reason: reason || 'No reason provided'
-    })
-    .eq('id', memberId);
-
-  if (error) {
-    console.error('Error deactivating member:', error);
-    return false;
-  }
-
-  return true;
-},
-
-// Add function to reactivate member
-async reactivateMember(memberId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('users')
-    .update({
-      status: 'active',
-      deactivated_at: null,
-      deactivated_by: null,
-      deactivation_reason: null
-    })
-    .eq('id', memberId);
-
-  if (error) {
-    console.error('Error reactivating member:', error);
-    return false;
-  }
-
-  return true;
-},
-
-// Keep the old removeUser for permanent deletion (admin use only)
-async permanentlyDeleteMember(memberId: string): Promise<boolean> {
-  // First delete all related records
-  const { error: paymentsError } = await supabase
-    .from('payments')
-    .delete()
-    .eq('member_id', memberId);
-
-  if (paymentsError) {
-    console.error('Error deleting payments:', paymentsError);
-    return false;
-  }
-
-  const { error: loansError } = await supabase
-    .from('loans')
-    .delete()
-    .eq('member_id', memberId);
-
-  if (loansError) {
-    console.error('Error deleting loans:', loansError);
-    return false;
-  }
-
-  // Finally delete the user
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', memberId);
-
-  if (error) {
-    console.error('Error deleting user:', error);
-    return false;
-  }
-
-  return true;
-},
+    return data.map(user => ({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      role: user.role as 'admin' | 'member',
+      email: user.email || undefined,
+      password: user.password || undefined,
+      joinDate: user.join_date,
+      avatarUrl: user.avatar_url || undefined,
+      status: user.status || 'active',
+      deactivatedAt: user.deactivated_at || undefined,
+      deactivatedBy: user.deactivated_by || undefined,
+      deactivationReason: user.deactivation_reason || undefined
+    }));
+  },
 
   async addUser(user: Omit<User, 'id'>): Promise<User | null> {
     const { data, error } = await supabase
@@ -117,7 +39,9 @@ async permanentlyDeleteMember(memberId: string): Promise<boolean> {
         role: user.role,
         email: user.email || null,
         password: user.password || null,
-        join_date: user.joinDate
+        join_date: user.joinDate,
+        avatar_url: user.avatarUrl || null,
+        status: 'active'
       })
       .select()
       .single();
@@ -134,48 +58,90 @@ async permanentlyDeleteMember(memberId: string): Promise<boolean> {
       role: data.role as 'admin' | 'member',
       email: data.email || undefined,
       password: data.password || undefined,
-      joinDate: data.join_date
+      joinDate: data.join_date,
+      avatarUrl: data.avatar_url || undefined,
+      status: data.status || 'active'
     };
   },
 
-async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('users')
-    .update({
-      status: 'inactive',
-      deactivated_at: new Date().toISOString(),
-      deactivated_by: deactivatedBy,
-      deactivation_reason: reason || 'No reason provided'
-    })
-    .eq('id', memberId);
+  async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        status: 'inactive',
+        deactivated_at: new Date().toISOString(),
+        deactivated_by: deactivatedBy,
+        deactivation_reason: reason || 'No reason provided'
+      })
+      .eq('id', memberId);
 
-  if (error) {
-    console.error('Error deactivating member:', error);
-    return false;
-  }
+    if (error) {
+      console.error('Error deactivating member:', error);
+      return false;
+    }
 
-  return true;
-},
+    return true;
+  },
 
-// Add function to reactivate member
-async reactivateMember(memberId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('users')
-    .update({
-      status: 'active',
-      deactivated_at: null,
-      deactivated_by: null,
-      deactivation_reason: null
-    })
-    .eq('id', memberId);
+  async reactivateMember(memberId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        status: 'active',
+        deactivated_at: null,
+        deactivated_by: null,
+        deactivation_reason: null
+      })
+      .eq('id', memberId);
 
-  if (error) {
-    console.error('Error reactivating member:', error);
-    return false;
-  }
+    if (error) {
+      console.error('Error reactivating member:', error);
+      return false;
+    }
 
-  return true;
-},
+    return true;
+  },
+
+  async removeUser(memberId: string): Promise<boolean> {
+    // This is now just a soft delete wrapper
+    return this.deactivateMember(memberId, 'system', 'Member removed');
+  },
+
+  async permanentlyDeleteMember(memberId: string): Promise<boolean> {
+    // First delete all related records
+    const { error: paymentsError } = await supabase
+      .from('payments')
+      .delete()
+      .eq('member_id', memberId);
+
+    if (paymentsError) {
+      console.error('Error deleting payments:', paymentsError);
+      return false;
+    }
+
+    const { error: loansError } = await supabase
+      .from('loans')
+      .delete()
+      .eq('member_id', memberId);
+
+    if (loansError) {
+      console.error('Error deleting loans:', loansError);
+      return false;
+    }
+
+    // Finally delete the user
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', memberId);
+
+    if (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+
+    return true;
+  },
 
   async updateUserUsername(userId: string, newUsername: string): Promise<boolean> {
     const { error } = await supabase
@@ -343,7 +309,6 @@ async reactivateMember(memberId: string): Promise<boolean> {
   },
 
   async updateLoanRepayment(loanId: string, additionalRepayment: number): Promise<boolean> {
-    // First get the current loan data
     const { data: currentLoan, error: fetchError } = await supabase
       .from('loans')
       .select('amount, repaid_amount')
@@ -394,43 +359,6 @@ async reactivateMember(memberId: string): Promise<boolean> {
       addedBy: donation.added_by
     }));
   },
-  
-// Keep the old removeUser for permanent deletion (admin use only)
-async permanentlyDeleteMember(memberId: string): Promise<boolean> {
-  // First delete all related records
-  const { error: paymentsError } = await supabase
-    .from('payments')
-    .delete()
-    .eq('member_id', memberId);
-
-  if (paymentsError) {
-    console.error('Error deleting payments:', paymentsError);
-    return false;
-  }
-
-  const { error: loansError } = await supabase
-    .from('loans')
-    .delete()
-    .eq('member_id', memberId);
-
-  if (loansError) {
-    console.error('Error deleting loans:', loansError);
-    return false;
-  }
-
-  // Finally delete the user
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', memberId);
-
-  if (error) {
-    console.error('Error deleting user:', error);
-    return false;
-  }
-
-  return true;
-},
 
   async addDonation(donation: Omit<Donation, 'id'>): Promise<Donation | null> {
     const donationId = `donation_${Date.now()}`;
