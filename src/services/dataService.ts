@@ -63,7 +63,21 @@ export const dataService = {
       status: data.status || 'active'
     };
   },
+async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('loans')
+    .update({
+      due_date: newDueDate
+    })
+    .eq('id', loanId);
 
+  if (error) {
+    console.error('Error updating loan due date:', error);
+    return false;
+  }
+
+  return true;
+},
   async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
     const { error } = await supabase
       .from('users')
