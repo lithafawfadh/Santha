@@ -157,6 +157,26 @@ async deactivateMember(memberId: string, deactivatedBy: string, reason?: string)
   return true;
 },
 
+// Add function to reactivate member
+async reactivateMember(memberId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('users')
+    .update({
+      status: 'active',
+      deactivated_at: null,
+      deactivated_by: null,
+      deactivation_reason: null
+    })
+    .eq('id', memberId);
+
+  if (error) {
+    console.error('Error reactivating member:', error);
+    return false;
+  }
+
+  return true;
+},
+
   async updateUserUsername(userId: string, newUsername: string): Promise<boolean> {
     const { error } = await supabase
       .from('users')
