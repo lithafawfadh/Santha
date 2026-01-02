@@ -402,6 +402,11 @@ const inactiveMembers = useMemo(
       updateUsername,
       updateAdminProfile,
       isDarkMode,
+      deactivateMember,
+    reactivateMember,
+    permanentlyDeleteMember,
+    activeMembers,
+    inactiveMembers,
       toggleDarkMode
     }}>
       {children}
