@@ -7,10 +7,10 @@ export interface User {
   password?: string;
   joinDate: string;
   avatarUrl?: string;
-  status?: 'active' | 'inactive'; // Add this
-  deactivatedAt?: string; // Add this
-  deactivatedBy?: string; // Add this
-  deactivationReason?: string; // Add this
+  status?: 'active' | 'inactive';
+  deactivatedAt?: string;
+  deactivatedBy?: string;
+  deactivationReason?: string;
 }
 
 export interface Payment {
@@ -35,18 +35,18 @@ export interface Loan {
   issuedBy: string;
 }
 
-export interface GroupStats {
-  totalMembers: number;
-  totalFunds: number;
-  monthlyCollection: number;
-  activeLoans: number;
-  totalLoanAmount: number;
-}
-
 export interface Donation {
   id: string;
   amount: number;
   date: string;
   description: string;
   addedBy: string;
+}
+
+export interface GroupStats {
+  totalMembers: number;
+  totalFunds: number;
+  monthlyCollection: number;
+  activeLoans: number;
+  totalLoanAmount: number;
 }
