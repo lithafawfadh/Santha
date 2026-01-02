@@ -6,6 +6,11 @@ export interface User {
   email?: string;
   password?: string;
   joinDate: string;
+  avatarUrl?: string;
+  status?: 'active' | 'inactive'; // Add this
+  deactivatedAt?: string; // Add this
+  deactivatedBy?: string; // Add this
+  deactivationReason?: string; // Add this
 }
 
 export interface Payment {
