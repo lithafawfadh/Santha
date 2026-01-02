@@ -394,6 +394,43 @@ async reactivateMember(memberId: string): Promise<boolean> {
       addedBy: donation.added_by
     }));
   },
+  
+// Keep the old removeUser for permanent deletion (admin use only)
+async permanentlyDeleteMember(memberId: string): Promise<boolean> {
+  // First delete all related records
+  const { error: paymentsError } = await supabase
+    .from('payments')
+    .delete()
+    .eq('member_id', memberId);
+
+  if (paymentsError) {
+    console.error('Error deleting payments:', paymentsError);
+    return false;
+  }
+
+  const { error: loansError } = await supabase
+    .from('loans')
+    .delete()
+    .eq('member_id', memberId);
+
+  if (loansError) {
+    console.error('Error deleting loans:', loansError);
+    return false;
+  }
+
+  // Finally delete the user
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', memberId);
+
+  if (error) {
+    console.error('Error deleting user:', error);
+    return false;
+  }
+
+  return true;
+},
 
   async addDonation(donation: Omit<Donation, 'id'>): Promise<Donation | null> {
     const donationId = `donation_${Date.now()}`;
