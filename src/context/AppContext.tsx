@@ -71,6 +71,76 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const deactivateMember = async (memberId: string, reason?: string) => {
+  try {
+    const success = await dataService.deactivateMember(
+      memberId, 
+      currentUser?.id || '', 
+      reason
+    );
+    if (success) {
+      // Update the user in state instead of removing
+      setAllUsers(prev => prev.map(user => 
+        user.id === memberId 
+          ? { 
+              ...user, 
+              status: 'inactive',
+              deactivatedAt: new Date().toISOString(),
+              deactivatedBy: currentUser?.id,
+              deactivationReason: reason || 'No reason provided'
+            }
+          : user
+      ));
+    }
+  } catch (error) {
+    console.error('Error deactivating member:', error);
+  }
+};
+
+const reactivateMember = async (memberId: string) => {
+  try {
+    const success = await dataService.reactivateMember(memberId);
+    if (success) {
+      setAllUsers(prev => prev.map(user => 
+        user.id === memberId 
+          ? { 
+              ...user, 
+              status: 'active',
+              deactivatedAt: undefined,
+              deactivatedBy: undefined,
+              deactivationReason: undefined
+            }
+          : user
+      ));
+    }
+  } catch (error) {
+    console.error('Error reactivating member:', error);
+  }
+};
+
+const permanentlyDeleteMember = async (memberId: string) => {
+  try {
+    const success = await dataService.permanentlyDeleteMember(memberId);
+    if (success) {
+      setAllUsers(prev => prev.filter(user => user.id !== memberId));
+      setPayments(prev => prev.filter(payment => payment.memberId !== memberId));
+      setLoans(prev => prev.filter(loan => loan.memberId !== memberId));
+    }
+  } catch (error) {
+    console.error('Error permanently deleting member:', error);
+  }
+};
+
+// Compute active and inactive members
+const activeMembers = useMemo(
+  () => allUsers.filter(user => user.role === 'member' && user.status === 'active'),
+  [allUsers]
+);
+
+const inactiveMembers = useMemo(
+  () => allUsers.filter(user => user.role === 'member' && user.status === 'inactive'),
+  [allUsers]
+);
   
   // Create a user-specific dark mode key that changes when user changes
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
