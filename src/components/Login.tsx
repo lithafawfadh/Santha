@@ -1,282 +1,488 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart, HeartHandshake } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import GlassCard from './common/GlassCard';
-import GlassButton from './common/GlassButton';
+import { Shield, User, Lock, ArrowRight, Eye, EyeOff, Loader2, Sparkles, TrendingUp } from 'lucide-react';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'member'>('member');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [activeParticles, setActiveParticles] = useState<Array<{id: number, x: number, y: number}>>([]);
   const { login } = useApp();
+  const [currentPage, setCurrentPage] = useState<'welcome' | 'login'>('welcome');
+  const [role, setRole] = useState<'admin' | 'member'>('member');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveParticles(prev => [
-        ...prev.slice(-15),
-        { id: Date.now(), x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }
-      ]);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleContinue = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentPage('login');
+      setTimeout(() => setIsTransitioning(false), 100);
+    }, 600);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    if (!username.trim()) {
-      setError('Please enter your username');
-      setIsLoading(false);
+    setError('');
+    
+    if (!identifier.trim()) {
+      setError(role === 'admin' ? 'Please enter your username' : 'Please enter your name');
       return;
     }
 
     if (role === 'admin' && !password.trim()) {
       setError('Please enter your password');
-      setIsLoading(false);
       return;
     }
 
-    if (login(username.trim(), role, password.trim() || undefined)) {
-      setError('');
-    } else {
-      setError('Invalid credentials. Please check your username' + (role === 'admin' ? ' and password' : '') + '.');
+    setIsLoading(true);
+
+    try {
+      const success = await login(
+        identifier.trim(),
+        role,
+        role === 'admin' ? password : undefined
+      );
+
+      if (!success) {
+        setError(
+          role === 'admin' 
+            ? 'Invalid username or password' 
+            : 'Member name not found'
+        );
+      }
+    } catch (err) {
+      setError('Connection error. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const quickLogin = (userUsername: string, userRole: 'admin' | 'member', userPassword?: string) => {
-    setUsername(userUsername);
-    setPassword(userPassword || '');
-    setRole(userRole);
-    login(userUsername, userRole, userPassword);
+  const switchRole = (newRole: 'admin' | 'member') => {
+    setRole(newRole);
+    setIdentifier('');
+    setPassword('');
+    setError('');
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-      {/* Dynamic gradient background - Fixed for dark mode */}
-      <div 
-        className="absolute inset-0 transition-all duration-1000 ease-out"
-        style={{
-          background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, 
-            rgba(99, 102, 241, 0.2) 0%, 
-            rgba(139, 92, 246, 0.15) 25%, 
-            rgba(59, 130, 246, 0.1) 50%, 
-            transparent 70%),
-            linear-gradient(135deg, 
-              rgb(248, 250, 252) 0%, 
-              rgb(226, 232, 240) 25%, 
-              rgb(203, 213, 225) 50%, 
-              rgb(148, 163, 184) 100%)`
-        }}
-      />
-
-      {/* Dark mode overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:opacity-95 opacity-0 transition-opacity duration-500" />
-
-      {/* Floating particles */}
-      {activeParticles.map(particle => (
-        <div
-          key={particle.id}
-          className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-violet-500 rounded-full opacity-60 animate-pulse pointer-events-none"
-          style={{
-            left: particle.x,
-            top: particle.y,
-            animation: `float 4s ease-in-out infinite, fadeOut 4s ease-in-out forwards`
-          }}
-        />
-      ))}
-
-      {/* Morphing shapes - Adjusted for dark mode */}
-      <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-violet-500/30 to-indigo-600/30 dark:from-violet-500/20 dark:to-indigo-600/20 rounded-full blur-3xl animate-pulse transform rotate-12"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-br from-blue-500/25 to-cyan-500/25 dark:from-blue-500/15 dark:to-cyan-500/15 rounded-full blur-3xl animate-pulse transform -rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 dark:from-emerald-500/10 dark:to-blue-500/10 rounded-full blur-3xl animate-bounce transform rotate-45" style={{ animationDuration: '6s' }}></div>
+    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Animated Gradient Orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse-slow-delayed" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse-slower" />
       </div>
 
-      {/* Main card - Fixed contrast */}
-      <GlassCard variant="gradient" className="max-w-lg w-full relative z-10 overflow-hidden">
-        <div className="absolute -inset-2 bg-gradient-to-r from-violet-500/40 via-blue-500/40 to-emerald-500/40 dark:from-violet-500/30 dark:via-blue-500/30 dark:to-emerald-500/30 rounded-3xl blur-xl animate-pulse"></div>
-        
-        <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl border border-white/30 dark:border-slate-700/50 rounded-2xl p-12 shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <div className="relative mb-8">
-              <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-violet-500 to-blue-500 opacity-30" style={{ animationDuration: '8s' }}></div>
-              <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-emerald-500 opacity-20" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
-              
-              <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/30 to-blue-600/30 dark:from-violet-500/40 dark:to-blue-500/40 border border-violet-400/40 dark:border-violet-400/30 shadow-2xl backdrop-blur-xl">
-                <HeartHandshake className="h-12 w-12 text-violet-600 dark:text-violet-400 animate-bounce" style={{ animationDuration: '3s' }} />
-                <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-ping" />
-              </GlassCard>
+      {/* Animated Pattern Overlay */}
+      <div className="absolute inset-0 overflow-hidden opacity-10">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+              <circle cx="30" cy="30" r="2" fill="white" opacity="0.3" />
+              <circle cx="0" cy="0" r="2" fill="white" opacity="0.2" />
+              <circle cx="60" cy="0" r="2" fill="white" opacity="0.2" />
+              <circle cx="0" cy="60" r="2" fill="white" opacity="0.2" />
+              <circle cx="60" cy="60" r="2" fill="white" opacity="0.2" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+      </div>
+
+      {/* Welcome Page */}
+      <div className={`absolute inset-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        currentPage === 'welcome' && !isTransitioning
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 -translate-y-full pointer-events-none'
+      }`}>
+        <div className="relative h-full flex flex-col items-center justify-center px-6">
+          <div className="w-full max-w-md space-y-12 animate-fade-in-up">
+            {/* Logo Section */}
+            <div className="text-center space-y-6">
+              {/* Logo Icon */}
+              <div className="inline-flex items-center justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-500 rounded-3xl blur-xl opacity-50 animate-pulse-gentle" />
+                  <div className="relative w-24 h-24 bg-gradient-to-br from-purple-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                    <Sparkles className="h-12 w-12 text-white" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Brand Name */}
+              <div className="space-y-3">
+                <h1 className="text-5xl font-bold text-white tracking-wider">
+                  F.O.R.T
+                </h1>
+                <p className="text-xl font-light text-blue-200/80 tracking-wide">
+                  COLLECTIVE
+                </p>
+              </div>
+
+              {/* Tagline */}
+              <div className="flex items-center justify-center space-x-2 text-emerald-400">
+                <TrendingUp className="h-4 w-4" />
+                <p className="text-sm font-medium">
+                  Friends Organization for Resilience & Trust
+                </p>
+                <TrendingUp className="h-4 w-4" />
+              </div>
             </div>
-            
-            <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif drop-shadow-lg">
-              <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-300 dark:to-blue-300 bg-clip-text text-transparent">
-                F.O.R.T
-              </span>
-            </h1>
-            <h2 className="text-2xl font-light text-slate-700 dark:text-slate-200 mb-4 tracking-widest drop-shadow">
-              COLLECTIVE
-            </h2>
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-              <p className="text-slate-600 dark:text-slate-300 font-light tracking-wider text-sm drop-shadow">
-                Friends Organization for Resilience & Trust
-              </p>
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+
+            {/* Identity Section */}
+            <div className="space-y-4 animate-fade-in-up-delay">
+              <label className="block text-sm font-bold text-white/90 tracking-wide uppercase">
+                Identity
+              </label>
+              <input
+                type="text"
+                className="w-full px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-300 text-base"
+                placeholder="Enter your unique identifier"
+                disabled
+              />
+            </div>
+
+            {/* Choose Path Section */}
+            <div className="space-y-5 animate-fade-in-up-delay-2">
+              <h3 className="text-center text-sm font-bold text-white/90 tracking-wide uppercase">
+                Choose Your Path
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {/* Guardian/Admin Button */}
+                <button
+                  onClick={handleContinue}
+                  className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-6 hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300"
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <Shield className="h-8 w-8 text-white/80 group-hover:text-purple-400 transition-colors" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-white mb-1">Guardian</p>
+                      <p className="text-xs text-white/60">Administrator</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Builder/Member Button */}
+                <button
+                  onClick={handleContinue}
+                  className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/40 to-purple-600/40 backdrop-blur-xl border border-blue-400/30 p-6 hover:from-blue-600/50 hover:to-purple-600/50 hover:border-blue-400/50 transition-all duration-300 shadow-lg shadow-blue-500/20"
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <User className="h-8 w-8 text-white group-hover:text-blue-200 transition-colors" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-white mb-1">Builder</p>
+                      <p className="text-xs text-blue-200/80">Member</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <form className="space-y-8" onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              {/* Username */}
-              <div className="group">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
-                  Identity
-                </label>
+      {/* Login Page */}
+      <div className={`absolute inset-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        currentPage === 'login' && !isTransitioning
+          ? 'opacity-100 translate-y-0'
+          : currentPage === 'login'
+          ? 'opacity-0 translate-y-full'
+          : 'opacity-0 translate-y-full pointer-events-none'
+      }`}>
+        <div className="relative h-full flex items-center justify-center px-6 py-12 overflow-auto">
+          <div className="w-full max-w-md space-y-8 animate-fade-in-up">
+            {/* Logo */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center mb-6">
                 <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl blur-lg opacity-50" />
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl">
+                    <Sparkles className="h-8 w-8 text-white" />
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+              <p className="text-sm text-white/60">Sign in to continue to F.O.R.T</p>
+            </div>
+
+            {/* Role Selector */}
+            <div className="p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => switchRole('member')}
+                  className={`relative py-3 px-4 rounded-xl font-semibold transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    role === 'member'
+                      ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                      : 'text-white/60 hover:text-white/80'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <User className="h-5 w-5" />
+                    <span>Member</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => switchRole('admin')}
+                  className={`relative py-3 px-4 rounded-xl font-semibold transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    role === 'admin'
+                      ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
+                      : 'text-white/60 hover:text-white/80'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Shield className="h-5 w-5" />
+                    <span>Admin</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-2xl animate-shake">
+                  <p className="text-sm text-red-300 font-medium text-center">{error}</p>
+                </div>
+              )}
+
+              {/* Identifier Field */}
+              <div className="space-y-3">
+                <label className="block text-sm font-bold text-white/90 tracking-wide uppercase">
+                  {role === 'admin' ? 'Username' : 'Your Name'}
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                    <User className={`h-5 w-5 transition-all duration-300 ${
+                      identifier ? 'text-blue-400' : 'text-white/40'
+                    }`} />
+                  </div>
                   <input
-                    id="username"
-                    name="username"
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
-                    placeholder="Enter your unique identifier"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    className="relative w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:border-blue-500/50 focus:bg-white/10 transition-all duration-300 text-base"
+                    placeholder={role === 'admin' ? 'Enter your username' : 'Enter your name'}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
-              {/* Password */}
+              {/* Password Field (Admin Only) */}
               {role === 'admin' && (
-                <div className="group animate-fadeIn">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
-                    Security Key
+                <div className="space-y-3 animate-slide-down">
+                  <label className="block text-sm font-bold text-white/90 tracking-wide uppercase">
+                    Password
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                      <Lock className={`h-5 w-5 transition-all duration-300 ${
+                        password ? 'text-purple-400' : 'text-white/40'
+                      }`} />
+                    </div>
                     <input
-                      id="password"
-                      name="password"
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
-                      placeholder="Enter your secure passphrase"
+                      className="relative w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-300 text-base"
+                      placeholder="Enter your password"
+                      disabled={isLoading}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/40 hover:text-white/80 transition-colors z-10"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
               )}
 
-              {/* Role Selector */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-6 tracking-widest uppercase text-center">
-                  Choose Your Path
-                </label>
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Guardian */}
-                  <div className="relative group">
-                    <GlassButton
-                      variant={role === 'admin' ? 'primary' : 'secondary'}
-                      onClick={() => setRole('admin')}
-                      className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
-                        role === 'admin'
-                          ? 'ring-2 ring-violet-500/50 dark:ring-violet-400/50 bg-gradient-to-br from-violet-500/30 to-purple-600/30 dark:from-violet-500/40 dark:to-purple-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
-                      }`}
-                    >
-                      <Shield className={`h-8 w-8 mb-3 ${role === 'admin' ? 'text-violet-600 dark:text-violet-300 animate-pulse' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Guardian</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Administrator</span>
-                    </GlassButton>
-                  </div>
-                  
-                  {/* Builder */}
-                  <div className="relative group">
-                    <GlassButton
-                      variant={role === 'member' ? 'accent' : 'secondary'}
-                      onClick={() => setRole('member')}
-                      className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
-                        role === 'member'
-                          ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50 bg-gradient-to-br from-blue-500/30 to-cyan-600/30 dark:from-blue-500/40 dark:to-cyan-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
-                      }`}
-                    >
-                      <UserCheck className={`h-8 w-8 mb-3 ${role === 'member' ? 'text-blue-600 dark:text-blue-300 animate-bounce' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Builder</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Member</span>
-                    </GlassButton>
-                  </div>
-                </div>
+              {/* Login Button */}
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`relative w-full py-4 rounded-2xl font-bold text-white text-lg overflow-hidden group transition-all duration-300 active:scale-[0.98] ${
+                    isLoading
+                      ? 'bg-white/10 cursor-not-allowed'
+                      : role === 'admin'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shadow-purple-500/30'
+                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/30'
+                  }`}
+                >
+                  {!isLoading && (
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  )}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <div className="relative flex items-center justify-center space-x-2">
+                      <span>Sign In</span>
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
+                </button>
               </div>
-            </div>
 
-            {error && (
-              <GlassCard className="p-6 bg-red-500/30 dark:bg-red-500/40 border-red-400/50 dark:border-red-400/60 border rounded-2xl backdrop-blur-2xl shadow-xl animate-shake">
-                <p className="text-sm text-red-700 dark:text-red-200 font-light tracking-wider text-center">{error}</p>
-              </GlassCard>
-            )}
-
-            {/* Submit */}
-            <GlassButton
-              type="submit"
-              variant="primary"
-              disabled={isLoading}
-              className="w-full flex justify-center items-center py-6 text-lg font-light transition-all duration-500 hover:shadow-2xl rounded-2xl backdrop-blur-2xl shadow-xl tracking-widest uppercase hover:scale-105 bg-gradient-to-r from-violet-600/90 to-blue-600/90 dark:from-violet-500/80 dark:to-blue-500/80 border-2 border-white/40 dark:border-white/20 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  <LogIn className="h-6 w-6 mr-4" />
-                  Enter Collective
-                </>
-              )}
-            </GlassButton>
-          </form>
+              {/* Helper Text */}
+              <div className="text-center">
+                <p className="text-xs text-white/50">
+                  {role === 'admin' 
+                    ? 'Secure admin access with credentials'
+                    : 'Quick member access with your name'
+                  }
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Animations */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
+      <style jsx>{`
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 0.15;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.25;
+            transform: scale(1.05);
+          }
         }
-        @keyframes fadeOut {
-          0% { opacity: 0.6; }
-          100% { opacity: 0; }
+
+        @keyframes pulse-slow-delayed {
+          0%, 100% {
+            opacity: 0.15;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.25;
+            transform: scale(1.05);
+          }
         }
-        @keyframes fadeIn {
-          0% { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
+
+        @keyframes pulse-slower {
+          0%, 100% {
+            opacity: 0.1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.2;
+            transform: scale(1.1);
+          }
         }
+
+        @keyframes pulse-gentle {
+          0%, 100% {
+            opacity: 0.5;
+          }
+          50% {
+            opacity: 0.8;
+          }
+        }
+
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+          0%, 100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-8px);
+          }
+          75% {
+            transform: translateX(8px);
+          }
         }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
+
+        @keyframes slide-down {
+          from {
+            opacity: 0;
+            max-height: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            max-height: 500px;
+            transform: translateY(0);
+          }
         }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+
+        .animate-pulse-slow-delayed {
+          animation: pulse-slow-delayed 5s ease-in-out infinite;
+          animation-delay: 1s;
+        }
+
+        .animate-pulse-slower {
+          animation: pulse-slower 6s ease-in-out infinite;
+          animation-delay: 2s;
+        }
+
+        .animate-pulse-gentle {
+          animation: pulse-gentle 2s ease-in-out infinite;
+        }
+
+        .animate-fade-in-up {
+          animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+          opacity: 0;
+        }
+
+        .animate-fade-in-up-delay {
+          animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+          opacity: 0;
+        }
+
+        .animate-fade-in-up-delay-2 {
+          animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+          opacity: 0;
+        }
+
         .animate-shake {
-          animation: shake 0.5s ease-in-out;
+          animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        .animate-slide-down {
+          animation: slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        * {
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        @supports (-webkit-touch-callout: none) {
+          input, textarea, select {
+            font-size: 16px !important;
+          }
         }
       `}</style>
     </div>
