@@ -4,6 +4,7 @@ import { User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard, Edit3,
 import { useApp } from '../../context/AppContext';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import ShaderBackground from '../common/ShaderBackground';
+import WarningBanner from '../common/WarningBanner';
 
 // Professional Status Badge Component
 const StatusBadge = React.memo(({ status, text }: { status: 'success' | 'warning' | 'error' | 'info', text: string }) => {
@@ -93,7 +94,19 @@ const MetricCard = React.memo(({
 MetricCard.displayName = 'MetricCard';
 
 export default function MemberDashboard() {
-  const { currentUser, payments, loans, groupStats, logout, loading, updateUsername, isDarkMode, toggleDarkMode } = useApp();
+  const { 
+    currentUser, 
+    payments, 
+    loans, 
+    groupStats, 
+    logout, 
+    loading, 
+    updateUsername, 
+    isDarkMode, 
+    toggleDarkMode,
+    memberWarnings,
+    markWarningAsRead
+  } = useApp();
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isEditingUsername, setIsEditingUsername] = useState(false);
@@ -385,6 +398,14 @@ export default function MemberDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+        
+        {/* Warning Banner */}
+        <WarningBanner 
+          warnings={memberWarnings}
+          onDismiss={markWarningAsRead}
+          isDarkMode={isDarkMode}
+        />
+
         {/* Success Message */}
         {usernameMessage && (
           <div className={`mb-6 p-4 rounded-xl ${
@@ -588,196 +609,199 @@ export default function MemberDashboard() {
               }`}>
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                   My Loans
-                </h3><p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                </h3>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {myLoans.length} total
                 </p>
-              </div><div className="p-6">
-            {myLoans.length > 0 ? (
-              <div className="space-y-4">
-                {myLoans.map((loan) => {
-                  const outstanding = loan.amount - loan.repaidAmount;
-                  const progress = (loan.repaidAmount / loan.amount) * 100;
-                  const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
-                  
-                  return (
-                    <div
-                      key={loan.id}
-                      className={`p-4 rounded-xl border-2 transition-all duration-300 ${
-                        loan.status === 'repaid'
-                          ? isDarkMode 
-                            ? 'bg-emerald-500/10 border-emerald-500/30'
-                            : 'bg-emerald-50 border-emerald-200'
-                          : isOverdue
-                          ? isDarkMode
-                            ? 'bg-red-500/10 border-red-500/30'
-                            : 'bg-red-50 border-red-200'
-                          : isDarkMode
-                          ? 'bg-blue-500/10 border-blue-500/30'
-                          : 'bg-blue-50 border-blue-200'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            LKR {loan.amount.toLocaleString()}
-                          </p>
-                          <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {new Date(loan.issueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        </div>
-                        <StatusBadge
-                          status={
-                            loan.status === 'repaid' ? 'success' : 
-                            isOverdue ? 'error' : 'warning'
-                          }
-                          text={
-                            loan.status === 'repaid' ? 'Repaid' : 
-                            isOverdue ? 'Overdue' : 'Active'
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2 mb-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Repaid</span>
-                          <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            LKR {loan.repaidAmount.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Outstanding</span>
-                          <span className={`font-semibold ${
-                            outstanding > 0
-                              ? isDarkMode ? 'text-orange-400' : 'text-orange-600'
-                              : isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
-                          }`}>
-                            LKR {outstanding.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Due</span>
-                          <span className={`font-semibold ${
-                            isOverdue 
-                              ? isDarkMode ? 'text-red-400' : 'text-red-600'
-                              : isDarkMode ? 'text-white' : 'text-gray-900'
-                          }`}>
-                            {new Date(loan.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Progress */}
-                      <div>
-                        <div className="flex items-center justify-between text-xs mb-1.5">
-                          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Repayment Progress</span>
-                          <span className={`font-bold ${
-                            loan.status === 'repaid'
-                              ? 'text-emerald-500'
-                              : isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                          }`}>
-                            {Math.round(progress)}%
-                          </span>
-                        </div>
-                        <div className={`w-full h-2 rounded-full overflow-hidden ${
-                          isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-                        }`}>
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              loan.status === 'repaid'
-                                ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                                : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                            }`}
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${
-                  isDarkMode ? 'bg-gray-700/30' : 'bg-gray-100'
+              <div className="p-6">
+                {myLoans.length > 0 ? (
+                  <div className="space-y-4">
+                    {myLoans.map((loan) => {
+                      const outstanding = loan.amount - loan.repaidAmount;
+                      const progress = (loan.repaidAmount / loan.amount) * 100;
+                      const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
+                      
+                      return (
+                        <div
+                          key={loan.id}
+                          className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                            loan.status === 'repaid'
+                              ? isDarkMode 
+                                ? 'bg-emerald-500/10 border-emerald-500/30'
+                                : 'bg-emerald-50 border-emerald-200'
+                              : isOverdue
+                              ? isDarkMode
+                                ? 'bg-red-500/10 border-red-500/30'
+                                : 'bg-red-50 border-red-200'
+                              : isDarkMode
+                              ? 'bg-blue-500/10 border-blue-500/30'
+                              : 'bg-blue-50 border-blue-200'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                LKR {loan.amount.toLocaleString()}
+                              </p>
+                              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {new Date(loan.issueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </p>
+                            </div>
+                            <StatusBadge
+                              status={
+                                loan.status === 'repaid' ? 'success' : 
+                                isOverdue ? 'error' : 'warning'
+                              }
+                              text={
+                                loan.status === 'repaid' ? 'Repaid' : 
+                                isOverdue ? 'Overdue' : 'Active'
+                              }
+                            />
+                          </div>
+
+                          <div className="space-y-2 mb-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Repaid</span>
+                              <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                LKR {loan.repaidAmount.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Outstanding</span>
+                              <span className={`font-semibold ${
+                                outstanding > 0
+                                  ? isDarkMode ? 'text-orange-400' : 'text-orange-600'
+                                  : isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
+                              }`}>
+                                LKR {outstanding.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Due</span>
+                              <span className={`font-semibold ${
+                                isOverdue 
+                                  ? isDarkMode ? 'text-red-400' : 'text-red-600'
+                                  : isDarkMode ? 'text-white' : 'text-gray-900'
+                              }`}>
+                                {new Date(loan.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Progress */}
+                          <div>
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Repayment Progress</span>
+                              <span className={`font-bold ${
+                                loan.status === 'repaid'
+                                  ? 'text-emerald-500'
+                                  : isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                              }`}>
+                                {Math.round(progress)}%
+                              </span>
+                            </div>
+                            <div className={`w-full h-2 rounded-full overflow-hidden ${
+                              isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                            }`}>
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  loan.status === 'repaid'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                                    : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                                }`}
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-100'
+                    }`}>
+                      <CreditCard className={`h-12 w-12 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                    </div>
+                    <h4 className={`text-base font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      No Loans
+                    </h4>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      You don't have any active loans
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Group Stats Footer */}
+        <div className={`mt-6 rounded-2xl overflow-hidden ${
+          isDarkMode 
+            ? 'bg-gray-800/40 border border-gray-700/50' 
+            : 'bg-white/40 border border-white/60'
+        } backdrop-blur-xl shadow-lg`}>
+          <div className={`px-6 py-4 border-b ${
+            isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
+          }`}>
+            <div className="flex items-center space-x-2">
+              <Activity className={`h-5 w-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Group Overview
+              </h3>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
+                  isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'
                 }`}>
-                  <CreditCard className={`h-12 w-12 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <User className={`h-6 w-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
-                <h4 className={`text-base font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  No Loans
-                </h4>
+                <p className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {groupStats.totalMembers}
+                </p>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  You don't have any active loans
+                  Active Members
                 </p>
               </div>
-            )}
+              
+              <div className="text-center">
+                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
+                  isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'
+                }`}>
+                  <DollarSign className={`h-6 w-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                </div>
+                <p className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  LKR {groupStats.monthlyCollection.toLocaleString()}
+                </p>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Monthly Collection
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
+                  isDarkMode ? 'bg-purple-500/10' : 'bg-purple-50'
+                }`}>
+                  <Award className={`h-6 w-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                </div>
+                <p className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {groupStats.activeLoans}
+                </p>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Active Loans
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    {/* Group Stats Footer */}
-    <div className={`mt-6 rounded-2xl overflow-hidden ${
-      isDarkMode 
-        ? 'bg-gray-800/40 border border-gray-700/50' 
-        : 'bg-white/40 border border-white/60'
-    } backdrop-blur-xl shadow-lg`}>
-      <div className={`px-6 py-4 border-b ${
-        isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
-      }`}>
-        <div className="flex items-center space-x-2">
-          <Activity className={`h-5 w-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Group Overview
-          </h3>
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
-              isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'
-            }`}>
-              <User className={`h-6 w-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-            </div>
-            <p className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              {groupStats.totalMembers}
-            </p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Active Members
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
-              isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'
-            }`}>
-              <DollarSign className={`h-6 w-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-            </div>
-            <p className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              LKR {groupStats.monthlyCollection.toLocaleString()}
-            </p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Monthly Collection
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
-              isDarkMode ? 'bg-purple-500/10' : 'bg-purple-50'
-            }`}>
-              <Award className={`h-6 w-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-            </div>
-            <p className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              {groupStats.activeLoans}
-            </p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Active Loans
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>);
+  );
 }

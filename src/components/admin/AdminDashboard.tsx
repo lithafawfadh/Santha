@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet, TrendingUp, TrendingDown, AlertCircle, CheckCircle, Clock, Award, Target } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet, TrendingUp, TrendingDown, AlertCircle, CheckCircle, Clock, Award, Target, Bell } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
@@ -10,6 +10,7 @@ import MemberManagement from './MemberManagement';
 import Reports from './Reports';
 import DonationManagement from './DonationManagement';
 import ShaderBackground from '../common/ShaderBackground';
+import WarningManagement from './WarningManagement';
 
 export default function AdminDashboard() {
   const { groupStats, currentUser, logout, loading, isDarkMode, toggleDarkMode, updateAdminProfile, payments, loans, allUsers, donations } = useApp();
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
   const [profileMessage, setProfileMessage] = useState('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
+  // Updated tabs configuration with Warnings (using Bell icon)
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'payments', label: 'Payments', icon: DollarSign },
@@ -29,6 +31,7 @@ export default function AdminDashboard() {
     { id: 'donations', label: 'Donations', icon: Gift },
     { id: 'members', label: 'Members', icon: Users },
     { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'warnings', label: 'Warnings', icon: Bell },
   ];
 
   // Calculate advanced analytics
@@ -304,6 +307,7 @@ export default function AdminDashboard() {
                   <Moon className="h-4 w-4 text-white" />
                 )}
               </GlassButton>
+              
               
               {/* Google Sheet Link */}
               <GlassButton
@@ -584,6 +588,7 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+            
 
             {/* Recent Activity */}
             <div className={`rounded-2xl backdrop-blur-xl border shadow-2xl p-6 transition-all duration-300 ${
@@ -633,6 +638,7 @@ export default function AdminDashboard() {
         {activeTab === 'donations' && <DonationManagement />}
         {activeTab === 'members' && <MemberManagement />}
         {activeTab === 'reports' && <Reports />}
+        {activeTab === 'warnings' && <WarningManagement />}
       </div>
     </div>
   );

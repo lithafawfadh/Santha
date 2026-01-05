@@ -29,6 +29,138 @@ export const dataService = {
       deactivationReason: user.deactivation_reason || undefined
     }));
   },
+  // Warnings
+async getWarnings(): Promise<Warning[]> {
+  const { data, error } = await supabase
+    .from('warnings')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching warnings:', error);
+    return [];
+  }
+
+  return data.map(warning => ({
+    id: warning.id,
+    memberId: warning.member_id,
+    title: warning.title,
+    message: warning.message,
+    type: warning.type as 'payment' | 'loan' | 'general' | 'urgent',
+    createdBy: warning.created_by,
+    createdAt: warning.created_at,
+    isRead: warning.is_read,
+    expiresAt: warning.expires_at || undefined
+  }));
+},
+
+async getMemberWarnings(memberId: string): Promise<Warning[]> {
+  const { data, error } = await supabase
+    .from('warnings')
+    .select('*')
+    .eq('member_id', memberId)
+    .eq('is_read', false)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching member warnings:', error);
+    return [];
+  }
+
+  return data.map(warning => ({
+    id: warning.id,
+    memberId: warning.member_id,
+    title: warning.title,
+    message: warning.message,
+    type: warning.type as 'payment' | 'loan' | 'general' | 'urgent',
+    createdBy: warning.created_by,
+    createdAt: warning.created_at,
+    isRead: warning.is_read,
+    expiresAt: warning.expires_at || undefined
+  }));
+},
+
+async addWarning(warning: Omit<Warning, 'id' | 'createdAt' | 'isRead'>): Promise<Warning | null> {
+  const { data, error } = await supabase
+    .from('warnings')
+    .insert({
+      member_id: warning.memberId,
+      title: warning.title,
+      message: warning.message,
+      type: warning.type,
+      created_by: warning.createdBy,
+      expires_at: warning.expiresAt || null
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding warning:', error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    memberId: data.member_id,
+    title: data.title,
+    message: data.message,
+    type: data.type as 'payment' | 'loan' | 'general' | 'urgent',
+    createdBy: data.created_by,
+    createdAt: data.created_at,
+    isRead: data.is_read,
+    expiresAt: data.expires_at || undefined
+  };
+},
+
+async markWarningAsRead(warningId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('warnings')
+    .update({ is_read: true })
+    .eq('id', warningId);
+
+  if (error) {
+    console.error('Error marking warning as read:', error);
+    return false;
+  }
+
+  return true;
+},
+
+async deleteWarning(warningId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('warnings')
+    .delete()
+    .eq('id', warningId);
+
+  if (error) {
+    console.error('Error deleting warning:', error);
+    return false;
+  }
+
+  return true;
+},
+
+async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>): Promise<boolean> {
+  const warnings = memberIds.map(memberId => ({
+    member_id: memberId,
+    title: warning.title,
+    message: warning.message,
+    type: warning.type,
+    created_by: warning.createdBy,
+    expires_at: warning.expiresAt || null
+  }));
+
+  const { error } = await supabase
+    .from('warnings')
+    .insert(warnings);
+
+  if (error) {
+    console.error('Error sending bulk warnings:', error);
+    return false;
+  }
+
+  return true;
+},
 
   async addUser(user: Omit<User, 'id'>): Promise<User | null> {
     const { data, error } = await supabase

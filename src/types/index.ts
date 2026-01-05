@@ -12,6 +12,17 @@ export interface User {
   deactivatedBy?: string;
   deactivationReason?: string;
 }
+export interface Warning {
+  id: string;
+  memberId: string;
+  title: string;
+  message: string;
+  type: 'payment' | 'loan' | 'general' | 'urgent';
+  createdBy: string;
+  createdAt: string;
+  isRead: boolean;
+  expiresAt?: string;
+}
 
 export interface Payment {
   id: string;

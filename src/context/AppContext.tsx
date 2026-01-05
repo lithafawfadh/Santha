@@ -32,6 +32,12 @@ interface AppContextType {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   updateLoanDueDate: (loanId: string, newDueDate: string) => Promise<void>;
+    warnings: Warning[];
+  memberWarnings: Warning[];
+  addWarning: (warning: Omit<Warning, 'id' | 'createdAt' | 'isRead'>) => Promise<void>;
+  sendBulkWarnings: (memberIds: string[], warning: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>) => Promise<void>;
+  markWarningAsRead: (warningId: string) => Promise<void>;
+  deleteWarning: (warningId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -72,6 +78,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
   const [isDarkMode, setIsDarkMode] = useLocalStorage(darkModeKey, false);
+  const [warnings, setWarnings] = useState<Warning[]>([]);
   
   const [groupStats, setGroupStats] = useState<GroupStats>({
     totalMembers: 0,
@@ -80,6 +87,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     activeLoans: 0,
     totalLoanAmount: 0
   });
+
+  const memberWarnings = useMemo(
+  () => warnings.filter(w => w.memberId === currentUser?.id && !w.isRead),
+  [warnings, currentUser?.id]
+);
 
   const activeMembers = useMemo(
     () => allUsers.filter(user => user.role === 'member' && user.status === 'active'),
@@ -132,26 +144,28 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
     });
   };
 
-  const refreshData = async () => {
-    try {
-      setLoading(true);
-      const [usersData, paymentsData, loansData, donationsData] = await Promise.all([
-        dataService.getUsers(),
-        dataService.getPayments(),
-        dataService.getLoans(),
-        dataService.getDonations()
-      ]);
+const refreshData = async () => {
+  try {
+    setLoading(true);
+    const [usersData, paymentsData, loansData, donationsData, warningsData] = await Promise.all([
+      dataService.getUsers(),
+      dataService.getPayments(),
+      dataService.getLoans(),
+      dataService.getDonations(),
+      dataService.getWarnings()
+    ]);
 
-      setAllUsers(usersData);
-      setPayments(paymentsData);
-      setLoans(loansData);
-      setDonations(donationsData);
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setAllUsers(usersData);
+    setPayments(paymentsData);
+    setLoans(loansData);
+    setDonations(donationsData);
+    setWarnings(warningsData);
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     refreshData();
@@ -174,6 +188,51 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
       return false;
     }
   };
+  const addWarning = async (warningData: Omit<Warning, 'id' | 'createdAt' | 'isRead'>) => {
+  try {
+    const newWarning = await dataService.addWarning(warningData);
+    if (newWarning) {
+      setWarnings(prev => [newWarning, ...prev]);
+    }
+  } catch (error) {
+    console.error('Error adding warning:', error);
+  }
+};
+
+const sendBulkWarnings = async (memberIds: string[], warningData: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>) => {
+  try {
+    const success = await dataService.sendBulkWarnings(memberIds, warningData);
+    if (success) {
+      await refreshData(); // Refresh to get new warnings
+    }
+  } catch (error) {
+    console.error('Error sending bulk warnings:', error);
+  }
+};
+
+const markWarningAsRead = async (warningId: string) => {
+  try {
+    const success = await dataService.markWarningAsRead(warningId);
+    if (success) {
+      setWarnings(prev => prev.map(w => 
+        w.id === warningId ? { ...w, isRead: true } : w
+      ));
+    }
+  } catch (error) {
+    console.error('Error marking warning as read:', error);
+  }
+};
+
+const deleteWarning = async (warningId: string) => {
+  try {
+    const success = await dataService.deleteWarning(warningId);
+    if (success) {
+      setWarnings(prev => prev.filter(w => w.id !== warningId));
+    }
+  } catch (error) {
+    console.error('Error deleting warning:', error);
+  }
+};
 
   const logout = () => {
     setCurrentUser(null);
@@ -401,6 +460,12 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
       updateAdminProfile,
       isDarkMode,
       updateLoanDueDate,
+          warnings,
+    memberWarnings,
+    addWarning,
+    sendBulkWarnings,
+    markWarningAsRead,
+    deleteWarning,
       toggleDarkMode
     }}>
       {children}
