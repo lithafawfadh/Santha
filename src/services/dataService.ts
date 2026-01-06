@@ -1,9 +1,20 @@
 import { supabase } from '../lib/supabase';
 import { User, Payment, Loan, Donation } from '../types';
 
+// Performance optimization: Simple cache with 30-second duration
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 30000; // 30 seconds
+
 export const dataService = {
   // Users
   async getUsers(): Promise<User[]> {
+    const cacheKey = 'users';
+    const cached = cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -11,10 +22,10 @@ export const dataService = {
 
     if (error) {
       console.error('Error fetching users:', error);
-      return [];
+      return cached?.data || [];
     }
 
-    return data.map(user => ({
+    const result = data.map(user => ({
       id: user.id,
       name: user.name,
       username: user.username,
@@ -28,9 +39,19 @@ export const dataService = {
       deactivatedBy: user.deactivated_by || undefined,
       deactivationReason: user.deactivation_reason || undefined
     }));
+    
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   },
   // Warnings
 async getWarnings(): Promise<Warning[]> {
+  const cacheKey = 'warnings';
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  
   const { data, error } = await supabase
     .from('warnings')
     .select('*')
@@ -38,10 +59,10 @@ async getWarnings(): Promise<Warning[]> {
 
   if (error) {
     console.error('Error fetching warnings:', error);
-    return [];
+    return cached?.data || [];
   }
 
-  return data.map(warning => ({
+  const result = data.map(warning => ({
     id: warning.id,
     memberId: warning.member_id,
     title: warning.title,
@@ -52,6 +73,9 @@ async getWarnings(): Promise<Warning[]> {
     isRead: warning.is_read,
     expiresAt: warning.expires_at || undefined
   }));
+  
+  cache.set(cacheKey, { data: result, timestamp: Date.now() });
+  return result;
 },
 
 async getMemberWarnings(memberId: string): Promise<Warning[]> {
@@ -333,6 +357,13 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
   // Payments
   async getPayments(): Promise<Payment[]> {
+    const cacheKey = 'payments';
+    const cached = cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    
     const { data, error } = await supabase
       .from('payments')
       .select('*')
@@ -341,10 +372,10 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
     if (error) {
       console.error('Error fetching payments:', error);
-      return [];
+      return cached?.data || [];
     }
 
-    return data.map(payment => ({
+    const result = data.map(payment => ({
       id: payment.id,
       memberId: payment.member_id,
       month: payment.month,
@@ -354,6 +385,9 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       paidDate: payment.paid_date || undefined,
       markedBy: payment.marked_by || undefined
     }));
+    
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   },
 
   async updatePayment(paymentId: string, paid: boolean, markedBy?: string): Promise<boolean> {
@@ -398,6 +432,13 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
   // Loans
   async getLoans(): Promise<Loan[]> {
+    const cacheKey = 'loans';
+    const cached = cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    
     const { data, error } = await supabase
       .from('loans')
       .select('*')
@@ -405,10 +446,10 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
     if (error) {
       console.error('Error fetching loans:', error);
-      return [];
+      return cached?.data || [];
     }
 
-    return data.map(loan => ({
+    const result = data.map(loan => ({
       id: loan.id,
       memberId: loan.member_id,
       amount: loan.amount,
@@ -418,6 +459,9 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       status: loan.status as 'active' | 'repaid' | 'overdue',
       issuedBy: loan.issued_by
     }));
+    
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   },
 
   async addLoan(loan: Omit<Loan, 'id'>): Promise<Loan | null> {
@@ -487,6 +531,13 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
   // Donations
   async getDonations(): Promise<Donation[]> {
+    const cacheKey = 'donations';
+    const cached = cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    
     const { data, error } = await supabase
       .from('donations')
       .select('*')
@@ -494,16 +545,19 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
     if (error) {
       console.error('Error fetching donations:', error);
-      return [];
+      return cached?.data || [];
     }
 
-    return data.map(donation => ({
+    const result = data.map(donation => ({
       id: donation.id,
       amount: donation.amount,
       date: donation.date,
       description: donation.description,
       addedBy: donation.added_by
     }));
+    
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   },
 
   async addDonation(donation: Omit<Donation, 'id'>): Promise<Donation | null> {
