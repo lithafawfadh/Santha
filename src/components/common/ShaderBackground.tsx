@@ -1,7 +1,7 @@
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
-function ShaderBackground() {
+export default function ShaderBackground() {
   const [isMobile, setIsMobile] = useState(false);
   const { isDarkMode } = useApp();
 
@@ -376,5 +376,3 @@ function ShaderBackground() {
     </>
   );
 }
-
-export default memo(ShaderBackground);

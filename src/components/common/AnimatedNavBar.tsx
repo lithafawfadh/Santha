@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
@@ -15,10 +15,10 @@ interface AnimatedNavBarProps {
   className?: string;
 }
 
-function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: AnimatedNavBarProps) {
+export default function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: AnimatedNavBarProps) {
   return (
     <div className={`w-fit ${className}`}>
-      <div className="flex items-center gap-3 backdrop-blur-lg bg-slate-900 bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-30 py-1 px-1 rounded-full shadow-lg">
+      <div className="flex items-center gap-3 backdrop-blur-lg bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-700 dark:border-opacity-30 py-1 px-1 rounded-full shadow-lg">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = activeItem === item.id;
@@ -29,8 +29,8 @@ function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: Ani
               onClick={() => onItemSelect(item.id)}
               className={`relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors ${
                 isActive
-                  ? 'text-white dark:text-blue-400'
-                  : 'text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-blue-400'
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'
               }`}
             >
               <span className="hidden md:flex items-center gap-2">
@@ -43,13 +43,12 @@ function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: Ani
               {isActive && (
                 <motion.div
                   layoutId="lamp"
-                  className="absolute inset-0 w-full bg-blue-500 bg-opacity-30 dark:bg-blue-600 dark:bg-opacity-20 rounded-full -z-10"
+                  className="absolute inset-0 w-full bg-blue-500 bg-opacity-10 dark:bg-blue-600 dark:bg-opacity-20 rounded-full -z-10"
                   initial={false}
                   transition={{
                     type: "spring",
-                    stiffness: 400,
-                    damping: 35,
-                    mass: 0.5
+                    stiffness: 300,
+                    damping: 30,
                   }}
                 >
                   <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-500 dark:bg-blue-400 rounded-t-full">
@@ -66,5 +65,3 @@ function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: Ani
     </div>
   );
 }
-
-export default memo(AnimatedNavBar);

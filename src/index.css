@@ -1,46 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Performance optimizations */
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Optimize repaints */
-.backdrop-blur-xl,
-.backdrop-blur-lg {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* Prevent layout shifts */
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* GPU acceleration for animations */
-.grid-background,
-.particle,
-.energy-wave,
-.glow-orb {
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-/* Reduce animation complexity on low-end devices */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+/* Add these to the end of your existing index.css */
 
 @layer utilities {
   .bg-gradient-radial {

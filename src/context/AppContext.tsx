@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { User, Payment, Loan, GroupStats, Donation } from '../types';
 import { authService } from '../services/authService';
 import { dataService } from '../services/dataService';
@@ -116,7 +116,7 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
     console.error('Error updating loan due date:', error);
   }
 };
-  const calculateGroupStats = useCallback(() => {
+  const calculateGroupStats = () => {
     const members = activeMembers;
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -142,7 +142,7 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
       activeLoans: activeLoansData.length,
       totalLoanAmount
     });
-  }, [activeMembers, payments, donations, loans]);
+  };
 
 const refreshData = async () => {
   try {
@@ -172,10 +172,8 @@ const refreshData = async () => {
   }, []);
 
   useEffect(() => {
-    if (allUsers.length > 0) {
-      calculateGroupStats();
-    }
-  }, [payments, loans, donations, allUsers, calculateGroupStats]);
+    calculateGroupStats();
+  }, [payments, loans, donations, allUsers]);
 
   const login = async (username: string, role: 'admin' | 'member', password?: string): Promise<boolean> => {
     try {
