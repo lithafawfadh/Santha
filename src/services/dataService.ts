@@ -1,9 +1,37 @@
 import { supabase } from '../lib/supabase';
 import { User, Payment, Loan, Donation } from '../types';
 
+// Simple in-memory cache with 5 minute expiration
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const cache: { [key: string]: { data: any; timestamp: number } } = {};
+
+function getCachedData<T>(key: string): T | null {
+  const cached = cache[key];
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data as T;
+  }
+  return null;
+}
+
+function setCachedData<T>(key: string, data: T): void {
+  cache[key] = { data, timestamp: Date.now() };
+}
+
+function clearCache(key?: string): void {
+  if (key) {
+    delete cache[key];
+  } else {
+    Object.keys(cache).forEach(k => delete cache[k]);
+  }
+}
+
 export const dataService = {
   // Users
   async getUsers(): Promise<User[]> {
+    // Check cache first
+    const cached = getCachedData<User[]>('users');
+    if (cached) return cached;
+
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -14,7 +42,7 @@ export const dataService = {
       return [];
     }
 
-    return data.map(user => ({
+    const users = data.map(user => ({
       id: user.id,
       name: user.name,
       username: user.username,
@@ -28,6 +56,10 @@ export const dataService = {
       deactivatedBy: user.deactivated_by || undefined,
       deactivationReason: user.deactivation_reason || undefined
     }));
+
+    // Cache the result
+    setCachedData('users', users);
+    return users;
   },
   // Warnings
 async getWarnings(): Promise<Warning[]> {
@@ -163,6 +195,7 @@ async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'membe
 },
 
   async addUser(user: Omit<User, 'id'>): Promise<User | null> {
+    clearCache('users'); // Clear cache when adding user
     const { data, error } = await supabase
       .from('users')
       .insert({
@@ -211,6 +244,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
   return true;
 },
   async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
+    clearCache('users'); // Clear cache when deactivating
     const { error } = await supabase
       .from('users')
       .update({
@@ -230,6 +264,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
   },
 
   async reactivateMember(memberId: string): Promise<boolean> {
+    clearCache('users'); // Clear cache when reactivating
     const { error } = await supabase
       .from('users')
       .update({
@@ -357,6 +392,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
   },
 
   async updatePayment(paymentId: string, paid: boolean, markedBy?: string): Promise<boolean> {
+    clearCache('payments'); // Clear cache when updating payment
     const { error } = await supabase
       .from('payments')
       .update({
