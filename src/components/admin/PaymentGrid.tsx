@@ -1,13 +1,29 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback, memo } from 'react';
 import { Check, Search, Download, CheckCircle2, AlertTriangle, TrendingUp, Filter, ArrowUp, Sparkles, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassButton from '../common/GlassButton';
 
-export default function PaymentGrid() {
-  const { payments, updatePayment, currentUser, allUsers } = useApp();
-  
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [searchTerm, setSearchTerm] = useState('');
+// Debounce hook for search optimization
+function useDebounce(value: string, delay: number) {
+const [debouncedValue, setDebouncedValue] = useState(value);
+
+useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+function PaymentGrid() {
+  const { payments, updatePayment, currentUser, allUsers } = useApp();
+  
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [searchInput, setSearchInput] = useState('');
+  const searchTerm = useDebounce(searchInput, 300); // 300ms debounce
   const [showOnlyUnpaid, setShowOnlyUnpaid] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [justPaidCell, setJustPaidCell] = useState<string | null>(null);
@@ -129,7 +145,7 @@ export default function PaymentGrid() {
     return { paidCountYTD, paidCountTotal, streak, unpaidCount, totalPaid };
   };
 
-  const togglePayment = async (memberId: string, month: string) => {
+  const togglePayment = useCallback(async (memberId: string, month: string) => {
     const paymentId = `${memberId}_${month}_${selectedYear}`;
     const currentStatus = paymentMatrix[memberId]?.[month];
     const newStatus = !currentStatus;
@@ -153,11 +169,11 @@ export default function PaymentGrid() {
         }
       }
     } catch (error) {
-      console.error('Failed to update payment:', error);
+    console.error('Failed to update payment:', error);
     }
-  };
+    }, [paymentMatrix, selectedYear, updatePayment, currentUser, members]);
 
-  const markAllAsPaidForCurrentMonth = async () => {
+  const markAllAsPaidForCurrentMonth = useCallback(async () => {
     if (!window.confirm(`Mark all members as paid for ${currentMonth}?`)) return;
     
     for (const member of members) {
@@ -166,14 +182,14 @@ export default function PaymentGrid() {
       }
     }
     triggerConfetti();
-  };
+    }, [members, paymentMatrix, currentMonth, togglePayment]);
 
   const triggerConfetti = () => {
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
   };
 
-  const exportToCSV = () => {
+  const exportToCSV = useCallback(() => {
     const headers = ['Member', ...months, 'Total Paid', 'Percentage'];
     const rows = filteredMembers.map(member => {
       const { paidCountTotal } = getMemberStats(member.id);
@@ -196,7 +212,7 @@ export default function PaymentGrid() {
     link.href = url;
     link.download = `payment-tracking-${selectedYear}.csv`;
     link.click();
-  };
+    }, [filteredMembers, selectedYear, paymentMatrix, months]);
 
   // Scroll event listener
   useEffect(() => {
@@ -317,13 +333,13 @@ export default function PaymentGrid() {
               <input
                 type="text"
                 placeholder="Search members by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white placeholder-white/50 transition-all"
               />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
+              {searchInput && (
+              <button
+              onClick={() => setSearchInput('')}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white"
                 >
                   <X className="h-4 w-4" />
@@ -526,7 +542,7 @@ export default function PaymentGrid() {
                       <Search className="h-12 w-12 text-white/30" />
                       <p className="text-white/70 text-lg">No members found matching "{searchTerm}"</p>
                       <button
-                        onClick={() => setSearchTerm('')}
+                      onClick={() => setSearchInput('')}
                         className="text-blue-300 hover:text-blue-200 text-sm underline"
                       >
                         Clear search
@@ -741,3 +757,5 @@ All Paid!
   `}</style>
 </div>);
 }
+
+export default memo(PaymentGrid);
