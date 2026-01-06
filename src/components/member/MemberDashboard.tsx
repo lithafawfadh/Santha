@@ -493,6 +493,17 @@ export default function MemberDashboard() {
                 </select>
               </div>
 
+              {/* 2024 Information Message */}
+              {selectedYear === 2024 && (
+                <div className={`mx-6 mt-4 p-3 rounded-lg text-center text-sm ${
+                  isDarkMode 
+                    ? 'bg-blue-900/30 text-blue-200 border border-blue-700/50' 
+                    : 'bg-blue-50 text-blue-800 border border-blue-200'
+                }`}>
+                  💡 <strong>Note:</strong> Our group started in May 2024. Payment tracking begins from each member's join date.
+                </div>
+              )}
+
               {/* Calendar Grid */}
               <div className="p-6">
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
