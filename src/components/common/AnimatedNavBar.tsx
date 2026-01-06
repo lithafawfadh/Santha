@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
@@ -15,7 +15,7 @@ interface AnimatedNavBarProps {
   className?: string;
 }
 
-export default function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: AnimatedNavBarProps) {
+function AnimatedNavBar({ items, activeItem, onItemSelect, className = '' }: AnimatedNavBarProps) {
   return (
     <div className={`w-fit ${className}`}>
       <div className="flex items-center gap-3 backdrop-blur-lg bg-slate-900 bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-30 py-1 px-1 rounded-full shadow-lg">
@@ -47,8 +47,9 @@ export default function AnimatedNavBar({ items, activeItem, onItemSelect, classN
                   initial={false}
                   transition={{
                     type: "spring",
-                    stiffness: 300,
-                    damping: 30,
+                    stiffness: 400,
+                    damping: 35,
+                    mass: 0.5
                   }}
                 >
                   <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-500 dark:bg-blue-400 rounded-t-full">
@@ -65,3 +66,5 @@ export default function AnimatedNavBar({ items, activeItem, onItemSelect, classN
     </div>
   );
 }
+
+export default memo(AnimatedNavBar);
