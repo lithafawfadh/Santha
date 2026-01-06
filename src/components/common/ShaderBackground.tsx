@@ -147,6 +147,14 @@ export default function ShaderBackground() {
       </div>
 
       <style>{`
+        /* Performance optimizations */
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+          }
+        }
+
         /* Gradient animations */
         @keyframes gradient-shift {
           0%, 100% {
@@ -177,22 +185,22 @@ export default function ShaderBackground() {
           }
         }
 
-        /* Floating orbs - optimized */
+        /* Floating orbs - optimized with GPU acceleration */
         @keyframes float-1 {
           0%, 100% {
-            transform: translate(0, 0) scale(1);
+            transform: translate3d(0, 0, 0) scale(1);
           }
           50% {
-            transform: translate(50px, -80px) scale(1.1);
+            transform: translate3d(50px, -80px, 0) scale(1.1);
           }
         }
 
         @keyframes float-3 {
           0%, 100% {
-            transform: translate(0, 0) scale(1);
+            transform: translate3d(0, 0, 0) scale(1);
           }
           50% {
-            transform: translate(70px, -40px) scale(1.1);
+            transform: translate3d(70px, -40px, 0) scale(1.1);
           }
         }
 
@@ -258,6 +266,7 @@ export default function ShaderBackground() {
           height: 3px;
           animation: particle-float 15s ease-in-out infinite;
           will-change: transform, opacity;
+          contain: layout style paint;
         }
 
         .particle-1 { top: 10%; left: 15%; animation-delay: 0s; }
@@ -291,6 +300,7 @@ export default function ShaderBackground() {
           border: 1px solid rgba(139, 92, 246, 0.2);
           animation: wave-pulse 8s ease-in-out infinite;
           will-change: transform, opacity;
+          contain: layout style paint;
         }
 
         .energy-wave-1 {
@@ -322,6 +332,7 @@ export default function ShaderBackground() {
             0 0 10px rgba(6, 182, 212, 0.8),
             0 0 20px rgba(139, 92, 246, 0.6);
           animation: orb-pulse 2s ease-in-out infinite;
+          contain: layout style paint;
         }
 
         .glow-orb-1 { top: 20%; left: 30%; animation-delay: 0s; }
