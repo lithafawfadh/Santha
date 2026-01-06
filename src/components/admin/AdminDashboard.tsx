@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { BarChart3, Users, DollarSign, Calendar, CreditCard, FileText, Settings, Gift, Moon, Sun, Edit3, Save, X, FileSpreadsheet, TrendingUp, TrendingDown, AlertCircle, CheckCircle, Clock, Award, Target, Bell } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
@@ -12,7 +12,7 @@ import DonationManagement from './DonationManagement';
 import ShaderBackground from '../common/ShaderBackground';
 import WarningManagement from './WarningManagement';
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const { groupStats, currentUser, logout, loading, isDarkMode, toggleDarkMode, updateAdminProfile, payments, loans, allUsers, donations } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
     };
   }, [payments, loans, allUsers, donations]);
 
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = useCallback(async () => {
     if (!profileForm.name.trim()) {
       setProfileMessage('Name cannot be empty');
       return;
@@ -154,16 +154,16 @@ export default function AdminDashboard() {
     } finally {
       setIsUpdatingProfile(false);
     }
-  };
+  }, [profileForm, currentUser, updateAdminProfile]);
 
-  const cancelProfileEdit = () => {
+  const cancelProfileEdit = useCallback(() => {
     setIsEditingProfile(false);
     setProfileForm({
       name: currentUser?.name || '',
       password: ''
     });
     setProfileMessage('');
-  };
+  }, [currentUser]);
 
   const statsCards = [
     {
@@ -643,3 +643,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+export default memo(AdminDashboard);
