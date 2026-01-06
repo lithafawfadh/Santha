@@ -273,8 +273,8 @@ export default function AdminDashboard() {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <div>
-                      <h1 className="text-xl font-semibold text-white drop-shadow-lg">Admin Portal</h1>
-                      <p className="text-sm text-white drop-shadow">Welcome, {currentUser?.name}</p>
+                      <h1 className={`text-xl font-semibold drop-shadow-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Admin Portal</h1>
+                      <p className={`text-sm drop-shadow ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>Welcome, {currentUser?.name}</p>
                     </div>
                     <GlassButton
                       variant="secondary"
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
                 {isDarkMode ? (
                   <Sun className="h-4 w-4 text-yellow-400" />
                 ) : (
-                  <Moon className="h-4 w-4 text-white" />
+                  <Moon className="h-4 w-4 text-gray-700" />
                 )}
               </GlassButton>
               
