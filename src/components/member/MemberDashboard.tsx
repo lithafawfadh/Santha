@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback, Suspense } from 'react';
 import { 
   User, 
   DollarSign, 
@@ -25,6 +25,7 @@ import { MeetingReport } from '../../types';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import ShaderBackground from '../common/ShaderBackground';
 import WarningBanner from '../common/WarningBanner';
+import MeetingReportCard from '../common/MeetingReportCard';
 
 // Professional Status Badge Component
 const StatusBadge = React.memo(({ status, text }: { status: 'success' | 'warning' | 'error' | 'info', text: string }) => {
@@ -663,13 +664,14 @@ export default function MemberDashboard() {
             </div>
           </div>
 
-          {/* Loans Section - 1/3 width */}
-          <div className="lg:col-span-1">
+          {/* Loans & Meeting Reports Section - 1/3 width */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Loans Section */}
             <div className={`rounded-2xl overflow-hidden ${
               isDarkMode 
                 ? 'bg-gray-800/40 border border-gray-700/50' 
                 : 'bg-white/40 border border-white/60'
-            } backdrop-blur-xl shadow-lg h-full`}>
+            } backdrop-blur-xl shadow-lg`}>
               <div className={`px-6 py-4 border-b ${
                 isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
               }`}>
@@ -928,6 +930,21 @@ export default function MemberDashboard() {
                 )}
               </div>
             </div>
+
+            {/* Meeting Report Card - NEW */}
+            <Suspense fallback={
+              <div className={`rounded-2xl p-6 ${
+                isDarkMode ? 'bg-gray-800/40 border border-gray-700/50' : 'bg-white/40 border border-white/60'
+              } backdrop-blur-xl shadow-lg animate-pulse`}>
+                <div className="h-32 bg-gray-700/20 rounded"></div>
+              </div>
+            }>
+              <MeetingReportCard
+                latestReport={meetingReports[0] || null}
+                onViewAll={() => setShowMeetingReports(true)}
+                isDarkMode={isDarkMode}
+              />
+            </Suspense>
           </div>
         </div>
 
