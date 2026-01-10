@@ -2,6 +2,11 @@ import React from 'react';
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard, Edit3, X, Moon, Sun, CheckCircle2, Clock, AlertTriangle, ArrowUpRight, Award, Target, Activity } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+// Add to imports (around line 2-3)
+import { FileText } from 'lucide-react'; // Add FileText if not already imported
+import MeetingReportsModal from '../common/MeetingReportsModal';
+import MeetingReportCard from './MeetingReportCard';
+import { MeetingReport } from '../../types';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import ShaderBackground from '../common/ShaderBackground';
 import WarningBanner from '../common/WarningBanner';
