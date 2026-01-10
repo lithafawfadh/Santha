@@ -12,6 +12,7 @@ export interface User {
   deactivatedBy?: string;
   deactivationReason?: string;
 }
+
 export interface Warning {
   id: string;
   memberId: string;
@@ -60,4 +61,16 @@ export interface GroupStats {
   monthlyCollection: number;
   activeLoans: number;
   totalLoanAmount: number;
+}
+
+export interface MeetingReport {
+  id: string;
+  title: string;
+  date: string;
+  agenda: string[];
+  decisions: string[];
+  attendees: string[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
 }
