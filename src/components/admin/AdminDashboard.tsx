@@ -24,15 +24,16 @@ export default function AdminDashboard() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Updated tabs configuration with Warnings (using Bell icon)
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'payments', label: 'Payments', icon: DollarSign },
-    { id: 'loans', label: 'Loans', icon: CreditCard },
-    { id: 'donations', label: 'Donations', icon: Gift },
-    { id: 'members', label: 'Members', icon: Users },
-    { id: 'reports', label: 'Reports', icon: FileText },
-    { id: 'warnings', label: 'Warnings', icon: Bell },
-  ];
+const tabs = [
+  { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'payments', label: 'Payments', icon: DollarSign },
+  { id: 'loans', label: 'Loans', icon: CreditCard },
+  { id: 'donations', label: 'Donations', icon: Gift },
+  { id: 'members', label: 'Members', icon: Users },
+  { id: 'reports', label: 'Reports', icon: FileText },
+  { id: 'warnings', label: 'Warnings', icon: Bell },
+  { id: 'meetings', label: 'Meeting Reports', icon: FileText }, // ADD THIS LINE
+];
 
   // Calculate advanced analytics
   const analytics = useMemo(() => {
