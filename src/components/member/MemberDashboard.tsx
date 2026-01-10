@@ -25,7 +25,7 @@ import { MeetingReport } from '../../types';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import ShaderBackground from '../common/ShaderBackground';
 import WarningBanner from '../common/WarningBanner';
-import MeetingReportCard from '../common/MeetingReportCard';
+import MeetingReportsModal from '../common/MeetingReportsModal';
 
 // Professional Status Badge Component
 const StatusBadge = React.memo(({ status, text }: { status: 'success' | 'warning' | 'error' | 'info', text: string }) => {
