@@ -97,7 +97,20 @@ const [showMeetingReports, setShowMeetingReports] = useState(false);
     </div>
   );
 });
-
+// Load meeting reports
+useEffect(() => {
+  const loadMeetingReports = async () => {
+    try {
+      const { dataService } = await import('../../services/dataService');
+      const reports = await dataService.getMeetingReports();
+      setMeetingReports(reports);
+    } catch (error) {
+      console.error('Error loading meeting reports:', error);
+    }
+  };
+  
+  loadMeetingReports();
+}, []);
 MetricCard.displayName = 'MetricCard';
 
 export default function MemberDashboard() {
