@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import MeetingReportsModal from '../common/MeetingReportsModal';
-import MeetingReportCard from './MeetingReportCard';
 import { MeetingReport } from '../../types';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import ShaderBackground from '../common/ShaderBackground';
@@ -322,7 +321,7 @@ export default function MemberDashboard() {
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              {/* Meeting Reports Icon */}
+              {/* Meeting Reports Icon - Add this after Dark Mode Toggle */}
               <button
                 onClick={() => setShowMeetingReports(true)}
                 className={`p-2.5 rounded-xl transition-all duration-300 relative ${
@@ -513,7 +512,7 @@ export default function MemberDashboard() {
           />
         </div>
 
-        {/* Payment Calendar, Loans & Meeting Reports Grid */}
+        {/* Payment Calendar & Loans Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Payment Calendar - 2/3 width */}
           <div className="lg:col-span-2">
@@ -664,14 +663,13 @@ export default function MemberDashboard() {
             </div>
           </div>
 
-          {/* Loans & Meeting Reports Section - 1/3 width */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Loans Section */}
+          {/* Loans Section - 1/3 width */}
+          <div className="lg:col-span-1">
             <div className={`rounded-2xl overflow-hidden ${
               isDarkMode 
                 ? 'bg-gray-800/40 border border-gray-700/50' 
                 : 'bg-white/40 border border-white/60'
-            } backdrop-blur-xl shadow-lg`}>
+            } backdrop-blur-xl shadow-lg h-full`}>
               <div className={`px-6 py-4 border-b ${
                 isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
               }`}>
@@ -930,21 +928,6 @@ export default function MemberDashboard() {
                 )}
               </div>
             </div>
-
-            {/* Meeting Report Card - NEW */}
-            <React.Suspense fallback={
-              <div className={`rounded-2xl p-6 ${
-                isDarkMode ? 'bg-gray-800/40 border border-gray-700/50' : 'bg-white/40 border border-white/60'
-              } backdrop-blur-xl shadow-lg animate-pulse`}>
-                <div className="h-32 bg-gray-700/20 rounded"></div>
-              </div>
-            }>
-              <MeetingReportCard
-                latestReport={meetingReports[0] || null}
-                onViewAll={() => setShowMeetingReports(true)}
-                isDarkMode={isDarkMode}
-              />
-            </React.Suspense>
           </div>
         </div>
 
