@@ -47,6 +47,8 @@ const MetricCard = React.memo(({
   colorScheme?: 'blue' | 'green' | 'purple' | 'orange' | 'red',
   isDarkMode: boolean 
 }) => {
+  const [meetingReports, setMeetingReports] = useState<MeetingReport[]>([]);
+const [showMeetingReports, setShowMeetingReports] = useState(false);
   const colors = {
     blue: 'from-blue-500 to-cyan-500',
     green: 'from-emerald-500 to-teal-500',
