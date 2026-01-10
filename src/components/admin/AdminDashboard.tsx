@@ -641,6 +641,7 @@ const tabs = [
         {activeTab === 'members' && <MemberManagement />}
         {activeTab === 'reports' && <Reports />}
         {activeTab === 'warnings' && <WarningManagement />}
+        {activeTab === 'meetings' && <MeetingReportsManagement />}
       </div>
     </div>
   );
