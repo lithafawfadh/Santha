@@ -1,11 +1,26 @@
-import React from 'react';
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard, Edit3, X, Moon, Sun, CheckCircle2, Clock, AlertTriangle, ArrowUpRight, Award, Target, Activity } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { 
+  User, 
+  DollarSign, 
+  Calendar, 
+  AlertCircle, 
+  TrendingUp, 
+  CreditCard, 
+  Edit3, 
+  X, 
+  Moon, 
+  Sun, 
+  CheckCircle2, 
+  Clock, 
+  AlertTriangle, 
+  ArrowUpRight, 
+  Award, 
+  Target, 
+  Activity,
+  FileText 
+} from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-// Add to imports (around line 2-3)
-import { FileText } from 'lucide-react'; // Add FileText if not already imported
 import MeetingReportsModal from '../common/MeetingReportsModal';
-import MeetingReportCard from './MeetingReportCard';
 import { MeetingReport } from '../../types';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import ShaderBackground from '../common/ShaderBackground';
@@ -47,8 +62,6 @@ const MetricCard = React.memo(({
   colorScheme?: 'blue' | 'green' | 'purple' | 'orange' | 'red',
   isDarkMode: boolean 
 }) => {
-  const [meetingReports, setMeetingReports] = useState<MeetingReport[]>([]);
-const [showMeetingReports, setShowMeetingReports] = useState(false);
   const colors = {
     blue: 'from-blue-500 to-cyan-500',
     green: 'from-emerald-500 to-teal-500',
@@ -97,20 +110,7 @@ const [showMeetingReports, setShowMeetingReports] = useState(false);
     </div>
   );
 });
-// Load meeting reports
-useEffect(() => {
-  const loadMeetingReports = async () => {
-    try {
-      const { dataService } = await import('../../services/dataService');
-      const reports = await dataService.getMeetingReports();
-      setMeetingReports(reports);
-    } catch (error) {
-      console.error('Error loading meeting reports:', error);
-    }
-  };
-  
-  loadMeetingReports();
-}, []);
+
 MetricCard.displayName = 'MetricCard';
 
 export default function MemberDashboard() {
@@ -134,6 +134,10 @@ export default function MemberDashboard() {
   const [newUsername, setNewUsername] = useState(currentUser?.username || '');
   const [usernameMessage, setUsernameMessage] = useState('');
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
+  
+  // Meeting Reports State
+  const [meetingReports, setMeetingReports] = useState<MeetingReport[]>([]);
+  const [showMeetingReports, setShowMeetingReports] = useState(false);
   
   const userMenuRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -185,6 +189,21 @@ export default function MemberDashboard() {
     month: new Date().getMonth(),
     year: new Date().getFullYear()
   }), []);
+
+  // Load meeting reports
+  useEffect(() => {
+    const loadMeetingReports = async () => {
+      try {
+        const { dataService } = await import('../../services/dataService');
+        const reports = await dataService.getMeetingReports();
+        setMeetingReports(reports);
+      } catch (error) {
+        console.error('Error loading meeting reports:', error);
+      }
+    };
+    
+    loadMeetingReports();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -300,6 +319,22 @@ export default function MemberDashboard() {
                 aria-label="Toggle dark mode"
               >
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+
+              {/* Meeting Reports Icon - Add this after Dark Mode Toggle */}
+              <button
+                onClick={() => setShowMeetingReports(true)}
+                className={`p-2.5 rounded-xl transition-all duration-300 relative ${
+                  isDarkMode
+                    ? 'bg-gray-800 hover:bg-gray-700 text-purple-400'
+                    : 'bg-gray-100 hover:bg-gray-200 text-purple-600'
+                } shadow-sm`}
+                title="Meeting Reports"
+              >
+                <FileText className="h-4 w-4" />
+                {meetingReports.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-purple-500 rounded-full border-2 border-gray-900"></span>
+                )}
               </button>
               
               {/* User Menu */}
@@ -960,6 +995,14 @@ export default function MemberDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Meeting Reports Modal */}
+      <MeetingReportsModal
+        isOpen={showMeetingReports}
+        onClose={() => setShowMeetingReports(false)}
+        reports={meetingReports}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }
