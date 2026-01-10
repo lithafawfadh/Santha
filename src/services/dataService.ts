@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { User, Payment, Loan, Donation } from '../types';
+import { User, Payment, Loan, Donation, MeetingReport } from '../types';
 
 // Performance optimization: Simple cache with 30-second duration
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -586,5 +586,114 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       description: data.description,
       addedBy: data.added_by
     };
+  },
+
+  // Meeting Reports
+  async getMeetingReports(): Promise<MeetingReport[]> {
+    const cacheKey = 'meeting_reports';
+    const cached = cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    
+    const { data, error } = await supabase
+      .from('meeting_reports')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching meeting reports:', error);
+      return cached?.data || [];
+    }
+
+    const result = data.map(report => ({
+      id: report.id,
+      title: report.title,
+      date: report.date,
+      agenda: report.agenda || [],
+      decisions: report.decisions || [],
+      attendees: report.attendees || [],
+      createdBy: report.created_by,
+      createdAt: report.created_at,
+      updatedAt: report.updated_at
+    }));
+    
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
+  },
+
+  async addMeetingReport(report: Omit<MeetingReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<MeetingReport | null> {
+    const { data, error } = await supabase
+      .from('meeting_reports')
+      .insert({
+        title: report.title,
+        date: report.date,
+        agenda: report.agenda,
+        decisions: report.decisions,
+        attendees: report.attendees,
+        created_by: report.createdBy
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding meeting report:', error);
+      return null;
+    }
+
+    cache.delete('meeting_reports'); // Invalidate cache
+    
+    return {
+      id: data.id,
+      title: data.title,
+      date: data.date,
+      agenda: data.agenda || [],
+      decisions: data.decisions || [],
+      attendees: data.attendees || [],
+      createdBy: data.created_by,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
+  },
+
+  async updateMeetingReport(reportId: string, updates: Partial<Omit<MeetingReport, 'id' | 'createdBy' | 'createdAt'>>): Promise<boolean> {
+    const updateData: any = {};
+    
+    if (updates.title) updateData.title = updates.title;
+    if (updates.date) updateData.date = updates.date;
+    if (updates.agenda) updateData.agenda = updates.agenda;
+    if (updates.decisions) updateData.decisions = updates.decisions;
+    if (updates.attendees) updateData.attendees = updates.attendees;
+    
+    updateData.updated_at = new Date().toISOString();
+
+    const { error } = await supabase
+      .from('meeting_reports')
+      .update(updateData)
+      .eq('id', reportId);
+
+    if (error) {
+      console.error('Error updating meeting report:', error);
+      return false;
+    }
+
+    cache.delete('meeting_reports'); // Invalidate cache
+    return true;
+  },
+
+  async deleteMeetingReport(reportId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('meeting_reports')
+      .delete()
+      .eq('id', reportId);
+
+    if (error) {
+      console.error('Error deleting meeting report:', error);
+      return false;
+    }
+
+    cache.delete('meeting_reports'); // Invalidate cache
+    return true;
   }
 };
