@@ -939,7 +939,7 @@ export default function MemberDashboard() {
                 <div className="h-32 bg-gray-700/20 rounded"></div>
               </div>
             }>
-              <MeetingReportCard
+              <MeetingReportsModal
                 latestReport={meetingReports[0] || null}
                 onViewAll={() => setShowMeetingReports(true)}
                 isDarkMode={isDarkMode}
