@@ -529,6 +529,36 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
     return true;
   },
 
+  async editLoanRepaidAmount(loanId: string, newRepaidAmount: number): Promise<boolean> {
+    const { data: currentLoan, error: fetchError } = await supabase
+      .from('loans')
+      .select('amount')
+      .eq('id', loanId)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching loan:', fetchError);
+      return false;
+    }
+
+    const isFullyRepaid = newRepaidAmount >= currentLoan.amount;
+
+    const { error } = await supabase
+      .from('loans')
+      .update({
+        repaid_amount: newRepaidAmount,
+        status: isFullyRepaid ? 'repaid' : 'active'
+      })
+      .eq('id', loanId);
+
+    if (error) {
+      console.error('Error editing loan repaid amount:', error);
+      return false;
+    }
+
+    return true;
+  },
+
   // Donations
   async getDonations(): Promise<Donation[]> {
     const cacheKey = 'donations';
