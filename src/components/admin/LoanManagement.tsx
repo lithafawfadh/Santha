@@ -4,15 +4,17 @@ import { useApp } from '../../context/AppContext';
 import GlassButton from '../common/GlassButton';
 
 export default function LoanManagement() {
-  const { loans, allUsers, activeMembers, addLoan, updateLoanRepayment, currentUser, updateLoanDueDate } = useApp();
+  const { loans, allUsers, activeMembers, addLoan, updateLoanRepayment, editLoanRepaidAmount, currentUser, updateLoanDueDate } = useApp();
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingDueDate, setEditingDueDate] = useState<string | null>(null);
   const [newDueDate, setNewDueDate] = useState('');
   const [selectedMember, setSelectedMember] = useState('');
   const [showRepaymentModal, setShowRepaymentModal] = useState(false);
+  const [showEditRepaymentModal, setShowEditRepaymentModal] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<string | null>(null);
   const [repaymentAmount, setRepaymentAmount] = useState('');
+  const [editRepaymentAmount, setEditRepaymentAmount] = useState('');
   
   const [newLoan, setNewLoan] = useState({
     memberId: '',
@@ -63,6 +65,30 @@ export default function LoanManagement() {
     setShowRepaymentModal(false);
     setSelectedLoan(null);
     setRepaymentAmount('');
+  };
+
+  const handleEditRepayment = async () => {
+    if (!selectedLoan || !editRepaymentAmount) {
+      alert('Please enter a valid repayment amount');
+      return;
+    }
+
+    const amount = parseFloat(editRepaymentAmount);
+    if (amount < 0) {
+      alert('Repayment amount cannot be negative');
+      return;
+    }
+
+    const loan = loans.find(l => l.id === selectedLoan);
+    if (loan && amount > loan.amount) {
+      alert(`Repayment amount cannot exceed loan amount of LKR ${loan.amount.toLocaleString()}`);
+      return;
+    }
+
+    await editLoanRepaidAmount(selectedLoan, amount);
+    setShowEditRepaymentModal(false);
+    setSelectedLoan(null);
+    setEditRepaymentAmount('');
   };
 
   const handleEditDueDate = (loanId: string, currentDueDate: string) => {
@@ -397,7 +423,7 @@ export default function LoanManagement() {
                     </div>
                   </div>
 
-                  {/* Action Button */}
+                  {/* Action Buttons */}
                   {loan.status === 'active' && (
                     <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
                       <GlassButton
@@ -409,6 +435,17 @@ export default function LoanManagement() {
                       >
                         <DollarSign className="h-4 w-4 mr-2" />
                         Add Repayment
+                      </GlassButton>
+                      <GlassButton
+                        variant="secondary"
+                        onClick={() => {
+                          setSelectedLoan(loan.id);
+                          setEditRepaymentAmount(loan.repaidAmount.toString());
+                          setShowEditRepaymentModal(true);
+                        }}
+                      >
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Edit Repaid
                       </GlassButton>
                     </div>
                   )}
@@ -482,6 +519,88 @@ export default function LoanManagement() {
                         setShowRepaymentModal(false);
                         setSelectedLoan(null);
                         setRepaymentAmount('');
+                      }}
+                      className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-300 border border-white/20"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Repayment Modal */}
+      {showEditRepaymentModal && selectedLoan && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900/95 backdrop-blur-xl rounded-2xl p-6 max-w-md w-full border border-white/20 shadow-2xl">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="h-12 w-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                <Edit2 className="h-6 w-6 text-orange-400" />
+              </div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent">
+                Edit Repaid Amount
+              </h3>
+            </div>
+
+            {(() => {
+              const loan = loans.find(l => l.id === selectedLoan);
+              if (!loan) return null;
+              const outstanding = loan.amount - loan.repaidAmount;
+              
+              return (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                      <p className="text-xs text-white/60 mb-1">Loan Amount</p>
+                      <p className="text-lg font-bold text-white">LKR {loan.amount.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                      <p className="text-xs text-white/60 mb-1">Current Repaid</p>
+                      <p className="text-lg font-bold text-green-300">LKR {loan.repaidAmount.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      New Repaid Amount (LKR)
+                    </label>
+                    <input
+                      type="number"
+                      value={editRepaymentAmount}
+                      onChange={(e) => setEditRepaymentAmount(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-orange-500 focus:outline-none backdrop-blur-xl"
+                      placeholder="0"
+                      min="0"
+                      max={loan.amount}
+                      step="100"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="h-4 w-4 text-orange-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-orange-300">
+                        This will replace the current repaid amount. Use this to correct mistakes in repayment entries.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleEditRepayment}
+                      className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-all duration-300 shadow-lg"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowEditRepaymentModal(false);
+                        setSelectedLoan(null);
+                        setEditRepaymentAmount('');
                       }}
                       className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-300 border border-white/20"
                     >
