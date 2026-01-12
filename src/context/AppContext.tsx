@@ -20,6 +20,7 @@ interface AppContextType {
   updatePayment: (paymentId: string, paid: boolean, markedBy?: string) => Promise<void>;
   addLoan: (loan: Omit<Loan, 'id'>) => Promise<void>;
   updateLoanRepayment: (loanId: string, repaidAmount: number) => Promise<void>;
+  editLoanRepaidAmount: (loanId: string, newRepaidAmount: number) => Promise<void>;
   addDonation: (donation: Omit<Donation, 'id'>) => Promise<void>;
   addMember: (member: Omit<User, 'id'>) => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
@@ -291,6 +292,27 @@ const deleteWarning = async (warningId: string) => {
     }
   };
 
+  const editLoanRepaidAmount = async (loanId: string, newRepaidAmount: number) => {
+    try {
+      const success = await dataService.editLoanRepaidAmount(loanId, newRepaidAmount);
+      if (success) {
+        setLoans(prev => prev.map(loan => {
+          if (loan.id === loanId) {
+            const isFullyRepaid = newRepaidAmount >= loan.amount;
+            return {
+              ...loan,
+              repaidAmount: newRepaidAmount,
+              status: isFullyRepaid ? 'repaid' : 'active'
+            };
+          }
+          return loan;
+        }));
+      }
+    } catch (error) {
+      console.error('Error editing loan repaid amount:', error);
+    }
+  };
+
   const addDonation = async (donationData: Omit<Donation, 'id'>) => {
     try {
       const newDonation = await dataService.addDonation(donationData);
@@ -449,6 +471,7 @@ const deleteWarning = async (warningId: string) => {
       updatePayment,
       addLoan,
       updateLoanRepayment,
+      editLoanRepaidAmount,
       addDonation,
       addMember,
       removeMember,
