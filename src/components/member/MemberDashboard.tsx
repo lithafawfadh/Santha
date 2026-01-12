@@ -555,7 +555,7 @@ export default function MemberDashboard() {
                     ? 'bg-blue-900/30 text-blue-200 border border-blue-700/50' 
                     : 'bg-blue-50 text-blue-800 border border-blue-200'
                 }`}>
-                  💡 <strong>Note:</strong> Our group started in May 2024. Payment tracking begins from each member's join date.
+                  💡 <strong>Note:</strong> Our group started in May 2024. Payment tracking begins from each member's join date. So do not worry about the unpaid marks.
                 </div>
               )}
 
