@@ -56,6 +56,21 @@ export const dataService = {
     return true;
   },
 
+  async clearActivityLogs(): Promise<boolean> {
+    const { error } = await supabase
+      .from('activity_logs')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
+
+    if (error) {
+      console.error('Error clearing activity logs:', error);
+      return false;
+    }
+
+    cache.delete('activity_logs');
+    return true;
+  },
+
   // Users
   async getUsers(): Promise<User[]> {
     const cacheKey = 'users';

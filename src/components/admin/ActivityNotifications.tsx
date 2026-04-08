@@ -1,8 +1,8 @@
 import { useApp } from '../../context/AppContext';
-import { Activity, Clock, UserMinus, DollarSign, CreditCard } from 'lucide-react';
+import { Activity, Clock, UserMinus, DollarSign, CreditCard, Trash2 } from 'lucide-react';
 
 export default function ActivityNotifications() {
-  const { activities } = useApp();
+  const { activities, clearActivities } = useApp();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -37,7 +37,18 @@ export default function ActivityNotifications() {
     <div className="absolute right-0 mt-2 w-80 lg:w-96 bg-luxury-surface border border-ghost-border/50 rounded-xl shadow-ambient overflow-hidden z-50">
       <div className="p-4 border-b border-ghost-border/30 bg-luxury-card/50 flex justify-between items-center">
         <h3 className="font-serif font-medium text-gray-200">Activity Log</h3>
-        <span className="text-xs bg-gold/10 text-gold px-2 py-0.5 rounded-full">{safeActivities.length} total</span>
+        <div className="flex items-center gap-2">
+          {safeActivities.length > 0 && (
+            <button 
+              onClick={() => clearActivities()} 
+              className="text-xs text-gray-400 hover:text-red-400 flex items-center gap-1 transition-colors focus:outline-none"
+              title="Clear all activities"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <span className="text-xs bg-gold/10 text-gold px-2 py-0.5 rounded-full">{safeActivities.length} total</span>
+        </div>
       </div>
       
       <div className="max-h-[360px] overflow-y-auto">

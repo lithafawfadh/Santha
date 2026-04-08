@@ -39,9 +39,10 @@ interface AppContextType {
   addWarning: (warning: Omit<Warning, 'id' | 'createdAt' | 'isRead'>) => Promise<void>;
   sendBulkWarnings: (memberIds: string[], warning: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>) => Promise<void>;
   markWarningAsRead: (warningId: string) => Promise<void>;
-  deleteWarning: (warningId: string) => Promise<void>;
+  deleteWarning: (warningId: string) => Promise<boolean>;
   memberExits: MemberExit[];
   processMemberExit: (memberId: string, extraAmount?: number, notes?: string) => Promise<{ success: boolean; refundAmount: number; error?: string }>;
+  clearActivities: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -239,16 +240,30 @@ const markWarningAsRead = async (warningId: string) => {
   }
 };
 
-const deleteWarning = async (warningId: string) => {
-  try {
-    const success = await dataService.deleteWarning(warningId);
-    if (success) {
-      setWarnings(prev => prev.filter(w => w.id !== warningId));
+  const deleteWarning = async (warningId: string) => {
+    try {
+      const success = await dataService.deleteWarning(warningId);
+      if (success) {
+        setWarnings(prev => prev.filter(w => w.id !== warningId));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting warning:', error);
+      return false;
     }
-  } catch (error) {
-    console.error('Error deleting warning:', error);
-  }
-};
+  };
+
+  const clearActivities = async () => {
+    try {
+      const success = await dataService.clearActivityLogs();
+      if (success) {
+        setActivities([]);
+      }
+    } catch (error) {
+      console.error('Error clearing activities:', error);
+    }
+  };
 
   const logout = () => {
     setCurrentUser(null);
@@ -626,6 +641,7 @@ const deleteWarning = async (warningId: string) => {
       toggleDarkMode,
       memberExits,
       processMemberExit,
+      clearActivities
     }}>
       {children}
     </AppContext.Provider>
