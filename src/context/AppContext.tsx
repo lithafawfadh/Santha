@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { User, Payment, Loan, GroupStats, Donation } from '../types';
+import { User, Payment, Loan, GroupStats, Donation, Warning, MemberExit } from '../types';
 import { authService } from '../services/authService';
 import { dataService } from '../services/dataService';
 import { MONTHLY_CONTRIBUTION } from '../data/mockData';
@@ -33,12 +33,14 @@ interface AppContextType {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   updateLoanDueDate: (loanId: string, newDueDate: string) => Promise<void>;
-    warnings: Warning[];
+  warnings: Warning[];
   memberWarnings: Warning[];
   addWarning: (warning: Omit<Warning, 'id' | 'createdAt' | 'isRead'>) => Promise<void>;
   sendBulkWarnings: (memberIds: string[], warning: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>) => Promise<void>;
   markWarningAsRead: (warningId: string) => Promise<void>;
   deleteWarning: (warningId: string) => Promise<void>;
+  memberExits: MemberExit[];
+  processMemberExit: (memberId: string, extraAmount?: number, notes?: string) => Promise<{ success: boolean; refundAmount: number; error?: string }>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -75,6 +77,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [memberExits, setMemberExits] = useState<MemberExit[]>([]);
   const [loading, setLoading] = useState(true);
   
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
@@ -119,16 +122,18 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
 };
   const calculateGroupStats = () => {
     const members = activeMembers;
-    const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
     const paidPayments = payments.filter(payment => payment.paid);
-    const totalFunds = paidPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const totalPaidContributions = paidPayments.reduce((sum, payment) => sum + payment.amount, 0);
     
     const totalDonations = donations.reduce((sum, donation) => sum + donation.amount, 0);
     
     const activeLoansData = loans.filter(loan => loan.status === 'active');
     const totalLoanAmount = activeLoansData.reduce((sum, loan) => sum - loan.repaidAmount + loan.amount, 0);
+
+    // Subtract all refunds issued to exited members
+    const totalRefunds = memberExits.reduce((sum, exit) => sum + exit.refundAmount, 0);
     
     const monthlyPayments = payments.filter(payment => 
       payment.year === currentYear && 
@@ -138,7 +143,7 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
     
     setGroupStats({
       totalMembers: members.length,
-      totalFunds: totalFunds + totalDonations - totalLoanAmount,
+      totalFunds: totalPaidContributions + totalDonations - totalLoanAmount - totalRefunds,
       monthlyCollection: monthlyPayments.length * MONTHLY_CONTRIBUTION,
       activeLoans: activeLoansData.length,
       totalLoanAmount
@@ -148,12 +153,13 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
 const refreshData = async () => {
   try {
     setLoading(true);
-    const [usersData, paymentsData, loansData, donationsData, warningsData] = await Promise.all([
+    const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData] = await Promise.all([
       dataService.getUsers(),
       dataService.getPayments(),
       dataService.getLoans(),
       dataService.getDonations(),
-      dataService.getWarnings()
+      dataService.getWarnings(),
+      dataService.getMemberExits()
     ]);
 
     setAllUsers(usersData);
@@ -161,6 +167,7 @@ const refreshData = async () => {
     setLoans(loansData);
     setDonations(donationsData);
     setWarnings(warningsData);
+    setMemberExits(exitsData);
   } catch (error) {
     console.error('Error refreshing data:', error);
   } finally {
@@ -169,12 +176,16 @@ const refreshData = async () => {
 };
 
   useEffect(() => {
-    refreshData();
+    // Timeout fallback: if loading doesn't resolve in 8s, force it to stop
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+    refreshData().finally(() => clearTimeout(timeout));
   }, []);
 
   useEffect(() => {
     calculateGroupStats();
-  }, [payments, loans, donations, allUsers]);
+  }, [payments, loans, donations, allUsers, memberExits]);
 
   const login = async (username: string, role: 'admin' | 'member', password?: string): Promise<boolean> => {
     try {
@@ -237,6 +248,88 @@ const deleteWarning = async (warningId: string) => {
 
   const logout = () => {
     setCurrentUser(null);
+  };
+
+  const processMemberExit = async (
+    memberId: string,
+    extraAmount: number = 0,
+    notes?: string
+  ): Promise<{ success: boolean; refundAmount: number; error?: string }> => {
+    // Safety: prevent admin from exiting themselves
+    if (memberId === currentUser?.id) {
+      return { success: false, refundAmount: 0, error: 'Admin cannot exit themselves.' };
+    }
+
+    // Check for active loans — hard block
+    const activeLoan = loans.find(l => l.memberId === memberId && l.status === 'active');
+    if (activeLoan) {
+      return { success: false, refundAmount: 0, error: 'Member has an active loan. Loan must be fully repaid before exit.' };
+    }
+
+    // Find the member
+    const member = allUsers.find(u => u.id === memberId);
+    if (!member) {
+      return { success: false, refundAmount: 0, error: 'Member not found.' };
+    }
+
+    // Calculate total paid contributions (all time, not just current year)
+    const memberPaidPayments = payments.filter(p => p.memberId === memberId && p.paid === true);
+    const totalPaidMonths = memberPaidPayments.length;
+    const baseRefund = totalPaidMonths * MONTHLY_CONTRIBUTION;
+    const totalRefund = baseRefund + extraAmount;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Build a full notes string that includes the breakdown when extra is given
+    let fullNotes = notes || '';
+    if (extraAmount > 0) {
+      const breakdown =
+        `Refund breakdown: LKR ${baseRefund.toLocaleString()} (${totalPaidMonths} months × LKR 300)` +
+        ` + LKR ${extraAmount.toLocaleString()} (extra contributions) = LKR ${totalRefund.toLocaleString()} total.`;
+      fullNotes = fullNotes ? `${fullNotes} | ${breakdown}` : breakdown;
+    }
+
+    // Record the exit in the database first
+    const exitRecord = await dataService.recordMemberExit({
+      memberId,
+      memberName: member.name,
+      exitDate: today,
+      totalPaidMonths,
+      refundAmount: totalRefund,
+      processedBy: currentUser?.id || 'admin',
+      notes: fullNotes || undefined,
+    });
+
+    if (!exitRecord) {
+      return { success: false, refundAmount: 0, error: 'Failed to record exit in database. Member has NOT been deactivated.' };
+    }
+
+    // Now deactivate the member
+    const deactivated = await dataService.deactivateMember(
+      memberId,
+      currentUser?.id || '',
+      `Member exited organization. Refund of LKR ${totalRefund.toLocaleString()} issued on ${today}.`
+    );
+
+    if (!deactivated) {
+      return { success: false, refundAmount: 0, error: 'Exit recorded but member deactivation failed. Please deactivate manually.' };
+    }
+
+    // Update local state
+    setMemberExits(prev => [exitRecord, ...prev]);
+    setAllUsers(prev => prev.map(user =>
+      user.id === memberId
+        ? {
+            ...user,
+            status: 'inactive' as const,
+            deactivatedAt: new Date().toISOString(),
+            deactivatedBy: currentUser?.id,
+            deactivationReason: `Member exited organization. Refund of LKR ${totalRefund.toLocaleString()} issued on ${today}.`
+          }
+        : user
+    ));
+
+    return { success: true, refundAmount: totalRefund };
   };
 
   const updatePayment = async (paymentId: string, paid: boolean, markedBy?: string) => {
@@ -483,13 +576,15 @@ const deleteWarning = async (warningId: string) => {
       updateAdminProfile,
       isDarkMode,
       updateLoanDueDate,
-          warnings,
-    memberWarnings,
-    addWarning,
-    sendBulkWarnings,
-    markWarningAsRead,
-    deleteWarning,
-      toggleDarkMode
+      warnings,
+      memberWarnings,
+      addWarning,
+      sendBulkWarnings,
+      markWarningAsRead,
+      deleteWarning,
+      toggleDarkMode,
+      memberExits,
+      processMemberExit,
     }}>
       {children}
     </AppContext.Provider>

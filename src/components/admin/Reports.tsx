@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Download, TrendingUp, Calendar, DollarSign, CheckSquare, Square } from 'lucide-react';
+import { Download, TrendingUp, Calendar, DollarSign, CheckSquare, Square, LogOut, UserCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 
 export default function Reports() {
-  const { payments, loans, allUsers } = useApp();
+  const { payments, loans, allUsers, memberExits } = useApp();
   const [selectedMonths, setSelectedMonths] = useState<number[]>([new Date().getMonth()]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -367,6 +367,91 @@ export default function Reports() {
           </div>
         </div>
       </GlassCard>
+
+      {/* Member Exits Report */}
+      <GlassCard variant="gradient">
+        <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="h-9 w-9 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                <LogOut className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Member Exit History</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{memberExits.length} exit{memberExits.length !== 1 ? 's' : ''} recorded</p>
+              </div>
+            </div>
+            {memberExits.length > 0 && (
+              <div className="text-right">
+                <p className="text-xs text-white/60">Total Refunds Issued</p>
+                <p className="text-xl font-bold text-emerald-400">
+                  LKR {memberExits.reduce((sum, e) => sum + e.refundAmount, 0).toLocaleString()}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="p-6">
+          {memberExits.length === 0 ? (
+            <div className="text-center py-10">
+              <UserCheck className="h-12 w-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white/50 text-sm">No member exits recorded yet.</p>
+              <p className="text-white/35 text-xs mt-1">Exit records will appear here when a member leaves the organization.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/10">
+                    <th className="text-left pb-3 text-white/60 font-medium">Member</th>
+                    <th className="text-left pb-3 text-white/60 font-medium">Exit Date</th>
+                    <th className="text-center pb-3 text-white/60 font-medium">Months Paid</th>
+                    <th className="text-right pb-3 text-white/60 font-medium">Refund Issued</th>
+                    <th className="text-left pb-3 text-white/60 font-medium">Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {memberExits.map((exit) => (
+                    <tr key={exit.id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-8 w-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-white">{exit.memberName.charAt(0).toUpperCase()}</span>
+                          </div>
+                          <span className="text-white font-medium">{exit.memberName}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4 text-white/70">
+                        {new Date(exit.exitDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </td>
+                      <td className="py-3 pr-4 text-center">
+                        <span className="px-2.5 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-medium border border-blue-500/30">
+                          {exit.totalPaidMonths} months
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4 text-right">
+                        <span className="text-emerald-400 font-bold">LKR {exit.refundAmount.toLocaleString()}</span>
+                      </td>
+                      <td className="py-3 text-white/50 text-xs italic">
+                        {exit.notes || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-emerald-500/30">
+                    <td colSpan={3} className="pt-3 text-white/70 font-semibold">Total Refunds Issued</td>
+                    <td className="pt-3 text-right text-emerald-400 font-bold text-base">
+                      LKR {memberExits.reduce((sum, e) => sum + e.refundAmount, 0).toLocaleString()}
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </div>
+      </GlassCard>
     </div>
   );
-}
+}

@@ -1,10 +1,313 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* Add these to the end of your existing index.css */
 
 @layer utilities {
   .bg-gradient-radial {
     background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+  }
+}
+
+/* ─── AUREUM LEDGER: ALIVE CARD SYSTEM ─── */
+
+/* Staggered Entrance: cards rise from shadow */
+@keyframes card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(32px) scale(0.97);
+    filter: blur(4px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+.bento-card {
+  animation: card-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.4s ease;
+  border: 1px solid transparent;
+}
+
+/* Staggered delays for each card */
+.bento-card:nth-child(1) { animation-delay: 0.05s; }
+.bento-card:nth-child(2) { animation-delay: 0.12s; }
+.bento-card:nth-child(3) { animation-delay: 0.2s; }
+.bento-card:nth-child(4) { animation-delay: 0.28s; }
+.bento-card:nth-child(5) { animation-delay: 0.36s; }
+.bento-card:nth-child(6) { animation-delay: 0.44s; }
+
+/* Hover: lift + golden ember glow */
+.bento-card:hover {
+  transform: translateY(-6px) scale(1.008);
+  box-shadow:
+    0 20px 60px -15px rgba(212, 175, 55, 0.15),
+    0 8px 24px -8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(212, 175, 55, 0.08);
+  border-color: rgba(212, 175, 55, 0.15);
+}
+
+/* Shimmer sweep on hover — golden light wipe */
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.04),
+    rgba(212, 175, 55, 0.08),
+    rgba(212, 175, 55, 0.04),
+    transparent
+  );
+  transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bento-card:hover::before {
+  left: 140%;
+}
+
+/* Subtle inner highlight on top edge */
+.bento-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0) 20%,
+    rgba(212, 175, 55, 0.2) 50%,
+    rgba(212, 175, 55, 0) 80%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bento-card:hover::after {
+  opacity: 1;
+}
+
+/* ─── HERO NUMBER: breathing gold glow ─── */
+@keyframes gold-breathe {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.1), 0 0 40px rgba(212, 175, 55, 0.05);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(212, 175, 55, 0.25), 0 0 60px rgba(212, 175, 55, 0.1);
+  }
+}
+
+.hero-number {
+  animation: gold-breathe 4s ease-in-out infinite;
+}
+
+/* ─── COMPLIANCE BAR: animated fill with glow ─── */
+@keyframes bar-fill {
+  0% {
+    width: 0%;
+    box-shadow: none;
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(80, 200, 120, 0.5), 0 0 4px rgba(80, 200, 120, 0.8);
+  }
+}
+
+.compliance-bar {
+  animation: bar-fill 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  position: relative;
+}
+
+/* Sweeping highlight on bar */
+.compliance-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  animation: bar-sweep 2.5s ease-in-out 1.5s infinite;
+  border-radius: inherit;
+}
+
+@keyframes bar-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* ─── ALERT CARDS: subtle pulse ─── */
+@keyframes alert-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.alert-card {
+  animation: alert-pulse 3s ease-in-out infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.alert-card:hover {
+  transform: translateX(4px);
+  box-shadow: -4px 0 16px -4px rgba(212, 175, 55, 0.2);
+}
+
+/* Red alert variant */
+.alert-card-danger {
+  animation: alert-pulse-red 2.5s ease-in-out infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+@keyframes alert-pulse-red {
+  0%, 100% { 
+    opacity: 1;
+    box-shadow: inset 0 0 0 rgba(239, 68, 68, 0);
+  }
+  50% { 
+    opacity: 0.9;
+    box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.05);
+  }
+}
+
+.alert-card-danger:hover {
+  transform: translateX(4px);
+  box-shadow: -4px 0 16px -4px rgba(239, 68, 68, 0.3);
+}
+
+/* ─── AWARD ICON: slow rotate shimmer ─── */
+@keyframes award-shimmer {
+  0% { filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6)); }
+  100% { filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.3)); }
+}
+
+.award-icon {
+  animation: award-shimmer 3s ease-in-out infinite;
+}
+
+.award-badge {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+
+.award-badge:hover {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.3);
+}
+
+/* ─── SIDEBAR NAV: smooth tab transitions ─── */
+.nav-item {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 60%;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.8), rgba(212, 175, 55, 0.2));
+  border-radius: 0 4px 4px 0;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-item-active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+.nav-item:hover {
+  padding-left: 20px;
+}
+
+/* ─── RECOVERY RATE: counter-style number ─── */
+@keyframes count-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-number {
+  animation: count-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* ─── NOISE TEXTURE OVERLAY ─── */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ─── SCROLLBAR: luxury dark ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121212;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}
+
+/* ─── REDUCED MOTION RESPECT ─── */
+@media (prefers-reduced-motion: reduce) {
+  .bento-card,
+  .hero-number,
+  .compliance-bar,
+  .alert-card,
+  .alert-card-danger,
+  .award-icon,
+  .stat-number {
+    animation: none !important;
+  }
+  
+  .bento-card:hover {
+    transform: none;
+  }
+  
+  .bento-card::before {
+    display: none;
   }
 }

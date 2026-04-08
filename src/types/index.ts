@@ -74,3 +74,15 @@ export interface MeetingReport {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface MemberExit {
+  id: string;
+  memberId: string;
+  memberName: string;
+  exitDate: string;
+  totalPaidMonths: number;
+  refundAmount: number;
+  processedBy: string;
+  notes?: string;
+  createdAt: string;
+}

@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { User, Payment, Loan, Donation, MeetingReport } from '../types';
+import { User, Payment, Loan, Donation, MeetingReport, Warning, MemberExit } from '../types';
 
 // Performance optimization: Simple cache with 30-second duration
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -725,5 +725,76 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
 
     cache.delete('meeting_reports'); // Invalidate cache
     return true;
-  }
-};
+  },
+
+  // Member Exits
+  async getMemberExits(): Promise<MemberExit[]> {
+    const cacheKey = 'member_exits';
+    const cached = cache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+
+    const { data, error } = await supabase
+      .from('member_exits')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching member exits:', error);
+      return cached?.data || [];
+    }
+
+    const result: MemberExit[] = data.map((row: any) => ({
+      id: row.id,
+      memberId: row.member_id,
+      memberName: row.member_name,
+      exitDate: row.exit_date,
+      totalPaidMonths: row.total_paid_months,
+      refundAmount: row.refund_amount,
+      processedBy: row.processed_by,
+      notes: row.notes || undefined,
+      createdAt: row.created_at,
+    }));
+
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
+  },
+
+  async recordMemberExit(exit: Omit<MemberExit, 'id' | 'createdAt'>): Promise<MemberExit | null> {
+    const { data, error } = await supabase
+      .from('member_exits')
+      .insert({
+        member_id: exit.memberId,
+        member_name: exit.memberName,
+        exit_date: exit.exitDate,
+        total_paid_months: exit.totalPaidMonths,
+        refund_amount: exit.refundAmount,
+        processed_by: exit.processedBy,
+        notes: exit.notes || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error recording member exit:', error);
+      return null;
+    }
+
+    cache.delete('member_exits');
+    cache.delete('users');
+
+    return {
+      id: data.id,
+      memberId: data.member_id,
+      memberName: data.member_name,
+      exitDate: data.exit_date,
+      totalPaidMonths: data.total_paid_months,
+      refundAmount: data.refund_amount,
+      processedBy: data.processed_by,
+      notes: data.notes || undefined,
+      createdAt: data.created_at,
+    };
+  },
+};
