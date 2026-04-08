@@ -8,11 +8,16 @@ import MemberManagement from './MemberManagement';
 import Reports from './Reports';
 import DonationManagement from './DonationManagement';
 import WarningManagement from './WarningManagement';
+import ActivityNotifications from './ActivityNotifications';
+import { Activity } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const { groupStats, currentUser, logout, loading, isDarkMode, payments, loans, allUsers, donations } = useApp();
+  const { groupStats, currentUser, logout, loading, isDarkMode, payments, loans, allUsers, donations, activities } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
+
+  const safeActivities = activities || [];
 
   // Updated tabs configuration with Warnings (using Bell icon)
 const tabs = [
@@ -169,10 +174,25 @@ const tabs = [
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-luxury-surface border-b border-ghost-border/30 z-30 flex items-center justify-between px-4">
         <h1 className="text-xl font-serif font-bold text-gold">Aureum Ledger</h1>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gold p-2">
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setIsActivityOpen(!isActivityOpen)} className="text-gray-400 hover:text-gold relative p-2 transition-colors">
+            <Activity className="w-5 h-5" />
+            {safeActivities.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-luxury-surface"></span>
+            )}
+          </button>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gold p-2">
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+      
+      {/* Mobile Activity Dropdown */}
+      {isActivityOpen && (
+        <div className="md:hidden fixed top-16 right-4 z-40">
+           <ActivityNotifications />
+        </div>
+      )}
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
@@ -204,7 +224,27 @@ const tabs = [
       )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col pt-16 md:pt-0 min-h-screen overflow-x-hidden bg-luxury-bg">
+      <main className="flex-1 flex flex-col pt-16 md:pt-0 min-h-screen overflow-x-hidden relative bg-luxury-bg">
+        
+        {/* Desktop Notification Bell */}
+        <div className="hidden md:block absolute top-6 right-8 z-30">
+          <button 
+            onClick={() => setIsActivityOpen(!isActivityOpen)} 
+            className="text-gray-400 hover:text-gold relative p-2 rounded-full hover:bg-luxury-card-hover transition-colors"
+          >
+            <Activity className="w-5 h-5" />
+            {safeActivities.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-luxury-bg"></span>
+            )}
+          </button>
+          
+          {isActivityOpen && (
+            <div className="absolute right-0 mt-2 z-40">
+              <ActivityNotifications />
+            </div>
+          )}
+        </div>
+
         <div className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
           
 

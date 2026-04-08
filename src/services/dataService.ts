@@ -1,11 +1,61 @@
 import { supabase } from '../lib/supabase';
-import { User, Payment, Loan, Donation, MeetingReport, Warning, MemberExit } from '../types';
+import { User, Payment, Loan, Donation, MeetingReport, Warning, MemberExit, ActivityLog } from '../types';
 
 // Performance optimization: Simple cache with 30-second duration
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 30000; // 30 seconds
 
 export const dataService = {
+  // Activity Logs
+  async getActivityLogs(): Promise<ActivityLog[]> {
+    const cacheKey = 'activity_logs';
+    const cached = cache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < 10000) { // Shorter cache for activities
+      return cached.data;
+    }
+
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error fetching activity logs:', error);
+      return cached?.data || [];
+    }
+
+    const result = data.map((log: any) => ({
+      id: log.id,
+      actionType: log.action_type,
+      description: log.description,
+      actorId: log.actor_id,
+      createdAt: log.created_at
+    }));
+
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
+  },
+
+  async logActivity(actionType: string, description: string, actorId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('activity_logs')
+      .insert({
+        action_type: actionType,
+        description: description,
+        actor_id: actorId
+      });
+
+    if (error) {
+      console.error('Error logging activity:', error);
+      return false;
+    }
+
+    cache.delete('activity_logs');
+    return true;
+  },
+
   // Users
   async getUsers(): Promise<User[]> {
     const cacheKey = 'users';
@@ -25,7 +75,7 @@ export const dataService = {
       return cached?.data || [];
     }
 
-    const result = data.map(user => ({
+    const result = data.map((user: any) => ({
       id: user.id,
       name: user.name,
       username: user.username,
@@ -62,7 +112,7 @@ async getWarnings(): Promise<Warning[]> {
     return cached?.data || [];
   }
 
-  const result = data.map(warning => ({
+  const result = data.map((warning: any) => ({
     id: warning.id,
     memberId: warning.member_id,
     title: warning.title,
@@ -91,7 +141,7 @@ async getMemberWarnings(memberId: string): Promise<Warning[]> {
     return [];
   }
 
-  return data.map(warning => ({
+  return data.map((warning: any) => ({
     id: warning.id,
     memberId: warning.member_id,
     title: warning.title,
@@ -375,7 +425,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return cached?.data || [];
     }
 
-    const result = data.map(payment => ({
+    const result = data.map((payment: any) => ({
       id: payment.id,
       memberId: payment.member_id,
       month: payment.month,
@@ -449,7 +499,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return cached?.data || [];
     }
 
-    const result = data.map(loan => ({
+    const result = data.map((loan: any) => ({
       id: loan.id,
       memberId: loan.member_id,
       amount: loan.amount,
@@ -578,7 +628,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return cached?.data || [];
     }
 
-    const result = data.map(donation => ({
+    const result = data.map((donation: any) => ({
       id: donation.id,
       amount: donation.amount,
       date: donation.date,
@@ -637,7 +687,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return cached?.data || [];
     }
 
-    const result = data.map(report => ({
+    const result = data.map((report: any) => ({
       id: report.id,
       title: report.title,
       date: report.date,

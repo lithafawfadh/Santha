@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { User, Payment, Loan, GroupStats, Donation, Warning, MemberExit } from '../types';
+import { User, Payment, Loan, GroupStats, Donation, Warning, MemberExit, ActivityLog } from '../types';
 import { authService } from '../services/authService';
 import { dataService } from '../services/dataService';
 import { MONTHLY_CONTRIBUTION } from '../data/mockData';
@@ -15,6 +15,7 @@ interface AppContextType {
   inactiveMembers: User[];
   groupStats: GroupStats;
   loading: boolean;
+  activities: ActivityLog[];
   login: (username: string, role: 'admin' | 'member', password?: string) => Promise<boolean>;
   logout: () => void;
   updatePayment: (paymentId: string, paid: boolean, markedBy?: string) => Promise<void>;
@@ -78,6 +79,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [memberExits, setMemberExits] = useState<MemberExit[]>([]);
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
@@ -153,13 +155,14 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
 const refreshData = async () => {
   try {
     setLoading(true);
-    const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData] = await Promise.all([
+    const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData, activitiesData] = await Promise.all([
       dataService.getUsers(),
       dataService.getPayments(),
       dataService.getLoans(),
       dataService.getDonations(),
       dataService.getWarnings(),
-      dataService.getMemberExits()
+      dataService.getMemberExits(),
+      dataService.getActivityLogs()
     ]);
 
     setAllUsers(usersData);
@@ -168,6 +171,7 @@ const refreshData = async () => {
     setDonations(donationsData);
     setWarnings(warningsData);
     setMemberExits(exitsData);
+    setActivities(activitiesData);
   } catch (error) {
     console.error('Error refreshing data:', error);
   } finally {
@@ -315,6 +319,11 @@ const deleteWarning = async (warningId: string) => {
       return { success: false, refundAmount: 0, error: 'Exit recorded but member deactivation failed. Please deactivate manually.' };
     }
 
+    if (currentUser) {
+      await dataService.logActivity('MEMBER_EXIT', `${member.name} exited the organization and received a refund of LKR ${totalRefund.toLocaleString()}`, currentUser.id);
+      refreshData();
+    }
+
     // Update local state
     setMemberExits(prev => [exitRecord, ...prev]);
     setAllUsers(prev => prev.map(user =>
@@ -346,6 +355,16 @@ const deleteWarning = async (warningId: string) => {
               }
             : payment
         ));
+        
+        if (currentUser) {
+          const payment = payments.find(p => p.id === paymentId);
+          const member = allUsers.find(u => u.id === payment?.memberId);
+          if (member && payment) {
+            const status = paid ? 'paid' : 'unpaid';
+            await dataService.logActivity('PAYMENT_MARKED', `${member.name}'s payment for ${payment.month} ${payment.year} marked as ${status}`, currentUser.id);
+            refreshData();
+          }
+        }
       }
     } catch (error) {
       console.error('Error updating payment:', error);
@@ -357,6 +376,13 @@ const deleteWarning = async (warningId: string) => {
       const newLoan = await dataService.addLoan(loanData);
       if (newLoan) {
         setLoans(prev => [...prev, newLoan]);
+        if (currentUser) {
+          const member = allUsers.find(u => u.id === loanData.memberId);
+          if (member) {
+            await dataService.logActivity('LOAN_ISSUED', `Issued a new loan of LKR ${loanData.amount.toLocaleString()} to ${member.name}`, currentUser.id);
+            refreshData();
+          }
+        }
       }
     } catch (error) {
       console.error('Error adding loan:', error);
@@ -458,6 +484,13 @@ const deleteWarning = async (warningId: string) => {
               }
             : user
         ));
+        if (currentUser) {
+          const member = allUsers.find(u => u.id === memberId);
+          if (member) {
+            await dataService.logActivity('MEMBER_DEACTIVATED', `Deactivated member ${member.name}`, currentUser.id);
+            refreshData();
+          }
+        }
       }
     } catch (error) {
       console.error('Error deactivating member:', error);
@@ -479,6 +512,13 @@ const deleteWarning = async (warningId: string) => {
               }
             : user
         ));
+        if (currentUser) {
+          const member = allUsers.find(u => u.id === memberId);
+          if (member) {
+            await dataService.logActivity('MEMBER_REACTIVATED', `Reactivated member ${member.name}`, currentUser.id);
+            refreshData();
+          }
+        }
       }
     } catch (error) {
       console.error('Error reactivating member:', error);
@@ -575,6 +615,7 @@ const deleteWarning = async (warningId: string) => {
       updateUsername,
       updateAdminProfile,
       isDarkMode,
+      activities,
       updateLoanDueDate,
       warnings,
       memberWarnings,

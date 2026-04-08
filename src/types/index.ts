@@ -86,3 +86,11 @@ export interface MemberExit {
   notes?: string;
   createdAt: string;
 }
+
+export interface ActivityLog {
+  id: string;
+  actionType: string;
+  description: string;
+  actorId: string;
+  createdAt: string;
+}
