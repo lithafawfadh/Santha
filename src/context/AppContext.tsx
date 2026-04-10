@@ -28,7 +28,7 @@ interface AppContextType {
   deactivateMember: (memberId: string, reason?: string) => Promise<void>;
   reactivateMember: (memberId: string) => Promise<void>;
   permanentlyDeleteMember: (memberId: string) => Promise<void>;
-  refreshData: () => Promise<void>;
+  refreshData: (showGlobalLoading?: boolean) => Promise<void>;
   updateUsername: (userId: string, newUsername: string) => Promise<boolean>;
   updateAdminProfile: (userId: string, updates: { name?: string; password?: string }) => Promise<boolean>;
   isDarkMode: boolean;
@@ -96,9 +96,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
 
   const memberWarnings = useMemo(
-  () => warnings.filter(w => w.memberId === currentUser?.id && !w.isRead),
-  [warnings, currentUser?.id]
-);
+    () => warnings.filter(w => w.memberId === currentUser?.id && !w.isRead),
+    [warnings, currentUser?.id]
+  );
 
   const activeMembers = useMemo(
     () => allUsers.filter(user => user.role === 'member' && user.status === 'active'),
@@ -153,9 +153,11 @@ const updateLoanDueDate = async (loanId: string, newDueDate: string) => {
     });
   };
 
-const refreshData = async () => {
+const refreshData = async (showGlobalLoading: boolean = true) => {
   try {
-    setLoading(true);
+    if (showGlobalLoading) {
+      setLoading(true);
+    }
     const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData, activitiesData] = await Promise.all([
       dataService.getUsers(),
       dataService.getPayments(),
@@ -176,7 +178,9 @@ const refreshData = async () => {
   } catch (error) {
     console.error('Error refreshing data:', error);
   } finally {
-    setLoading(false);
+    if (showGlobalLoading) {
+      setLoading(false);
+    }
   }
 };
 
@@ -377,7 +381,8 @@ const markWarningAsRead = async (warningId: string) => {
           if (member && payment) {
             const status = paid ? 'paid' : 'unpaid';
             await dataService.logActivity('PAYMENT_MARKED', `${member.name}'s payment for ${payment.month} ${payment.year} marked as ${status}`, currentUser.id);
-            refreshData();
+            // Refresh background data without triggering a global loading screen
+            refreshData(false);
           }
         }
       }
