@@ -2,24 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .bg-gradient-radial {
-    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
-  }
+body {
+  @apply bg-slate-900 text-white selection:bg-blue-500/30;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.pro-max-theme {
+  background: linear-gradient(to bottom, #0c1b1f 0%, #020617 40%, #010409 100%);
+  background-attachment: fixed;
+  position: relative;
+  min-height: 100vh;
+  color: white;
+}
+
+.pro-max-theme::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: 10%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(100px);
+}
+
+.pro-max-theme::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
 /* ─── AUREUM LEDGER: ALIVE CARD SYSTEM ─── */
+.glass-panel {
+  background: rgba(13, 17, 23, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(212, 175, 55, 0.08);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
+}
 
 /* Staggered Entrance: cards rise from shadow */
 @keyframes card-rise {
   0% {
     opacity: 0;
-    transform: translateY(32px) scale(0.97);
-    filter: blur(4px);
-  }
-  60% {
-    opacity: 1;
-    filter: blur(0px);
+    transform: translateY(30px) scale(0.96);
+    filter: blur(10px);
   }
   100% {
     opacity: 1;
@@ -29,96 +63,40 @@
 }
 
 .bento-card {
-  animation: card-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: card-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
   position: relative;
   overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.4s ease;
-  border: 1px solid transparent;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(15, 23, 42, 0.4);
 }
 
-/* Staggered delays for each card */
-.bento-card:nth-child(1) { animation-delay: 0.05s; }
-.bento-card:nth-child(2) { animation-delay: 0.12s; }
-.bento-card:nth-child(3) { animation-delay: 0.2s; }
-.bento-card:nth-child(4) { animation-delay: 0.28s; }
-.bento-card:nth-child(5) { animation-delay: 0.36s; }
-.bento-card:nth-child(6) { animation-delay: 0.44s; }
-
-/* Hover: lift + golden ember glow */
 .bento-card:hover {
-  transform: translateY(-6px) scale(1.008);
-  box-shadow:
-    0 20px 60px -15px rgba(212, 175, 55, 0.15),
-    0 8px 24px -8px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(212, 175, 55, 0.08);
-  border-color: rgba(212, 175, 55, 0.15);
+  transform: translateY(-8px);
+  border-color: rgba(212, 175, 55, 0.2);
+  background: rgba(30, 41, 59, 0.5);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.05);
 }
 
-/* Shimmer sweep on hover — golden light wipe */
-.bento-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(212, 175, 55, 0.04),
-    rgba(212, 175, 55, 0.08),
-    rgba(212, 175, 55, 0.04),
-    transparent
-  );
-  transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.bento-card:hover::before {
-  left: 140%;
-}
-
-/* Subtle inner highlight on top edge */
-.bento-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0) 20%,
-    rgba(212, 175, 55, 0.2) 50%,
-    rgba(212, 175, 55, 0) 80%,
-    transparent 100%
-  );
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.bento-card:hover::after {
-  opacity: 1;
-}
-
-/* ─── HERO NUMBER: breathing gold glow ─── */
-@keyframes gold-breathe {
+/* ─── HERO NUMBER: AGGRESSIVE GOLD GLOW ─── */
+@keyframes striking-glow {
   0%, 100% {
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.1), 0 0 40px rgba(212, 175, 55, 0.05);
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5), 0 0 40px rgba(16, 185, 129, 0.2);
+    filter: brightness(1.1);
   }
   50% {
-    text-shadow: 0 0 30px rgba(212, 175, 55, 0.25), 0 0 60px rgba(212, 175, 55, 0.1);
+    text-shadow: 0 0 40px rgba(212, 175, 55, 0.8), 0 0 80px rgba(16, 185, 129, 0.4);
+    filter: brightness(1.4);
   }
 }
 
 .hero-number {
-  animation: gold-breathe 4s ease-in-out infinite;
+  animation: striking-glow 4s ease-in-out infinite;
+  background: linear-gradient(to bottom, #FFFFFF 0%, #F2CA50 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-weight: 800;
 }
 
 /* ─── COMPLIANCE BAR: animated fill with glow ─── */
