@@ -13,7 +13,15 @@ import { Activity } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { groupStats, currentUser, logout, loading, isDarkMode, payments, loans, allUsers, donations, activities } = useApp();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('adminActiveTab') || 'overview';
+  });
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    sessionStorage.setItem('adminActiveTab', tabId);
+    setIsMobileMenuOpen(false);
+  };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isActivityOpen, setIsActivityOpen] = useState(false);
 
@@ -138,7 +146,7 @@ const tabs = [
             return (
               <button 
                 key={tab.id} 
-                onClick={() => setActiveTab(tab.id)} 
+                onClick={() => handleTabChange(tab.id)} 
                 className={`nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                   isActive 
                     ? 'nav-item-active bg-gold/10 text-gold shadow-ambient' 
@@ -204,7 +212,7 @@ const tabs = [
               return (
                 <button 
                   key={tab.id} 
-                  onClick={() => { setActiveTab(tab.id); setIsMobileMenuOpen(false); }} 
+                  onClick={() => handleTabChange(tab.id)} 
                   className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-gold/10 text-gold shadow-ambient' 

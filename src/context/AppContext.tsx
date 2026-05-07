@@ -224,7 +224,7 @@ const sendBulkWarnings = async (memberIds: string[], warningData: Omit<Warning, 
   try {
     const success = await dataService.sendBulkWarnings(memberIds, warningData);
     if (success) {
-      await refreshData(); // Refresh to get new warnings
+      await refreshData(false); // Refresh in background to get new warnings
     }
   } catch (error) {
     console.error('Error sending bulk warnings:', error);
@@ -340,7 +340,7 @@ const markWarningAsRead = async (warningId: string) => {
 
     if (currentUser) {
       await dataService.logActivity('MEMBER_EXIT', `${member.name} exited the organization and received a refund of LKR ${totalRefund.toLocaleString()}`, currentUser.id);
-      refreshData();
+      refreshData(false);
     }
 
     // Update local state
@@ -421,7 +421,7 @@ const markWarningAsRead = async (warningId: string) => {
           const member = allUsers.find(u => u.id === loanData.memberId);
           if (member) {
             await dataService.logActivity('LOAN_ISSUED', `Issued a new loan of LKR ${loanData.amount.toLocaleString()} to ${member.name}`, currentUser.id);
-            refreshData();
+            refreshData(false);
           }
         }
       }
@@ -529,7 +529,7 @@ const markWarningAsRead = async (warningId: string) => {
           const member = allUsers.find(u => u.id === memberId);
           if (member) {
             await dataService.logActivity('MEMBER_DEACTIVATED', `Deactivated member ${member.name}`, currentUser.id);
-            refreshData();
+            refreshData(false);
           }
         }
       }
@@ -557,7 +557,7 @@ const markWarningAsRead = async (warningId: string) => {
           const member = allUsers.find(u => u.id === memberId);
           if (member) {
             await dataService.logActivity('MEMBER_REACTIVATED', `Reactivated member ${member.name}`, currentUser.id);
-            refreshData();
+            refreshData(false);
           }
         }
       }
