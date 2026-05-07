@@ -361,33 +361,54 @@ const markWarningAsRead = async (warningId: string) => {
   };
 
   const updatePayment = async (paymentId: string, paid: boolean, markedBy?: string) => {
-    try {
-      const success = await dataService.updatePayment(paymentId, paid, markedBy);
-      if (success) {
-        setPayments(prev => prev.map(payment => 
-          payment.id === paymentId 
-            ? { 
-                ...payment, 
-                paid, 
-                paidDate: paid ? new Date().toISOString().split('T')[0] : undefined,
-                markedBy: paid ? markedBy : undefined
-              }
-            : payment
-        ));
-        
-        if (currentUser) {
-          const payment = payments.find(p => p.id === paymentId);
-          const member = allUsers.find(u => u.id === payment?.memberId);
-          if (member && payment) {
-            const status = paid ? 'paid' : 'unpaid';
-            await dataService.logActivity('PAYMENT_MARKED', `${member.name}'s payment for ${payment.month} ${payment.year} marked as ${status}`, currentUser.id);
-            // Refresh background data without triggering a global loading screen
-            refreshData(false);
+    // 1. Snapshot original state for rollback
+    const originalPayments = [...payments];
+    const today = new Date().toISOString().split('T')[0];
+
+    // 2. Optimistically update local state immediately
+    setPayments(prev => prev.map(payment => 
+      payment.id === paymentId 
+        ? { 
+            ...payment, 
+            paid, 
+            paidDate: paid ? today : undefined,
+            markedBy: paid ? markedBy : undefined
           }
+        : payment
+    ));
+
+    try {
+      // 3. Perform network call in background
+      const success = await dataService.updatePayment(paymentId, paid, markedBy);
+      
+      if (!success) {
+        // Rollback on server failure
+        setPayments(originalPayments);
+        return;
+      }
+
+      // 4. Handle activity log in background (don't await)
+      if (currentUser) {
+        // Use original snapshot to get metadata (month/year/memberId)
+        const paymentInfo = originalPayments.find(p => p.id === paymentId);
+        const member = allUsers.find(u => u.id === paymentInfo?.memberId);
+        
+        if (member && paymentInfo) {
+          const status = paid ? 'paid' : 'unpaid';
+          dataService.logActivity(
+            'PAYMENT_MARKED', 
+            `${member.name}'s payment for ${paymentInfo.month} ${paymentInfo.year} marked as ${status}`, 
+            currentUser.id
+          );
         }
       }
+      
+      // Note: Removed refreshData(false) as it's redundant with local state updates
+      // and dataService now handles cache invalidation correctly.
     } catch (error) {
       console.error('Error updating payment:', error);
+      // Rollback on network error
+      setPayments(originalPayments);
     }
   };
 

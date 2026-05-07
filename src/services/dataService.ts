@@ -188,6 +188,8 @@ async addWarning(warning: Omit<Warning, 'id' | 'createdAt' | 'isRead'>): Promise
     return null;
   }
 
+  cache.delete('warnings');
+
   return {
     id: data.id,
     memberId: data.member_id,
@@ -212,6 +214,7 @@ async markWarningAsRead(warningId: string): Promise<boolean> {
     return false;
   }
 
+  cache.delete('warnings');
   return true;
 },
 
@@ -226,6 +229,7 @@ async deleteWarning(warningId: string): Promise<boolean> {
     return false;
   }
 
+  cache.delete('warnings');
   return true;
 },
 
@@ -248,6 +252,7 @@ async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'membe
     return false;
   }
 
+  cache.delete('warnings');
   return true;
 },
 
@@ -271,6 +276,8 @@ async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'membe
       console.error('Error adding user:', error);
       return null;
     }
+
+    cache.delete('users');
 
     return {
       id: data.id,
@@ -297,6 +304,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
     return false;
   }
 
+  cache.delete('loans');
   return true;
 },
   async deactivateMember(memberId: string, deactivatedBy: string, reason?: string): Promise<boolean> {
@@ -315,6 +323,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('users');
     return true;
   },
 
@@ -334,6 +343,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('users');
     return true;
   },
 
@@ -375,6 +385,9 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('users');
+    cache.delete('payments');
+    cache.delete('loans');
     return true;
   },
 
@@ -389,6 +402,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('users');
     return true;
   },
 
@@ -417,6 +431,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('users');
     return true;
   },
 
@@ -470,6 +485,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('payments');
     return true;
   },
 
@@ -492,6 +508,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return false;
     }
 
+    cache.delete('payments');
     return true;
   },
 
@@ -551,6 +568,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return null;
     }
 
+    cache.delete('loans');
     return {
       id: data.id,
       memberId: data.member_id,
@@ -586,11 +604,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       })
       .eq('id', loanId);
 
-    if (error) {
-      console.error('Error updating loan repayment:', error);
-      return false;
-    }
-
+    cache.delete('loans');
     return true;
   },
 
@@ -616,11 +630,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       })
       .eq('id', loanId);
 
-    if (error) {
-      console.error('Error editing loan repaid amount:', error);
-      return false;
-    }
-
+    cache.delete('loans');
     return true;
   },
 
@@ -674,6 +684,7 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       return null;
     }
 
+    cache.delete('donations');
     return {
       id: data.id,
       amount: data.amount,
