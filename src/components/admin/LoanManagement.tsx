@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   DollarSign, Calendar, AlertCircle, CheckCircle2, TrendingUp, 
   CreditCard, Plus, Edit2, Save, X, ChevronDown, ChevronUp,
@@ -293,8 +294,8 @@ export default function LoanManagement() {
       </div>
 
       {/* Modals - Refactored for Aureum */}
-      {(showRepaymentModal || showEditRepaymentModal) && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+      {(showRepaymentModal || showEditRepaymentModal) && createPortal(
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[999] flex items-center justify-center p-6">
            <div className="w-full max-w-md glass-panel rounded-[2rem] p-8 space-y-8 animate-scaleUp">
               <div className="flex justify-between items-start">
                  <div className="w-16 h-16 rounded-2xl bg-gold/10 flex items-center justify-center text-gold border border-gold/20 shadow-gold-glow">
@@ -336,12 +337,13 @@ export default function LoanManagement() {
                 Confirm Transaction
               </button>
            </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Add Loan Modal */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+      {showAddForm && createPortal(
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[999] flex items-center justify-center p-6">
            <div className="w-full max-w-2xl glass-panel rounded-[2rem] p-8 lg:p-10 space-y-10 animate-scaleUp">
               <div className="flex justify-between items-start">
                  <div className="w-16 h-16 rounded-2xl bg-gold/10 flex items-center justify-center text-gold border border-gold/20 shadow-gold-glow">
@@ -393,7 +395,8 @@ export default function LoanManagement() {
                  </div>
               </form>
            </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -281,12 +281,12 @@ export default function AdminDashboard() {
                 <div className="absolute -inset-8 bg-emerald/5 blur-[100px] opacity-50"></div>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gold/5 blur-[120px] rounded-full opacity-30"></div>
 
-                <div className="relative bento-card glass-panel rounded-[2.5rem] p-10 lg:p-16 border-white/5 overflow-hidden">
+                <div className="relative bento-card glass-panel rounded-[2.5rem] p-6 lg:p-16 border-white/5 overflow-hidden">
                    {/* Background Textures */}
                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-emerald/10 to-transparent blur-[120px] -mr-48 -mt-48 opacity-40"></div>
                    <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-gold/10 to-transparent blur-[100px] -ml-32 -mb-32 opacity-20"></div>
 
-                   <div className="relative z-10 space-y-12">
+                   <div className="relative z-10 space-y-8 lg:space-y-12">
                       <div className="space-y-4">
                         <h1 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight">
                            Aureum Ledger <br/> 
@@ -294,11 +294,11 @@ export default function AdminDashboard() {
                         </h1>
                       </div>
 
-                      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+                      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-12">
                         <div className="space-y-6">
                            <div className="flex flex-col">
-                              <p className="hero-number text-7xl lg:text-[10rem] font-serif font-bold tracking-tighter leading-none pb-4 pr-12 overflow-visible">
-                                <span className="text-2xl lg:text-4xl text-white/40 font-sans font-bold tracking-normal align-top mr-6">LKR</span>
+                              <p className="hero-number text-5xl lg:text-[10rem] font-serif font-bold tracking-tighter leading-none pb-4 pr-12 overflow-visible">
+                                <span className="text-xl lg:text-4xl text-white/40 font-sans font-bold tracking-normal align-top mr-4 lg:mr-6">LKR</span>
                                 {groupStats.totalFunds.toLocaleString()}
                               </p>
                               <p className="text-xs lg:text-sm uppercase tracking-[0.6em] text-gray-500 font-bold mt-8">Available Group Funds</p>
@@ -346,7 +346,7 @@ export default function AdminDashboard() {
                    <div className="mt-8">
                       <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Active Loans</p>
                       <h4 className="text-4xl font-serif font-bold text-white mb-2">{groupStats.activeLoans}</h4>
-                      <p className="text-sm font-medium text-gold/70">LKR {groupStats.totalLoanAmount.toLocaleString()} out</p>
+                      <p className="text-xl lg:text-base font-bold text-gold-light">LKR {groupStats.totalLoanAmount.toLocaleString()} out</p>
                    </div>
                 </div>
 
