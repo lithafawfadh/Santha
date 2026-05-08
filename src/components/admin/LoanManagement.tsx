@@ -102,13 +102,21 @@ export default function LoanManagement() {
     : loans;
 
   const sortedLoans = [...filteredLoans].sort((a, b) => {
+    // 1. Group by Status (Active before Repaid)
     if (a.status === 'active' && b.status !== 'active') return -1;
     if (a.status !== 'active' && b.status === 'active') return 1;
+
+    // 2. Prioritize Overdue loans within the active group
     const aOverdue = new Date(a.dueDate) < new Date() && a.status === 'active';
     const bOverdue = new Date(b.dueDate) < new Date() && b.status === 'active';
     if (aOverdue && !bOverdue) return -1;
     if (!aOverdue && bOverdue) return 1;
-    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+
+    // 3. Within status groups, sort by issueDate descending (Newest first)
+    // If issueDate is the same, fallback to ID descending
+    const dateCompare = new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
+    if (dateCompare !== 0) return dateCompare;
+    return b.id.localeCompare(a.id);
   });
 
   const activeLoans = filteredLoans.filter(loan => loan.status === 'active');
