@@ -3,13 +3,13 @@ import { createPortal } from 'react-dom';
 import { 
   DollarSign, Calendar, AlertCircle, CheckCircle2, TrendingUp, 
   CreditCard, Plus, Edit2, Save, X, ChevronDown, ChevronUp,
-  User, ArrowUpRight, Search, Clock
+  User, ArrowUpRight, Search, Clock, Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import GlassButton from '../common/GlassButton';
 
 export default function LoanManagement() {
-  const { loans, allUsers, activeMembers, addLoan, updateLoanRepayment, editLoanRepaidAmount, currentUser, updateLoanDueDate } = useApp();
+  const { loans, allUsers, activeMembers, addLoan, updateLoanRepayment, editLoanRepaidAmount, currentUser, updateLoanDueDate, deleteLoan } = useApp();
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingDueDate, setEditingDueDate] = useState<string | null>(null);
@@ -21,6 +21,8 @@ export default function LoanManagement() {
   const [repaymentAmount, setRepaymentAmount] = useState('');
   const [editRepaymentAmount, setEditRepaymentAmount] = useState('');
   const [expandedLoans, setExpandedLoans] = useState<Set<string>>(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loanToDelete, setLoanToDelete] = useState<string | null>(null);
   
   const [newLoan, setNewLoan] = useState({
     memberId: '',
@@ -74,6 +76,20 @@ export default function LoanManagement() {
     await updateLoanDueDate(loanId, newDueDate);
     setEditingDueDate(null);
     setNewDueDate('');
+  };
+
+  const handleDeleteLoan = async () => {
+    if (!loanToDelete) return;
+    const success = await deleteLoan(loanToDelete);
+    if (success) {
+      setShowDeleteModal(false);
+      setLoanToDelete(null);
+    }
+  };
+
+  const handleEditDueDate = (loanId: string, currentDueDate: string) => {
+    setEditingDueDate(loanId);
+    setNewDueDate(currentDueDate);
   };
 
   const getMemberName = (memberId: string) => {
@@ -276,7 +292,13 @@ export default function LoanManagement() {
                       </div>
                    </div>
 
-                   <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-3">
+                      <button 
+                        onClick={() => { setLoanToDelete(loan.id); setShowDeleteModal(true); }}
+                        className="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500/20 transition-all flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" /> Delete Loan
+                      </button>
                       {loan.status === 'active' && (
                         <button 
                           onClick={() => { setSelectedLoan(loan.id); setEditRepaymentAmount(loan.repaidAmount.toString()); setShowEditRepaymentModal(true); }}
@@ -285,7 +307,7 @@ export default function LoanManagement() {
                           <Edit2 className="w-4 h-4" /> Correct Entry
                         </button>
                       )}
-                   </div>
+                    </div>
                 </div>
               )}
             </div>
@@ -314,7 +336,7 @@ export default function LoanManagement() {
               <div className="space-y-4">
                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                     <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Target Outstanding</p>
-                    <p className="text-2xl font-serif font-bold text-white">LKR {(loans.find(l => l.id === selectedLoan)?.amount || 0 - (loans.find(l => l.id === selectedLoan)?.repaidAmount || 0)).toLocaleString()}</p>
+                    <p className="text-2xl font-serif font-bold text-white">LKR {((loans.find(l => l.id === selectedLoan)?.amount || 0) - (loans.find(l => l.id === selectedLoan)?.repaidAmount || 0)).toLocaleString()}</p>
                  </div>
 
                  <div className="space-y-2">
@@ -394,6 +416,53 @@ export default function LoanManagement() {
                     <button type="submit" className="w-full py-5 bg-gold text-black rounded-2xl text-sm font-bold shadow-gold-glow hover:bg-gold-light transition-all uppercase tracking-[0.2em]">Authorize Loan Disbursement</button>
                  </div>
               </form>
+           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && createPortal(
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[999] flex items-center justify-center p-6">
+           <div className="w-full max-w-md glass-panel rounded-[2rem] p-8 space-y-8 animate-scaleUp border border-red-500/20">
+              <div className="flex justify-between items-start">
+                 <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 shadow-red-glow">
+                    <AlertCircle className="w-8 h-8" />
+                 </div>
+                 <button onClick={() => { setShowDeleteModal(false); setLoanToDelete(null); }} className="p-2 text-gray-500 hover:text-white transition-colors">
+                    <X className="w-6 h-6" />
+                 </button>
+              </div>
+
+              <div>
+                 <h3 className="text-2xl font-serif font-bold text-white">Delete Loan Record?</h3>
+                 <p className="text-sm text-gray-500 mt-2">This action is permanent and will remove this loan from all financial history and stats. This cannot be undone.</p>
+              </div>
+
+              <div className="space-y-4">
+                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Loan Details</p>
+                    <div className="flex justify-between items-center">
+                       <span className="text-sm text-white font-medium">{getMemberName(loans.find(l => l.id === loanToDelete)?.memberId || '')}</span>
+                       <span className="text-lg font-serif font-bold text-white">LKR {loans.find(l => l.id === loanToDelete)?.amount?.toLocaleString() || '0'}</span>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                 <button 
+                   onClick={handleDeleteLoan}
+                   className="w-full py-4 bg-red-500 text-white rounded-2xl text-sm font-bold shadow-red-glow hover:bg-red-600 transition-all uppercase tracking-widest"
+                 >
+                   Confirm Deletion
+                 </button>
+                 <button 
+                   onClick={() => { setShowDeleteModal(false); setLoanToDelete(null); }}
+                   className="w-full py-4 bg-white/5 text-gray-400 rounded-2xl text-sm font-bold border border-white/10 hover:bg-white/10 transition-all uppercase tracking-widest"
+                 >
+                   Cancel
+                 </button>
+              </div>
            </div>
         </div>,
         document.body

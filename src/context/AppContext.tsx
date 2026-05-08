@@ -22,6 +22,7 @@ interface AppContextType {
   addLoan: (loan: Omit<Loan, 'id'>) => Promise<void>;
   updateLoanRepayment: (loanId: string, repaidAmount: number) => Promise<void>;
   editLoanRepaidAmount: (loanId: string, newRepaidAmount: number) => Promise<void>;
+  deleteLoan: (loanId: string) => Promise<boolean>;
   addDonation: (donation: Omit<Donation, 'id'>) => Promise<void>;
   addMember: (member: Omit<User, 'id'>) => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
@@ -473,6 +474,32 @@ const markWarningAsRead = async (warningId: string) => {
     }
   };
 
+  const deleteLoan = async (loanId: string): Promise<boolean> => {
+    try {
+      const loanToDelete = loans.find(l => l.id === loanId);
+      const success = await dataService.deleteLoan(loanId);
+      if (success) {
+        setLoans(prev => prev.filter(loan => loan.id !== loanId));
+        if (currentUser && loanToDelete) {
+          const member = allUsers.find(u => u.id === loanToDelete.memberId);
+          if (member) {
+            await dataService.logActivity(
+              'LOAN_DELETED', 
+              `Deleted loan of LKR ${loanToDelete.amount.toLocaleString()} for ${member.name}`, 
+              currentUser.id
+            );
+            refreshData(false);
+          }
+        }
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting loan:', error);
+      return false;
+    }
+  };
+
   const addDonation = async (donationData: Omit<Donation, 'id'>) => {
     try {
       const newDonation = await dataService.addDonation(donationData);
@@ -646,6 +673,7 @@ const markWarningAsRead = async (warningId: string) => {
       addLoan,
       updateLoanRepayment,
       editLoanRepaidAmount,
+      deleteLoan,
       addDonation,
       addMember,
       removeMember,
