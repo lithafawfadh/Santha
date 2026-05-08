@@ -75,7 +75,7 @@ const generatePaymentsForMember = (memberId: string, memberJoinDate: string): Pa
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useLocalStorage<User | null>('santha_user', null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -272,6 +272,8 @@ const markWarningAsRead = async (warningId: string) => {
 
   const logout = () => {
     setCurrentUser(null);
+    // Force clear from localStorage to be safe
+    window.localStorage.removeItem('santha_user');
   };
 
   const processMemberExit = async (
