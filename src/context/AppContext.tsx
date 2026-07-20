@@ -223,9 +223,9 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
 
 const sendBulkWarnings = async (memberIds: string[], warningData: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>) => {
   try {
-    const success = await dataService.sendBulkWarnings(memberIds, warningData);
-    if (success) {
-      await refreshData(false); // Refresh in background to get new warnings
+    const newWarnings = await dataService.sendBulkWarnings(memberIds, warningData);
+    if (newWarnings) {
+      setWarnings(prev => [...newWarnings, ...prev]);
     }
   } catch (error) {
     console.error('Error sending bulk warnings:', error);
@@ -343,7 +343,6 @@ const markWarningAsRead = async (warningId: string) => {
 
     if (currentUser) {
       await dataService.logActivity('MEMBER_EXIT', `${member.name} exited the organization and received a refund of LKR ${totalRefund.toLocaleString()}`, currentUser.id);
-      refreshData(false);
     }
 
     // Update local state
@@ -424,7 +423,6 @@ const markWarningAsRead = async (warningId: string) => {
           const member = allUsers.find(u => u.id === loanData.memberId);
           if (member) {
             await dataService.logActivity('LOAN_ISSUED', `Issued a new loan of LKR ${loanData.amount.toLocaleString()} to ${member.name}`, currentUser.id);
-            refreshData(false);
           }
         }
       }
@@ -490,7 +488,6 @@ const markWarningAsRead = async (warningId: string) => {
               `Deleted loan of LKR ${loanToDelete.amount.toLocaleString()} for ${member.name}`, 
               currentUser.id
             );
-            refreshData(false);
           }
         }
         return true;
@@ -558,7 +555,6 @@ const markWarningAsRead = async (warningId: string) => {
           const member = allUsers.find(u => u.id === memberId);
           if (member) {
             await dataService.logActivity('MEMBER_DEACTIVATED', `Deactivated member ${member.name}`, currentUser.id);
-            refreshData(false);
           }
         }
       }
@@ -586,7 +582,6 @@ const markWarningAsRead = async (warningId: string) => {
           const member = allUsers.find(u => u.id === memberId);
           if (member) {
             await dataService.logActivity('MEMBER_REACTIVATED', `Reactivated member ${member.name}`, currentUser.id);
-            refreshData(false);
           }
         }
       }

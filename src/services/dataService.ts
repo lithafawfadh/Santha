@@ -233,7 +233,7 @@ async deleteWarning(warningId: string): Promise<boolean> {
   return true;
 },
 
-async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>): Promise<boolean> {
+async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'memberId' | 'createdAt' | 'isRead'>): Promise<Warning[] | null> {
   const warnings = memberIds.map(memberId => ({
     member_id: memberId,
     title: warning.title,
@@ -243,17 +243,29 @@ async sendBulkWarnings(memberIds: string[], warning: Omit<Warning, 'id' | 'membe
     expires_at: warning.expiresAt || null
   }));
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('warnings')
-    .insert(warnings);
+    .insert(warnings)
+    .select('*');
 
   if (error) {
     console.error('Error sending bulk warnings:', error);
-    return false;
+    return null;
   }
 
   cache.delete('warnings');
-  return true;
+
+  return (data || []).map((warningRow: any) => ({
+    id: warningRow.id,
+    memberId: warningRow.member_id,
+    title: warningRow.title,
+    message: warningRow.message,
+    type: warningRow.type as 'payment' | 'loan' | 'general' | 'urgent',
+    createdBy: warningRow.created_by,
+    createdAt: warningRow.created_at,
+    isRead: warningRow.is_read,
+    expiresAt: warningRow.expires_at || undefined
+  }));
 },
 
   async addUser(user: Omit<User, 'id'>): Promise<User | null> {
@@ -893,4 +905,4 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       createdAt: data.created_at,
     };
   },
-};
+};
