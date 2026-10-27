@@ -1,48 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Shield, LogIn, UserCheck, Sparkles, TrendingUp, Heart, HeartHandshake } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Shield, ArrowRight, Eye, EyeOff, User, ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import GlassCard from './common/GlassCard';
-import GlassButton from './common/GlassButton';
 
 export default function Login() {
+  const [step, setStep] = useState<'role' | 'credentials'>('role');
+  const [role, setRole] = useState<'admin' | 'member'>('member');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'member'>('member');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [activeParticles, setActiveParticles] = useState<Array<{id: number, x: number, y: number}>>([]);
+  const [focusTarget, setFocusTarget] = useState<'none' | 'username' | 'password'>('none');
+  const [eyePos, setEyePos] = useState({ x: 0, y: 0 });
+  const [isBlinking, setIsBlinking] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
   const { login } = useApp();
 
+  // Natural Blink Loop
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    const blinkInterval = setInterval(() => {
+      setIsBlinking(true);
+      setTimeout(() => setIsBlinking(false), 160);
+    }, 4200);
+    return () => clearInterval(blinkInterval);
   }, []);
 
+  // Interactive Eye Tracking (Mouse / Touch)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveParticles(prev => [
-        ...prev.slice(-15),
-        { id: Date.now(), x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }
-      ]);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (focusTarget !== 'none') return; // Field focus takes priority
+
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      // In Step 1, character is at the bottom, so eyes look slightly upward by default
+      const defaultY = step === 'role' ? -3 : 0;
+      const deltaX = Math.max(-7, Math.min(7, ((clientX - centerX) / centerX) * 8));
+      const deltaY = Math.max(-6, Math.min(6, defaultY + ((clientY - centerY) / centerY) * 7));
+
+      setEyePos({ x: deltaX, y: deltaY });
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', handleMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('touchmove', handleMove);
+    };
+  }, [focusTarget, step]);
+
+  // Adjust eye direction when focusing inputs
+  useEffect(() => {
+    if (focusTarget === 'username') {
+      setEyePos({ x: Math.min(5, Math.max(-5, (username.length - 6) * 0.8)), y: 6 });
+    } else if (focusTarget === 'password') {
+      setEyePos({ x: showPassword ? 3 : -6, y: showPassword ? 5 : -4 });
+    } else if (step === 'role') {
+      // In Step 1, eyes look upward toward the buttons
+      setEyePos({ x: 0, y: -4 });
+    }
+  }, [focusTarget, username, showPassword, step]);
+
+  const handleRoleSelect = (selectedRole: 'admin' | 'member') => {
+    setRole(selectedRole);
+    setError('');
+    setStep('credentials');
+  };
+
+  const handleBack = () => {
+    setError('');
+    setStep('role');
+    setFocusTarget('none');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (!username.trim()) {
-      setError('Please enter your username');
+      setError('Please enter your member username');
       return;
     }
 
     if (role === 'admin' && !password.trim()) {
-      setError('Please enter your password');
+      setError('Please enter your admin password');
       return;
     }
 
@@ -50,242 +96,345 @@ export default function Login() {
     try {
       const success = await login(username.trim(), role, password.trim() || undefined);
       if (!success) {
-        setError('Invalid credentials. Please check your username' + (role === 'admin' ? ' and password' : '') + '.');
+        setError('Invalid credentials. Check your username' + (role === 'admin' ? ' and password' : '') + '.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('An error occurred during authentication. Please try again.');
+      setError('An error occurred during authentication.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const quickLogin = async (userUsername: string, userRole: 'admin' | 'member', userPassword?: string) => {
-    setUsername(userUsername);
-    setPassword(userPassword || '');
-    setRole(userRole);
-    setIsLoading(true);
-    try {
-      await login(userUsername, userRole, userPassword);
-    } finally {
-      setIsLoading(false);
-    }
+  // Buttery iOS spring easing
+  const springConfig = {
+    type: 'spring',
+    stiffness: 300,
+    damping: 28,
+    mass: 0.85
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-      {/* Dynamic gradient background - Fixed for dark mode */}
-      <div 
-        className="absolute inset-0 transition-all duration-1000 ease-out"
-        style={{
-          background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, 
-            rgba(99, 102, 241, 0.2) 0%, 
-            rgba(139, 92, 246, 0.15) 25%, 
-            rgba(59, 130, 246, 0.1) 50%, 
-            transparent 70%),
-            linear-gradient(135deg, 
-              rgb(248, 250, 252) 0%, 
-              rgb(226, 232, 240) 25%, 
-              rgb(203, 213, 225) 50%, 
-              rgb(148, 163, 184) 100%)`
-        }}
-      />
-
-      {/* Dark mode overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:opacity-95 opacity-0 transition-opacity duration-500" />
-
-      {/* Floating particles */}
-      {activeParticles.map(particle => (
-        <div
-          key={particle.id}
-          className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-violet-500 rounded-full opacity-60 animate-pulse pointer-events-none"
-          style={{
-            left: particle.x,
-            top: particle.y,
-            animation: `float 4s ease-in-out infinite, fadeOut 4s ease-in-out forwards`
-          }}
-        />
-      ))}
-
-      {/* Morphing shapes - Adjusted for dark mode */}
-      <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-violet-500/30 to-indigo-600/30 dark:from-violet-500/20 dark:to-indigo-600/20 rounded-full blur-3xl animate-pulse transform rotate-12"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-br from-blue-500/25 to-cyan-500/25 dark:from-blue-500/15 dark:to-cyan-500/15 rounded-full blur-3xl animate-pulse transform -rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 dark:from-emerald-500/10 dark:to-blue-500/10 rounded-full blur-3xl animate-bounce transform rotate-45" style={{ animationDuration: '6s' }}></div>
+    <div 
+      ref={containerRef}
+      className="min-h-[100dvh] w-full bg-[#050814] flex items-center justify-center p-0 sm:p-6 lg:p-8 relative overflow-hidden font-sans selection:bg-orange-500/30"
+    >
+      {/* ─── AMBIENT DESKTOP BACKGROUND GLOW ─── */}
+      <div className="hidden sm:block absolute inset-0 pointer-events-none">
+        <div className="absolute -top-[15%] -left-[10%] w-[65vw] h-[65vw] max-w-[700px] max-h-[700px] rounded-full bg-blue-900/25 blur-[120px]" />
+        <div className="absolute -bottom-[15%] -right-[10%] w-[60vw] h-[60vw] max-w-[650px] max-h-[650px] rounded-full bg-orange-600/20 blur-[130px]" />
       </div>
 
-      {/* Main card - Fixed contrast */}
-      <GlassCard variant="gradient" className="max-w-lg w-full relative z-10 overflow-hidden">
-        <div className="absolute -inset-2 bg-gradient-to-r from-violet-500/40 via-blue-500/40 to-emerald-500/40 dark:from-violet-500/30 dark:via-blue-500/30 dark:to-emerald-500/30 rounded-3xl blur-xl animate-pulse"></div>
+      {/* ─── THE CARD SHELL (EDGE-TO-EDGE ON MOBILE, FLOATING PHONE ON DESKTOP) ─── */}
+      <div className="relative z-10 w-full h-[100dvh] sm:h-[720px] max-w-none sm:max-w-[420px] rounded-none sm:rounded-[48px] shadow-none sm:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.85),0_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden bg-[#FAF8F5]">
         
-        <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl border border-white/30 dark:border-slate-700/50 rounded-2xl p-12 shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <div className="relative mb-8">
-              <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-violet-500 to-blue-500 opacity-30" style={{ animationDuration: '8s' }}></div>
-              <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-emerald-500 opacity-20" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
-              
-              <GlassCard variant="highlight" className="relative mx-auto h-24 w-24 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-600/30 to-blue-600/30 dark:from-violet-500/40 dark:to-blue-500/40 border border-violet-400/40 dark:border-violet-400/30 shadow-2xl backdrop-blur-xl">
-                <HeartHandshake className="h-12 w-12 text-violet-600 dark:text-violet-400 animate-bounce" style={{ animationDuration: '3s' }} />
-                <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-ping" />
-              </GlassCard>
-            </div>
-            
-            <h1 className="text-5xl font-extralight tracking-wider text-slate-800 dark:text-white mb-2 font-serif drop-shadow-lg">
-              <span className="bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-300 dark:to-blue-300 bg-clip-text text-transparent">
-                F.O.R.T
-              </span>
+        {/* ─── TOP ORGANIC GEOMETRIC CUTOUTS (Step 1) ─── */}
+        <motion.div 
+          animate={{
+            y: step === 'credentials' ? -130 : 0,
+            opacity: step === 'credentials' ? 0 : 1,
+            scale: step === 'credentials' ? 0.8 : 1,
+          }}
+          transition={springConfig}
+          className="absolute top-0 inset-x-0 h-28 pointer-events-none z-10 overflow-hidden"
+        >
+          {/* Organic Amber Left Blob */}
+          <div className="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-[#FF7A00]" />
+          
+          {/* Deep Navy Circle Cutout */}
+          <div className="absolute top-6 left-28 w-11 h-11 rounded-full bg-[#081226]" />
+          
+          {/* Light Royal Blue Right Cutout */}
+          <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-[#6C92F6]" />
+        </motion.div>
+
+        {/* ─── STEP 1 CONTENT: HEADLINE & STACKED BUTTONS ─── */}
+        <motion.div
+          animate={{
+            opacity: step === 'role' ? 1 : 0,
+            y: step === 'role' ? 0 : -40,
+            filter: step === 'role' ? 'blur(0px)' : 'blur(4px)',
+            pointerEvents: step === 'role' ? 'auto' : 'none',
+          }}
+          transition={springConfig}
+          className="absolute inset-x-0 top-0 bottom-44 z-20 flex flex-col justify-center px-7 sm:px-9 pt-10 text-[#081226]"
+        >
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#081226] leading-[1.12]">
+              Let's check <br />
+              our ledger!
             </h1>
-            <h2 className="text-2xl font-light text-slate-700 dark:text-slate-200 mb-4 tracking-widest drop-shadow">
-              COLLECTIVE
-            </h2>
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-              <p className="text-slate-600 dark:text-slate-300 font-light tracking-wider text-sm drop-shadow">
-                Friends Organization for Resilience & Trust
-              </p>
-              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+            
+            <p className="text-sm font-medium text-zinc-500 mt-3 leading-relaxed max-w-[300px]">
+              Zero-interest emergency loans & mutual monthly contributions for our friends.
+            </p>
+
+            {/* The Stacked Role Buttons */}
+            <div className="mt-8 space-y-3.5">
+              {/* Member Access Button */}
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleRoleSelect('member')}
+                className="w-full py-4 px-6 rounded-2xl bg-[#081226] text-white font-bold text-sm tracking-wide shadow-lg shadow-black/20 flex items-center justify-center space-x-2 transition-all hover:bg-[#0D1B3A]"
+              >
+                <User className="w-4 h-4 text-[#FF7A00]" />
+                <span>Member Access</span>
+              </motion.button>
+
+              {/* Admin Console Button */}
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleRoleSelect('admin')}
+                className="w-full py-4 px-6 rounded-2xl bg-[#FAF8F5] text-[#081226] font-bold text-sm tracking-wide border-2 border-[#081226] flex items-center justify-center space-x-2 transition-all hover:bg-[#F2EDE4]"
+              >
+                <Shield className="w-4 h-4 text-[#081226]" />
+                <span>Admin Console</span>
+              </motion.button>
             </div>
           </div>
+        </motion.div>
 
-          <form className="space-y-8" onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              {/* Username */}
-              <div className="group">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
-                  Identity
-                </label>
+        {/* ─── THE UNIFIED MASCOT DOME (ATTACHED BODY & EYES TOGETHER) ─── */}
+        {/* In Step 1: Anchored to the bottom (h-[185px]) with eyes looking up. */}
+        {/* In Step 2: Smoothly expands to fill 100% height, and face glides seamlessly atop the form! */}
+        <motion.div
+          animate={{
+            height: step === 'credentials' ? '100%' : '185px',
+            borderTopLeftRadius: step === 'credentials' ? '0px' : '90px',
+            borderTopRightRadius: step === 'credentials' ? '0px' : '90px',
+          }}
+          transition={springConfig}
+          className="absolute inset-x-0 bottom-0 bg-gradient-to-b from-[#FF7A00] via-[#FF6A00] to-[#E65100] z-30 shadow-[0_-12px_40px_rgba(255,122,0,0.3)] overflow-hidden flex flex-col justify-between"
+        >
+          {/* ─── STEP 2 TOP HEADER BAR (Only visible in credentials step) ─── */}
+          <div className="w-full pt-4 sm:pt-6 px-6 sm:px-7 flex items-center justify-between z-20">
+            {step === 'credentials' ? (
+              <>
+                <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={handleBack}
+                  className="inline-flex items-center space-x-1.5 py-1.5 px-3.5 rounded-full bg-black/15 hover:bg-black/25 text-[#081226] text-xs font-bold transition-all shadow-sm"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back</span>
+                </motion.button>
+
+                <motion.div 
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="px-3 py-1 rounded-full bg-white/20 text-xs font-bold text-[#081226] tracking-wide shadow-sm"
+                >
+                  {role === 'admin' ? 'Admin Portal' : 'Member Portal'}
+                </motion.div>
+              </>
+            ) : <div className="h-7" />}
+          </div>
+
+          {/* ─── OPTION 1: THE UNIFIED CENTERED HERO & FORM BLOCK ─── */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-7 -mt-4 z-10 w-full max-w-[360px] mx-auto">
+            
+            {/* Animated Mascot Facial Features */}
+            {/* In Step 1: Sits at 12px from dome top (looking up). In Step 2: Smoothly positions right above the title (looking down). */}
+            <motion.div
+              animate={{
+                y: step === 'credentials' ? 0 : 0,
+                scale: step === 'credentials' ? 1.05 : 1,
+                marginBottom: step === 'credentials' ? '14px' : '0px',
+              }}
+              transition={springConfig}
+              className="flex flex-col items-center pointer-events-none select-none"
+            >
+              {/* White Top Tuft */}
+              <motion.div 
+                animate={{ rotate: [-4, 4, -4] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-5 h-6 rounded-full bg-white shadow-sm mb-1.5"
+              />
+
+              {/* Eyebrows */}
+              <div className="flex items-center justify-between w-32 sm:w-36 px-2 mb-1.5">
+                <motion.div 
+                  animate={{ 
+                    y: focusTarget === 'password' && !showPassword ? 5 : 0,
+                    rotate: focusTarget === 'password' && !showPassword ? 16 : 0 
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="w-7 h-2 rounded-full bg-[#081226]"
+                />
+                <motion.div 
+                  animate={{ 
+                    y: focusTarget === 'password' && !showPassword ? 5 : 0,
+                    rotate: focusTarget === 'password' && !showPassword ? -16 : 0 
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="w-7 h-2 rounded-full bg-[#081226]"
+                />
+              </div>
+
+              {/* Big Expressive Interactive Eyes */}
+              <div className="flex items-center justify-center space-x-4 sm:space-x-5">
+                {/* Left Eye */}
+                <div className="relative w-14 h-16 sm:w-16 sm:h-18 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden">
+                  <motion.div 
+                    animate={{ height: isBlinking ? '100%' : '0%' }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute top-0 inset-x-0 bg-[#FF7A00] z-20"
+                  />
+                  <motion.div
+                    animate={{ 
+                      x: eyePos.x, 
+                      y: eyePos.y,
+                      scaleY: focusTarget === 'password' && !showPassword ? 0.35 : 1
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+                    className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5"
+                  >
+                    <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 right-2 opacity-80" />
+                  </motion.div>
+                </div>
+
+                {/* Right Eye */}
+                <div className="relative w-14 h-16 sm:w-16 sm:h-18 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden">
+                  <motion.div 
+                    animate={{ height: isBlinking ? '100%' : '0%' }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute top-0 inset-x-0 bg-[#FF7A00] z-20"
+                  />
+                  <motion.div
+                    animate={{ 
+                      x: eyePos.x, 
+                      y: eyePos.y,
+                      scaleY: focusTarget === 'password' && !showPassword ? 0.35 : 1
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+                    className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5"
+                  >
+                    <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 right-2 opacity-80" />
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Nostrils */}
+              <div className="flex space-x-2 mt-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#081226]/40" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#081226]/40" />
+              </div>
+            </motion.div>
+
+            {/* Step 2 Form Content (Directly below the Mascot with zero awkward gap) */}
+            <motion.div
+              animate={{
+                opacity: step === 'credentials' ? 1 : 0,
+                y: step === 'credentials' ? 0 : 25,
+                height: step === 'credentials' ? 'auto' : 0,
+                pointerEvents: step === 'credentials' ? 'auto' : 'none',
+              }}
+              transition={springConfig}
+              className="w-full flex flex-col items-center"
+            >
+              {/* Title & Subtitle */}
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#081226] text-center mb-1">
+                {role === 'admin' ? 'Enter Admin Key' : 'Enter Your Name'}
+              </h2>
+              <p className="text-xs font-semibold text-[#081226]/65 text-center mb-5">
+                Santha Mutual Aid • LKR 300/mo Pool
+              </p>
+
+              {/* The Form Fields */}
+              <form onSubmit={handleSubmit} className="w-full space-y-3">
+                {/* Username Input */}
                 <div className="relative">
                   <input
-                    id="username"
-                    name="username"
+                    id="username-field"
                     type="text"
+                    autoComplete="username"
                     value={username}
+                    onFocus={() => setFocusTarget('username')}
+                    onBlur={() => setFocusTarget('none')}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
-                    placeholder="Enter your unique identifier"
+                    placeholder={role === 'admin' ? 'Admin username' : 'Your member username'}
+                    className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-white/25 placeholder-[#081226]/50 text-[#081226] font-semibold text-sm border border-white/30 focus:outline-none focus:ring-4 focus:ring-black/15 focus:bg-white/35 transition-all shadow-inner text-center"
                   />
                 </div>
-              </div>
 
-              {/* Password */}
-              {role === 'admin' && (
-                <div className="group animate-fadeIn">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-4 tracking-widest uppercase">
-                    Security Key
-                  </label>
-                  <div className="relative">
+                {/* Password Input (Admin Only) */}
+                {role === 'admin' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="relative"
+                  >
                     <input
-                      id="password"
-                      name="password"
-                      type="password"
+                      id="password-field"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       value={password}
+                      onFocus={() => setFocusTarget('password')}
+                      onBlur={() => setFocusTarget('none')}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-6 py-5 backdrop-blur-2xl bg-white/50 dark:bg-slate-700/60 border border-slate-300/60 dark:border-slate-600/60 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:focus:ring-violet-400/50 transition-all duration-500 shadow-xl font-light tracking-wider group-hover:shadow-2xl group-hover:bg-white/60 dark:group-hover:bg-slate-700/70"
-                      placeholder="Enter your secure passphrase"
+                      placeholder="Admin security password"
+                      className="w-full pl-5 pr-11 py-3.5 sm:py-4 rounded-2xl bg-white/25 placeholder-[#081226]/50 text-[#081226] font-semibold text-sm border border-white/30 focus:outline-none focus:ring-4 focus:ring-black/15 focus:bg-white/35 transition-all shadow-inner text-center"
                     />
-                  </div>
-                </div>
-              )}
-
-              {/* Role Selector */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-6 tracking-widest uppercase text-center">
-                  Choose Your Path
-                </label>
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Guardian */}
-                  <div className="relative group">
-                    <GlassButton
-                      variant={role === 'admin' ? 'primary' : 'secondary'}
-                      onClick={() => setRole('admin')}
-                      className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
-                        role === 'admin'
-                          ? 'ring-2 ring-violet-500/50 dark:ring-violet-400/50 bg-gradient-to-br from-violet-500/30 to-purple-600/30 dark:from-violet-500/40 dark:to-purple-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
-                      }`}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#081226]/70 hover:text-[#081226] transition-colors p-1"
                     >
-                      <Shield className={`h-8 w-8 mb-3 ${role === 'admin' ? 'text-violet-600 dark:text-violet-300 animate-pulse' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Guardian</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Administrator</span>
-                    </GlassButton>
-                  </div>
-                  
-                  {/* Builder */}
-                  <div className="relative group">
-                    <GlassButton
-                      variant={role === 'member' ? 'accent' : 'secondary'}
-                      onClick={() => setRole('member')}
-                      className={`relative w-full flex flex-col items-center justify-center px-6 py-8 transition-all duration-500 rounded-2xl backdrop-blur-2xl shadow-xl font-light tracking-wider ${
-                        role === 'member'
-                          ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50 bg-gradient-to-br from-blue-500/30 to-cyan-600/30 dark:from-blue-500/40 dark:to-cyan-600/40'
-                          : 'hover:bg-white/30 dark:hover:bg-slate-700/40 bg-white/20 dark:bg-slate-700/30'
-                      }`}
-                    >
-                      <UserCheck className={`h-8 w-8 mb-3 ${role === 'member' ? 'text-blue-600 dark:text-blue-300 animate-bounce' : 'text-slate-600 dark:text-slate-300'}`} />
-                      <span className="text-sm text-slate-800 dark:text-white font-medium">Builder</span>
-                      <span className="text-xs opacity-70 mt-1 text-slate-600 dark:text-slate-300">Member</span>
-                    </GlassButton>
-                  </div>
-                </div>
-              </div>
-            </div>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </motion.div>
+                )}
 
-            {error && (
-              <GlassCard className="p-6 bg-red-500/30 dark:bg-red-500/40 border-red-400/50 dark:border-red-400/60 border rounded-2xl backdrop-blur-2xl shadow-xl animate-shake">
-                <p className="text-sm text-red-700 dark:text-red-200 font-light tracking-wider text-center">{error}</p>
-              </GlassCard>
-            )}
+                {/* Error Banner */}
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-2.5 rounded-xl bg-black/30 border border-white/20 text-white text-xs font-medium text-center shadow-md"
+                  >
+                    {error}
+                  </motion.div>
+                )}
 
-            {/* Submit */}
-            <GlassButton
-              type="submit"
-              variant="primary"
-              disabled={isLoading}
-              className="w-full flex justify-center items-center py-6 text-lg font-light transition-all duration-500 hover:shadow-2xl rounded-2xl backdrop-blur-2xl shadow-xl tracking-widest uppercase hover:scale-105 bg-gradient-to-r from-violet-600/90 to-blue-600/90 dark:from-violet-500/80 dark:to-blue-500/80 border-2 border-white/40 dark:border-white/20 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  <LogIn className="h-6 w-6 mr-4" />
-                  Enter Collective
-                </>
-              )}
-            </GlassButton>
-          </form>
-        </div>
-      </GlassCard>
+                {/* Primary Submit Button */}
+                <motion.button
+                  whileHover={{ scale: 1.015 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-[#081226] text-white font-extrabold text-sm tracking-wide shadow-xl shadow-black/25 flex items-center justify-center space-x-2 mt-2 hover:bg-[#0D1B3A] transition-all"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{role === 'admin' ? 'Authorize Admin' : 'Enter Santha'}</span>
+                      <ArrowRight className="w-4 h-4 text-[#FF7A00]" />
+                    </>
+                  )}
+                </motion.button>
+              </form>
+            </motion.div>
+          </div>
 
-      {/* Animations */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes fadeOut {
-          0% { opacity: 0.6; }
-          100% { opacity: 0; }
-        }
-        @keyframes fadeIn {
-          0% { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
+          {/* Subtitle Footer */}
+          <div className="w-full text-center text-[11px] font-semibold text-[#081226]/60 pb-4 pt-1">
+            Santha Mutual Aid • Zero-Interest Group Ledger
+          </div>
+        </motion.div>
+
+      </div>
     </div>
   );
 }
