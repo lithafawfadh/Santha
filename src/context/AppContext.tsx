@@ -82,7 +82,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [memberExits, setMemberExits] = useState<MemberExit[]>([]);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(() => !!currentUser);
   
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
   const [isDarkMode, setIsDarkMode] = useLocalStorage(darkModeKey, false);
@@ -186,12 +186,17 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
 };
 
   useEffect(() => {
-    // Timeout fallback: if loading doesn't resolve in 8s, force it to stop
-    const timeout = setTimeout(() => {
+    if (currentUser) {
+      setLoading(true);
+      // Timeout fallback: if loading doesn't resolve in 8s, force it to stop
+      const timeout = setTimeout(() => {
+        setLoading(false);
+      }, 8000);
+      refreshData().finally(() => clearTimeout(timeout));
+    } else {
       setLoading(false);
-    }, 8000);
-    refreshData().finally(() => clearTimeout(timeout));
-  }, []);
+    }
+  }, [currentUser?.id]);
 
   useEffect(() => {
     calculateGroupStats();
@@ -202,6 +207,7 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
       const user = await authService.loginWithUsername(username, role, password);
       if (user) {
         setCurrentUser(user);
+        refreshData(true);
         return true;
       }
       return false;

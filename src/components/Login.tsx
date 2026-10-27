@@ -34,35 +34,42 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    await new Promise(resolve => setTimeout(resolve, 800));
+    setError('');
 
     if (!username.trim()) {
       setError('Please enter your username');
-      setIsLoading(false);
       return;
     }
 
     if (role === 'admin' && !password.trim()) {
       setError('Please enter your password');
-      setIsLoading(false);
       return;
     }
 
-    if (login(username.trim(), role, password.trim() || undefined)) {
-      setError('');
-    } else {
-      setError('Invalid credentials. Please check your username' + (role === 'admin' ? ' and password' : '') + '.');
+    setIsLoading(true);
+    try {
+      const success = await login(username.trim(), role, password.trim() || undefined);
+      if (!success) {
+        setError('Invalid credentials. Please check your username' + (role === 'admin' ? ' and password' : '') + '.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An error occurred during authentication. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const quickLogin = (userUsername: string, userRole: 'admin' | 'member', userPassword?: string) => {
+  const quickLogin = async (userUsername: string, userRole: 'admin' | 'member', userPassword?: string) => {
     setUsername(userUsername);
     setPassword(userPassword || '');
     setRole(userRole);
-    login(userUsername, userRole, userPassword);
+    setIsLoading(true);
+    try {
+      await login(userUsername, userRole, userPassword);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
