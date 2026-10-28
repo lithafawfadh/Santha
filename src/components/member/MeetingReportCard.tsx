@@ -1,1 +1,179 @@
-import React from 'react';\nimport { FileText, Calendar, ArrowRight, Inbox } from 'lucide-react';\nimport { MeetingReport } from '../../types';\n\ninterface MeetingReportCardProps {\n  latestReport: MeetingReport | null;\n  onViewAll: () => void;\n  isDarkMode: boolean;\n}\n\nexport default function MeetingReportCard({ latestReport, onViewAll, isDarkMode }: MeetingReportCardProps) {\n  if (!latestReport) {\n    return (\n      <div className={`rounded-2xl overflow-hidden ${\n        isDarkMode \n          ? 'bg-gray-800/40 border border-gray-700/50' \n          : 'bg-white/40 border border-white/60'\n      } backdrop-blur-xl shadow-lg h-full`}>\n        <div className={`px-6 py-4 border-b ${\n          isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'\n        }`}>\n          <div className=\"flex items-center space-x-2\">\n            <FileText className={`h-5 w-5 ${\n              isDarkMode ? 'text-purple-400' : 'text-purple-600'\n            }`} />\n            <h3 className={`text-lg font-bold ${\n              isDarkMode ? 'text-white' : 'text-gray-900'\n            }`}>\n              Latest Meeting\n            </h3>\n          </div>\n        </div>\n        <div className=\"p-6\">\n          <div className=\"text-center py-8\">\n            <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${\n              isDarkMode ? 'bg-gray-700/30' : 'bg-gray-100'\n            }`}>\n              <Inbox className={`h-12 w-12 ${\n                isDarkMode ? 'text-gray-500' : 'text-gray-400'\n              }`} />\n            </div>\n            <h4 className={`text-base font-semibold mb-2 ${\n              isDarkMode ? 'text-white' : 'text-gray-900'\n            }`}>\n              No Meeting Reports\n            </h4>\n            <p className={`text-sm ${\n              isDarkMode ? 'text-gray-400' : 'text-gray-500'\n            }`}>\n              Check back later for updates\n            </p>\n          </div>\n        </div>\n      </div>\n    );\n  }\n\n  return (\n    <div className={`rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 ${\n      isDarkMode \n        ? 'bg-gray-800/40 border border-gray-700/50 hover:border-purple-500/50' \n        : 'bg-white/40 border border-white/60 hover:border-purple-300'\n    } backdrop-blur-xl shadow-lg h-full`}>\n      {/* Header */}\n      <div className={`px-6 py-4 border-b ${\n        isDarkMode ? 'bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-gray-700/50' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-gray-200/50'\n      }`}>\n        <div className=\"flex items-center justify-between\">\n          <div className=\"flex items-center space-x-2\">\n            <div className=\"p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500\">\n              <FileText className=\"h-4 w-4 text-white\" />\n            </div>\n            <h3 className={`text-lg font-bold ${\n              isDarkMode ? 'text-white' : 'text-gray-900'\n            }`}>\n              Latest Meeting\n            </h3>\n          </div>\n          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${\n            isDarkMode \n              ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' \n              : 'bg-purple-100 text-purple-700 border border-purple-200'\n          }`}>\n            New\n          </span>\n        </div>\n      </div>\n\n      {/* Content */}\n      <div className=\"p-6\">\n        {/* Title */}\n        <h4 className={`text-xl font-bold mb-3 ${\n          isDarkMode ? 'text-white' : 'text-gray-900'\n        }`}>\n          {latestReport.title}\n        </h4>\n\n        {/* Date */}\n        <div className=\"flex items-center space-x-2 mb-4\">\n          <Calendar className={`h-4 w-4 ${\n            isDarkMode ? 'text-purple-400' : 'text-purple-600'\n          }`} />\n          <span className={`text-sm font-medium ${\n            isDarkMode ? 'text-gray-400' : 'text-gray-600'\n          }`}>\n            {new Date(latestReport.date).toLocaleDateString('en-US', {\n              month: 'long',\n              day: 'numeric',\n              year: 'numeric'\n            })}\n          </span>\n        </div>\n\n        {/* Key Decisions Preview */}\n        {latestReport.decisions && latestReport.decisions.length > 0 && (\n          <div className=\"mb-4\">\n            <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${\n              isDarkMode ? 'text-gray-500' : 'text-gray-400'\n            }`}>\n              Key Decisions\n            </p>\n            <ul className=\"space-y-2\">\n              {latestReport.decisions.slice(0, 3).map((decision, index) => (\n                <li\n                  key={index}\n                  className={`text-sm pl-3 border-l-2 py-1 ${\n                    isDarkMode \n                      ? 'border-purple-500/30 text-gray-300' \n                      : 'border-purple-300 text-gray-700'\n                  }`}\n                >\n                  {decision.length > 80 ? `${decision.substring(0, 80)}...` : decision}\n                </li>\n              ))}\n            </ul>\n            {latestReport.decisions.length > 3 && (\n              <p className={`text-xs mt-2 ${\n                isDarkMode ? 'text-gray-500' : 'text-gray-400'\n              }`}>\n                +{latestReport.decisions.length - 3} more decision{latestReport.decisions.length - 3 !== 1 ? 's' : ''}\n              </p>\n            )}\n          </div>\n        )}\n\n        {/* View All Button */}\n        <button\n          onClick={onViewAll}\n          className={`w-full mt-4 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center space-x-2 ${\n            isDarkMode\n              ? 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30'\n              : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200'\n          }`}\n        >\n          <span>View All Reports</span>\n          <ArrowRight className=\"h-4 w-4\" />\n        </button>\n      </div>\n    </div>\n  );\n}\n
+import React from 'react';
+import { FileText, Calendar, ArrowRight, Inbox, CheckCircle2, ChevronRight } from 'lucide-react';
+import { MeetingReport } from '../../types';
+import TactileFolderCard from '../common/TactileFolderCard';
+
+interface MeetingReportCardProps {
+  latestReport: MeetingReport | null;
+  onViewAll: () => void;
+  isDarkMode: boolean;
+}
+
+export default function MeetingReportCard({
+  latestReport,
+  onViewAll,
+  isDarkMode,
+}: MeetingReportCardProps) {
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+
+  if (!latestReport) {
+    return (
+      <TactileFolderCard
+        tabLabel="RESOLUTIONS"
+        tabColor="#8B5CF6"
+        tabTextColor="#FFFFFF"
+        isDarkMode={isDarkMode}
+        delay={0.15}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div
+            className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: '#8B5CF6',
+              borderColor,
+              color: '#FFFFFF',
+            }}
+          >
+            <FileText className="w-5 h-5" strokeWidth={2.2} />
+          </div>
+          <span
+            className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border-2"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+              color: isDarkMode ? '#94A3B8' : '#64748B',
+            }}
+          >
+            Archive Empty
+          </span>
+        </div>
+
+        <div className="text-center py-5">
+          <div
+            className="w-12 h-12 rounded-xl border-2 mx-auto mb-2.5 flex items-center justify-center"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.04)' : '#FAF7F2',
+            }}
+          >
+            <Inbox className="w-6 h-6 text-neutral-400" />
+          </div>
+          <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+            No Meeting Reports Yet
+          </h4>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 max-w-[220px] mx-auto">
+            Group minutes and assembly resolutions will appear here.
+          </p>
+        </div>
+
+        <button
+          onClick={onViewAll}
+          className="w-full mt-3 py-2.5 px-4 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+          style={{
+            borderColor,
+            backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : '#FAF7F2',
+            color: isDarkMode ? '#FFFFFF' : '#121212',
+            boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+          }}
+        >
+          <span>Open Archive</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </TactileFolderCard>
+    );
+  }
+
+  return (
+    <TactileFolderCard
+      tabLabel="RESOLUTIONS"
+      tabColor="#8B5CF6"
+      tabTextColor="#FFFFFF"
+      isDarkMode={isDarkMode}
+      delay={0.15}
+    >
+      {/* Top Header Row */}
+      <div className="flex items-start justify-between mb-3">
+        <div
+          className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0"
+          style={{
+            backgroundColor: '#8B5CF6',
+            borderColor,
+            color: '#FFFFFF',
+          }}
+        >
+          <FileText className="w-5 h-5" strokeWidth={2.2} />
+        </div>
+        <span
+          className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border-2"
+          style={{
+            borderColor,
+            backgroundColor: 'rgba(139, 92, 246, 0.15)',
+            color: isDarkMode ? '#C4B5FD' : '#7C3AED',
+          }}
+        >
+          Latest Meeting
+        </span>
+      </div>
+
+      {/* Report Info */}
+      <div className="space-y-3">
+        <div>
+          <h4 className="text-[15px] font-bold text-neutral-900 dark:text-neutral-100 line-clamp-1 leading-snug">
+            {latestReport.title}
+          </h4>
+          <div className="flex items-center gap-1.5 mt-1 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400">
+            <Calendar className="w-3 h-3 text-purple-500 shrink-0" />
+            <span>
+              {new Date(latestReport.date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
+        </div>
+
+        {/* Resolutions snippet */}
+        {latestReport.decisions && latestReport.decisions.length > 0 && (
+          <div className="space-y-1.5 pt-1">
+            <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              Key Resolutions
+            </p>
+            <div className="space-y-1.5">
+              {latestReport.decisions.slice(0, 2).map((decision, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-2 p-2 rounded-xl border text-xs"
+                  style={{
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FAF7F2',
+                  }}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
+                  <span className="text-neutral-700 dark:text-neutral-300 line-clamp-2 leading-relaxed">
+                    {decision}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Action Button */}
+      <button
+        onClick={onViewAll}
+        className="w-full mt-4 py-2.5 px-4 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        style={{
+          borderColor,
+          backgroundColor: '#8B5CF6',
+          color: '#FFFFFF',
+          boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+        }}
+      >
+        <span>View All Resolutions</span>
+        <ChevronRight className="w-3.5 h-3.5" />
+      </button>
+    </TactileFolderCard>
+  );
+}

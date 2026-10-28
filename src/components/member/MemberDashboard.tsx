@@ -1,1022 +1,1646 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback, Suspense } from 'react';
-import { 
-  User, 
-  DollarSign, 
-  Calendar, 
-  AlertCircle, 
-  TrendingUp, 
-  CreditCard, 
-  Edit3, 
-  X, 
-  Moon, 
-  Sun, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
-  ArrowUpRight, 
-  Award, 
-  Target, 
-  Activity,
-  FileText 
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard,
+  Edit3, X, Moon, Sun, CheckCircle2, Clock, AlertTriangle,
+  Activity, FileText, Zap, Users, LogOut,
+  ChevronDown, Copy, Check, ArrowRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import MeetingReportsModal from '../common/MeetingReportsModal';
 import { MeetingReport } from '../../types';
 import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
-import ShaderBackground from '../common/ShaderBackground';
 import WarningBanner from '../common/WarningBanner';
+import TactileFolderCard from '../common/TactileFolderCard';
+import MeetingReportCard from './MeetingReportCard';
 
-// Professional Status Badge Component
-const StatusBadge = React.memo(({ status, text }: { status: 'success' | 'warning' | 'error' | 'info', text: string }) => {
-  const styles = {
-    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    error: 'bg-red-500/10 text-red-400 border-red-500/20',
-    info: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-  };
+// ─── Spring Presets ──────────────────────────────────────────────────────────
+const spring = { type: 'spring', stiffness: 350, damping: 28 };
+const springFast = { type: 'spring', stiffness: 420, damping: 28 };
 
-  return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${styles[status]}`}>
-      {text}
-    </span>
-  );
-});
+// ─── Tactile Navigation Header ────────────────────────────────────────────────
+interface NavBarProps {
+  name: string;
+  username: string;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  onOpenReports: () => void;
+  onOpenProfile: () => void;
+  onOpenBankDetails: () => void;
+  reportCount: number;
+}
 
-StatusBadge.displayName = 'StatusBadge';
-
-// Professional Metric Card Component
-const MetricCard = React.memo(({ 
-  icon: Icon, 
-  label, 
-  value, 
-  subValue, 
-  trend, 
-  colorScheme = 'blue',
-  isDarkMode 
-}: { 
-  icon: any, 
-  label: string, 
-  value: string, 
-  subValue?: string, 
-  trend?: 'up' | 'down' | 'neutral',
-  colorScheme?: 'blue' | 'green' | 'purple' | 'orange' | 'red',
-  isDarkMode: boolean 
-}) => {
-  const colors = {
-    blue: 'from-blue-500 to-cyan-500',
-    green: 'from-emerald-500 to-teal-500',
-    purple: 'from-purple-500 to-pink-500',
-    orange: 'from-orange-500 to-amber-500',
-    red: 'from-red-500 to-rose-500'
-  };
+const NavBar = React.memo(({
+  name,
+  username,
+  isDarkMode,
+  toggleDarkMode,
+  onOpenReports,
+  onOpenProfile,
+  onOpenBankDetails,
+  reportCount,
+}: NavBarProps) => {
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+  const headerBg = isDarkMode ? '#0E1117' : '#FAF7F2';
+  const buttonBg = isDarkMode ? '#171B26' : '#FFFFFF';
+  const shadow = isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212';
 
   return (
-    <div className={`group relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] ${
-      isDarkMode 
-        ? 'bg-gray-800/40 hover:bg-gray-800/60 border border-gray-700/50' 
-        : 'bg-white/40 hover:bg-white/60 border border-white/60'
-    } backdrop-blur-xl shadow-lg hover:shadow-xl`}>
-      {/* Gradient accent */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${colors[colorScheme]} opacity-60`} />
-      
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-xl bg-gradient-to-br ${colors[colorScheme]} shadow-lg`}>
-            <Icon className="h-5 w-5 text-white" />
-          </div>
-          {trend && (
-            <div className={`flex items-center space-x-1 text-xs font-medium ${
-              trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-gray-400'
-            }`}>
-              <ArrowUpRight className={`h-3 w-3 ${trend === 'down' ? 'rotate-90' : ''}`} />
+    <header
+      className="sticky top-0 z-40 border-b-2 transition-colors select-none"
+      style={{
+        backgroundColor: headerBg,
+        borderColor,
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+        {/* Left: Member Avatar & Identity */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenProfile}
+            title="Open Profile Settings"
+            className="w-10 h-10 rounded-xl border-2 flex items-center justify-center font-black text-sm text-white shrink-0 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+            style={{
+              backgroundColor: '#FF7A00',
+              borderColor,
+              boxShadow: shadow,
+            }}
+          >
+            {name ? name.charAt(0).toUpperCase() : 'S'}
+          </button>
+
+          <div className="leading-tight">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-neutral-950 dark:text-white">
+                {name || 'Member'}
+              </span>
+              <span
+                className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border-2"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(52,211,153,0.15)' : 'rgba(34,197,94,0.12)',
+                  color: isDarkMode ? '#34D399' : '#16A34A',
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Active Ledger
+              </span>
             </div>
-          )}
-        </div>
-        
-        <div className="space-y-1">
-          <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            {label}
-          </p>
-          <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            {value}
-          </p>
-          {subValue && (
-            <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-              {subValue}
+            <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              @{username || 'member'} · 0% Interest Fund
             </p>
-          )}
+          </div>
+        </div>
+
+        {/* Right: Tactile Actions */}
+        <div className="flex items-center gap-2">
+          {/* Bank Transfer Details Trigger Button */}
+          <button
+            onClick={onOpenBankDetails}
+            title="Bank Transfer Details (LKR 300/mo)"
+            className="flex items-center gap-1.5 h-10 px-3 rounded-xl border-2 font-bold text-xs text-neutral-900 dark:text-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+            style={{
+              backgroundColor: buttonBg,
+              borderColor,
+              boxShadow: shadow,
+            }}
+          >
+            <CreditCard className="w-3.5 h-3.5 text-[#FF7A00]" strokeWidth={2.2} />
+            <span className="hidden sm:inline">Bank Details</span>
+          </button>
+
+          {/* Reports Archive Button */}
+          <button
+            onClick={onOpenReports}
+            title="Community Resolutions & Archive"
+            className="relative w-10 h-10 rounded-xl border-2 flex items-center justify-center text-neutral-800 dark:text-neutral-200 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+            style={{
+              backgroundColor: buttonBg,
+              borderColor,
+              boxShadow: shadow,
+            }}
+          >
+            <FileText className="w-4 h-4" strokeWidth={2.2} />
+            {reportCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border border-black dark:border-white bg-[#FF7A00] flex items-center justify-center text-[8px] font-black text-white"
+              >
+                {reportCount}
+              </span>
+            )}
+          </button>
+
+          {/* Theme Mode Toggle Button */}
+          <button
+            onClick={toggleDarkMode}
+            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            className="w-10 h-10 rounded-xl border-2 flex items-center justify-center text-neutral-800 dark:text-neutral-200 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+            style={{
+              backgroundColor: buttonBg,
+              borderColor,
+              boxShadow: shadow,
+            }}
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" strokeWidth={2.2} />
+            ) : (
+              <Moon className="w-4 h-4 text-neutral-800" strokeWidth={2.2} />
+            )}
+          </button>
+
+          {/* Profile Trigger Pill */}
+          <button
+            onClick={onOpenProfile}
+            title="Open Account Menu"
+            className="hidden sm:flex items-center gap-1.5 h-10 px-3 rounded-xl border-2 font-bold text-xs text-neutral-900 dark:text-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+            style={{
+              backgroundColor: buttonBg,
+              borderColor,
+              boxShadow: shadow,
+            }}
+          >
+            <User className="w-3.5 h-3.5" strokeWidth={2.2} />
+            <span>Profile</span>
+            <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
+          </button>
         </div>
       </div>
-    </div>
+    </header>
   );
 });
+NavBar.displayName = 'NavBar';
 
-MetricCard.displayName = 'MetricCard';
+// ─── Tactile Month Tile Component ─────────────────────────────────────────────
+interface MonthTileProps {
+  month: string;
+  isPaid: boolean;
+  isCurrent: boolean;
+  isPast: boolean;
+  paidDate?: string;
+  index: number;
+  isDarkMode: boolean;
+}
 
+const MonthTile = React.memo(({
+  month,
+  isPaid,
+  isCurrent,
+  isPast,
+  paidDate,
+  index,
+  isDarkMode,
+}: MonthTileProps) => {
+  const shortMonth = month.slice(0, 3).toUpperCase();
+  const baseBorderColor = isDarkMode ? '#2E364A' : '#121212';
+
+  let borderStyle = baseBorderColor;
+  let bgStyle = isDarkMode ? 'rgba(255,255,255,0.03)' : '#FFFFFF';
+  let badgeText = isDarkMode ? '#94A3B8' : '#64748B';
+  let shadow = isDarkMode ? '2px 2px 0px rgba(0,0,0,0.5)' : '2px 2px 0px #121212';
+
+  if (isPaid) {
+    borderStyle = isDarkMode ? '#34D399' : '#16A34A';
+    bgStyle = isDarkMode ? 'rgba(52,211,153,0.12)' : 'rgba(34,197,94,0.08)';
+    badgeText = isDarkMode ? '#34D399' : '#15803D';
+    shadow = isDarkMode ? '2px 2px 0px rgba(52,211,153,0.3)' : '2px 2px 0px #16A34A';
+  } else if (isCurrent) {
+    borderStyle = '#FF7A00';
+    bgStyle = isDarkMode ? 'rgba(255,122,0,0.15)' : 'rgba(255,122,0,0.08)';
+    badgeText = '#FF7A00';
+    shadow = '2px 2px 0px #FF7A00';
+  } else if (isPast) {
+    borderStyle = isDarkMode ? '#F87171' : '#DC2626';
+    bgStyle = isDarkMode ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.06)';
+    badgeText = isDarkMode ? '#F87171' : '#B91C1C';
+    shadow = isDarkMode ? '2px 2px 0px rgba(248,113,113,0.3)' : '2px 2px 0px #DC2626';
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ ...springFast, delay: index * 0.02 }}
+      className="relative rounded-xl border-2 p-2.5 sm:p-3 flex flex-col items-center justify-between min-h-[82px] select-none transition-all"
+      style={{
+        backgroundColor: bgStyle,
+        borderColor: borderStyle,
+        boxShadow: shadow,
+      }}
+    >
+      {/* Month Label */}
+      <span
+        className="text-[11px] font-black tracking-wider uppercase"
+        style={{ color: badgeText }}
+      >
+        {shortMonth}
+      </span>
+
+      {/* Center Icon */}
+      <div className="my-1 flex items-center justify-center">
+        {isPaid ? (
+          <CheckCircle2
+            className="w-5 h-5 text-emerald-500 dark:text-emerald-400"
+            strokeWidth={2.4}
+          />
+        ) : isCurrent ? (
+          <div className="relative">
+            <Clock className="w-5 h-5 text-orange-500 animate-pulse" strokeWidth={2.4} />
+          </div>
+        ) : isPast ? (
+          <AlertTriangle
+            className="w-5 h-5 text-red-500 dark:text-red-400"
+            strokeWidth={2.4}
+          />
+        ) : (
+          <div
+            className="w-4 h-4 rounded-full border-2 border-neutral-300 dark:border-neutral-700"
+          />
+        )}
+      </div>
+
+      {/* Status / Date Label */}
+      <div className="text-[10px] font-bold text-center leading-tight truncate w-full">
+        {isPaid && paidDate ? (
+          <span className="text-emerald-700 dark:text-emerald-300 font-black">
+            {new Date(paidDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+        ) : isPaid ? (
+          <span className="text-emerald-700 dark:text-emerald-300">Paid</span>
+        ) : isCurrent ? (
+          <span className="text-orange-600 dark:text-orange-400 font-black">Due Now</span>
+        ) : isPast ? (
+          <span className="text-red-600 dark:text-red-400 font-bold">Unpaid</span>
+        ) : (
+          <span className="text-neutral-400 dark:text-neutral-500">Upcoming</span>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+MonthTile.displayName = 'MonthTile';
+
+// ─── Tactile Loan Card Component ──────────────────────────────────────────────
+interface LoanCardProps {
+  loan: any;
+  isDarkMode: boolean;
+}
+
+const LoanCard = React.memo(({ loan, isDarkMode }: LoanCardProps) => {
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+  const outstanding = loan.amount - loan.repaidAmount;
+  const progress = loan.amount > 0 ? (loan.repaidAmount / loan.amount) * 100 : 0;
+  const today = new Date();
+  const dueDate = new Date(loan.dueDate);
+  const daysRemaining = Math.ceil((dueDate.getTime() - today.getTime()) / 86400000);
+  const isOverdue = daysRemaining < 0 && loan.status === 'active';
+  const isDueSoon = daysRemaining >= 0 && daysRemaining <= 7 && loan.status === 'active';
+
+  const tabColor = loan.status === 'repaid' ? '#22C55E' : isOverdue ? '#EF4444' : '#FF7A00';
+
+  return (
+    <TactileFolderCard
+      tabLabel="LOAN RECORD"
+      tabColor={tabColor}
+      tabTextColor="#FFFFFF"
+      isDarkMode={isDarkMode}
+      delay={0.12}
+    >
+      {/* Top Header */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div
+          className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0"
+          style={{
+            backgroundColor: tabColor,
+            borderColor,
+            color: '#FFFFFF',
+          }}
+        >
+          <Zap className="w-5 h-5" strokeWidth={2.2} />
+        </div>
+
+        <span
+          className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border-2"
+          style={{
+            borderColor,
+            backgroundColor:
+              loan.status === 'repaid'
+                ? 'rgba(34,197,94,0.15)'
+                : isOverdue
+                ? 'rgba(239,68,68,0.15)'
+                : 'rgba(255,122,0,0.15)',
+            color:
+              loan.status === 'repaid'
+                ? (isDarkMode ? '#34D399' : '#15803D')
+                : isOverdue
+                ? (isDarkMode ? '#F87171' : '#B91C1C')
+                : (isDarkMode ? '#FB923C' : '#C2410C'),
+          }}
+        >
+          {loan.status === 'repaid'
+            ? '✓ Repaid'
+            : isOverdue
+            ? '⚠ Overdue'
+            : isDueSoon
+            ? '⏰ Due Soon'
+            : '⏳ Active Loan'}
+        </span>
+      </div>
+
+      {/* Main Loan Details */}
+      <div className="space-y-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            Emergency Loan · 0% Interest
+          </p>
+          <p className="text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-neutral-950 dark:text-white mt-0.5">
+            LKR {loan.amount.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Outstanding Callout */}
+        {loan.status !== 'repaid' && outstanding > 0 && (
+          <div
+            className="p-3 rounded-xl border-2"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? 'rgba(255,122,0,0.08)' : '#FFF7ED',
+              boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.5)' : '2px 2px 0px #121212',
+            }}
+          >
+            <div className="flex items-center justify-between text-xs font-bold text-neutral-600 dark:text-neutral-300 mb-0.5">
+              <span>Outstanding Balance</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                {isOverdue ? `${Math.abs(daysRemaining)}d overdue` : `${daysRemaining}d left`}
+              </span>
+            </div>
+            <p className="text-xl font-black tabular-nums text-neutral-950 dark:text-white">
+              LKR {outstanding.toLocaleString()}
+            </p>
+            <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mt-1">
+              Due {dueDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+          </div>
+        )}
+
+        {/* Repayment Progress Stats */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div
+            className="p-2.5 rounded-xl border-2"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? 'rgba(52,211,153,0.08)' : 'rgba(34,197,94,0.08)',
+            }}
+          >
+            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-0.5">
+              Paid So Far
+            </p>
+            <p className="text-sm font-black tabular-nums text-emerald-800 dark:text-emerald-200">
+              LKR {loan.repaidAmount.toLocaleString()}
+            </p>
+          </div>
+
+          <div
+            className="p-2.5 rounded-xl border-2"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FAF7F2',
+            }}
+          >
+            <p className="text-[10px] font-black uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-0.5">
+              Repaid
+            </p>
+            <p className="text-sm font-black tabular-nums text-neutral-900 dark:text-white">
+              {Math.round(progress)}%
+            </p>
+          </div>
+        </div>
+
+        {/* Progress Bar with 2px Border */}
+        <div>
+          <div
+            className="h-2.5 rounded-full border-2 overflow-hidden"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#E2E8F0',
+            }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1.1, ease: 'easeOut' }}
+              style={{
+                backgroundColor: loan.status === 'repaid' ? '#22C55E' : '#FF7A00',
+              }}
+            />
+          </div>
+        </div>
+
+        {loan.status === 'repaid' && (
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 pt-1">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Loan fully repaid in good standing.</span>
+          </div>
+        )}
+      </div>
+    </TactileFolderCard>
+  );
+});
+LoanCard.displayName = 'LoanCard';
+
+// ─── Tactile No Loan State Component ──────────────────────────────────────────
+const NoLoan = React.memo(({
+  isDarkMode,
+  onRequestLoan,
+}: {
+  isDarkMode: boolean;
+  onRequestLoan: () => void;
+}) => {
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+
+  return (
+    <TactileFolderCard
+      tabLabel="0% EMERGENCY"
+      tabColor="#EC4899"
+      tabTextColor="#FFFFFF"
+      isDarkMode={isDarkMode}
+      delay={0.12}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div
+          className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0"
+          style={{
+            backgroundColor: '#EC4899',
+            borderColor,
+            color: '#FFFFFF',
+          }}
+        >
+          <Zap className="w-5 h-5" strokeWidth={2.2} />
+        </div>
+
+        <span
+          className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border-2"
+          style={{
+            borderColor,
+            backgroundColor: 'rgba(236,72,153,0.12)',
+            color: isDarkMode ? '#F472B6' : '#BE185D',
+          }}
+        >
+          Eligible
+        </span>
+      </div>
+
+      <div className="space-y-2 mb-4">
+        <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+          0% Emergency Loan Protection
+        </h4>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+          As an active contributing member, you have instant access to interest-free emergency assistance when urgent needs arise.
+        </p>
+      </div>
+
+      <button
+        onClick={onRequestLoan}
+        className="w-full py-2.5 px-4 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        style={{
+          borderColor,
+          backgroundColor: '#EC4899',
+          color: '#FFFFFF',
+          boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+        }}
+      >
+        <span>Request Emergency Aid</span>
+        <ArrowRight className="w-3.5 h-3.5" />
+      </button>
+    </TactileFolderCard>
+  );
+});
+NoLoan.displayName = 'NoLoan';
+
+// ─── Quick Actions & Bank Details Modal ────────────────────────────────────────
+interface QuickActionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  isDarkMode: boolean;
+}
+
+const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActionModalProps) => {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+  const modalBg = isDarkMode ? '#171B26' : '#FFFFFF';
+
+  const copyToClipboard = (key: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <motion.div
+            className="fixed inset-x-4 top-[10%] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-50 rounded-2xl border-2 overflow-hidden shadow-2xl p-5 select-none"
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            transition={springFast}
+            style={{
+              backgroundColor: modalBg,
+              borderColor,
+              boxShadow: isDarkMode ? '6px 6px 0px rgba(0,0,0,0.8)' : '6px 6px 0px #121212',
+            }}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b-2" style={{ borderColor }}>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-lg border-2 flex items-center justify-center bg-[#FF7A00] text-white"
+                  style={{ borderColor }}
+                >
+                  <CreditCard className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-neutral-950 dark:text-white">
+                    Mutual Aid Transfer
+                  </h3>
+                  <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    Monthly Contribution · LKR 300
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg border-2 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+                style={{ borderColor }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Bank Details Card */}
+            <div className="py-4 space-y-3">
+              <div
+                className="p-3.5 rounded-xl border-2 space-y-2.5"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FAF7F2',
+                }}
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-neutral-500 dark:text-neutral-400">Bank Name</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">Commercial Bank of Ceylon</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-neutral-500 dark:text-neutral-400">Account Name</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">Santha Mutual Pool</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs pt-1 border-t" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+                  <span className="font-medium text-neutral-500 dark:text-neutral-400">Account Number</span>
+                  <button
+                    onClick={() => copyToClipboard('acc', '8010000000')}
+                    className="flex items-center gap-1.5 font-black text-sm text-[#FF7A00] hover:underline"
+                  >
+                    <span>8010 000 000</span>
+                    {copiedKey === 'acc' ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-neutral-500 dark:text-neutral-400">Branch</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">Colombo Main Branch</span>
+                </div>
+              </div>
+
+              {/* Note Callout */}
+              <div
+                className="p-2.5 rounded-xl border-2 flex items-start gap-2 text-xs"
+                style={{
+                  borderColor,
+                  backgroundColor: 'rgba(255,122,0,0.08)',
+                  color: isDarkMode ? '#FB923C' : '#C2410C',
+                }}
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  Please include your <strong>member name</strong> in the transfer remarks so the treasurer can stamp your month promptly.
+                </span>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => copyToClipboard('all', 'Commercial Bank | Santha Mutual Pool | 8010000000 | LKR 300')}
+                className="flex-1 py-2.5 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                style={{
+                  borderColor,
+                  backgroundColor: '#FF7A00',
+                  color: '#FFFFFF',
+                  boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+                }}
+              >
+                {copiedKey === 'all' ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Copied Details!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Copy All Bank Details</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 transition-colors"
+                style={{ borderColor }}
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+});
+QuickActionModal.displayName = 'QuickActionModal';
+
+// ─── Profile Slide-over Sheet ─────────────────────────────────────────────────
+interface ProfileSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentUser: any;
+  isDarkMode: boolean;
+  onLogout: () => void;
+  onUsernameUpdate: (val: string) => Promise<void>;
+}
+
+const ProfileSheet = React.memo(({
+  isOpen,
+  onClose,
+  currentUser,
+  isDarkMode,
+  onLogout,
+  onUsernameUpdate,
+}: ProfileSheetProps) => {
+  const [editing, setEditing] = useState(false);
+  const [newName, setNewName] = useState(currentUser?.username || '');
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+  const sheetBg = isDarkMode ? '#0E1117' : '#FAF7F2';
+
+  const handleSave = async () => {
+    if (!newName.trim() || newName.trim() === currentUser?.username) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    await onUsernameUpdate(newName.trim());
+    setSaving(false);
+    setMsg('Username updated!');
+    setEditing(false);
+    setTimeout(() => setMsg(''), 3000);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <motion.div
+            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-88 flex flex-col border-l-2 select-none"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={spring}
+            style={{
+              backgroundColor: sheetBg,
+              borderColor,
+              boxShadow: '-4px 0px 0px rgba(0,0,0,0.2)',
+            }}
+          >
+            {/* Sheet Header */}
+            <div className="flex items-center justify-between p-5 border-b-2" style={{ borderColor }}>
+              <p className="text-base font-black text-neutral-950 dark:text-white">
+                Member Profile
+              </p>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg border-2 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+                style={{ borderColor }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Avatar Squircle */}
+              <div className="flex flex-col items-center gap-2 py-4">
+                <div
+                  className="w-16 h-16 rounded-2xl border-2 flex items-center justify-center text-2xl font-black text-white"
+                  style={{
+                    backgroundColor: '#FF7A00',
+                    borderColor,
+                    boxShadow: isDarkMode ? '3px 3px 0px rgba(0,0,0,0.6)' : '3px 3px 0px #121212',
+                  }}
+                >
+                  {currentUser?.name?.charAt(0)?.toUpperCase() || 'M'}
+                </div>
+                <div className="text-center mt-1">
+                  <p className="text-base font-black text-neutral-950 dark:text-white">
+                    {currentUser?.name}
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    @{currentUser?.username}
+                  </p>
+                  <span
+                    className="inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border-2"
+                    style={{
+                      borderColor,
+                      backgroundColor: 'rgba(255,122,0,0.15)',
+                      color: isDarkMode ? '#FB923C' : '#C2410C',
+                    }}
+                  >
+                    Santha Member
+                  </span>
+                </div>
+              </div>
+
+              {/* Username edit block */}
+              <div
+                className="rounded-xl border-2 p-4 space-y-2"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+                }}
+              >
+                <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  Member Handle
+                </p>
+                {editing ? (
+                  <div className="space-y-2">
+                    <input
+                      autoFocus
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg text-sm border-2 font-bold outline-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                      style={{ borderColor }}
+                      placeholder="New username"
+                      disabled={saving}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex-1 py-1.5 rounded-lg border-2 text-xs font-black text-white bg-[#FF7A00]"
+                        style={{ borderColor }}
+                      >
+                        {saving ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditing(false);
+                          setNewName(currentUser?.username || '');
+                        }}
+                        className="px-3 py-1.5 rounded-lg border-2 text-xs font-bold text-neutral-600 dark:text-neutral-400"
+                        style={{ borderColor }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="w-full flex items-center justify-between p-2 rounded-lg border-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    style={{ borderColor }}
+                  >
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                      @{currentUser?.username}
+                    </span>
+                    <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
+                  </button>
+                )}
+                {msg && <p className="text-xs font-bold text-emerald-500">{msg}</p>}
+              </div>
+
+              {/* Member Since block */}
+              <div
+                className="rounded-xl border-2 p-4"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+                }}
+              >
+                <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
+                  Member Status
+                </p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {currentUser?.joinDate
+                    ? `Joined ${new Date(currentUser.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
+                    : 'Active founding cohort'}
+                </p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Monthly contribution: LKR 300 / mo
+                </p>
+              </div>
+            </div>
+
+            {/* Logout Footer */}
+            <div className="p-5 border-t-2" style={{ borderColor }}>
+              <button
+                onClick={() => {
+                  onClose();
+                  onLogout();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl border-2 text-xs font-black text-red-600 dark:text-red-400 border-red-500/40 hover:bg-red-500/10 transition-all flex items-center justify-center gap-2 active:scale-98"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out of Ledger</span>
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+});
+ProfileSheet.displayName = 'ProfileSheet';
+
+// ─── Meeting Resolutions Slide-up Sheet ───────────────────────────────────────
+interface MeetingSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  reports: MeetingReport[];
+  isDarkMode: boolean;
+}
+
+const MeetingSheet = React.memo(({
+  isOpen,
+  onClose,
+  reports,
+  isDarkMode,
+}: MeetingSheetProps) => {
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+  const sheetBg = isDarkMode ? '#0E1117' : '#FAF7F2';
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <motion.div
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t-2 border-x-2 overflow-hidden select-none"
+            style={{
+              backgroundColor: sheetBg,
+              borderColor,
+              maxHeight: '85dvh',
+              boxShadow: '0px -6px 0px rgba(0,0,0,0.2)',
+            }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={spring}
+          >
+            {/* Sheet Handle & Title */}
+            <div className="flex items-center justify-between p-5 border-b-2" style={{ borderColor }}>
+              <div>
+                <h3 className="text-base font-black text-neutral-950 dark:text-white">
+                  Community Resolutions Archive
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {reports.length} official assembly record{reports.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg border-2 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+                style={{ borderColor }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="overflow-y-auto p-5 space-y-4" style={{ maxHeight: 'calc(85dvh - 80px)' }}>
+              {reports.length === 0 ? (
+                <div className="text-center py-12 text-neutral-400">
+                  <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-bold">No meeting reports filed yet.</p>
+                </div>
+              ) : (
+                reports.map((r, i) => (
+                  <motion.div
+                    key={r.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...spring, delay: i * 0.04 }}
+                    className="rounded-2xl border-2 p-4 space-y-3"
+                    style={{
+                      borderColor,
+                      backgroundColor: isDarkMode ? '#171B26' : '#FFFFFF',
+                      boxShadow: isDarkMode ? '3px 3px 0px rgba(0,0,0,0.5)' : '3px 3px 0px #121212',
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="text-sm font-black text-neutral-950 dark:text-white">
+                          {r.title}
+                        </h4>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5 mt-0.5">
+                          <Calendar className="w-3.5 h-3.5 text-purple-500" />
+                          <span>
+                            {new Date(r.date).toLocaleDateString('en-US', {
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {r.decisions && r.decisions.length > 0 && (
+                      <div className="space-y-1.5 pt-1">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                          Decisions Approved
+                        </p>
+                        {r.decisions.map((d, j) => (
+                          <div
+                            key={j}
+                            className="flex items-start gap-2 p-2 rounded-xl border text-xs"
+                            style={{
+                              borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FAF7F2',
+                            }}
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
+                            <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                              {d}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {r.attendees && r.attendees.length > 0 && (
+                      <div className="flex items-center gap-1.5 pt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                        <Users className="w-3.5 h-3.5" />
+                        <span>Present: {r.attendees.join(', ')}</span>
+                      </div>
+                    )}
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+});
+MeetingSheet.displayName = 'MeetingSheet';
+
+// ─── Main MemberDashboard Component ──────────────────────────────────────────
 export default function MemberDashboard() {
-  const { 
-    currentUser, 
-    payments, 
-    loans, 
-    groupStats, 
-    logout, 
-    loading, 
-    updateUsername, 
-    isDarkMode, 
+  const {
+    currentUser,
+    payments,
+    loans,
+    groupStats,
+    logout,
+    loading,
+    updateUsername,
+    isDarkMode,
     toggleDarkMode,
     memberWarnings,
-    markWarningAsRead
+    markWarningAsRead,
   } = useApp();
-  
+
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [isEditingUsername, setIsEditingUsername] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [newUsername, setNewUsername] = useState(currentUser?.username || '');
-  const [usernameMessage, setUsernameMessage] = useState('');
-  const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
-  
-  // Meeting Reports State
+  const [showProfile, setShowProfile] = useState(false);
+  const [showMeetings, setShowMeetings] = useState(false);
+  const [showPastLoans, setShowPastLoans] = useState(false);
+  const [showQuickAction, setShowQuickAction] = useState(false);
   const [meetingReports, setMeetingReports] = useState<MeetingReport[]>([]);
-  const [showMeetingReports, setShowMeetingReports] = useState(false);
-  
-  const userMenuRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const months = useMemo(() => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], []);
-  
+
+  const months = useMemo(
+    () => [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ],
+    []
+  );
+
   const availableYears = useMemo(() => {
-    const years = [...new Set(payments
-      .filter(p => p.memberId === currentUser?.id)
-      .map(p => p.year)
-    )].sort((a, b) => b - a);
-    return years.length > 0 ? years : [new Date().getFullYear()];
+    const yrs = [
+      ...new Set(
+        payments
+          .filter((p) => p.memberId === currentUser?.id)
+          .map((p) => p.year)
+      ),
+    ].sort((a, b) => b - a);
+    return yrs.length > 0 ? yrs : [new Date().getFullYear()];
   }, [payments, currentUser?.id]);
-  
-  const myPayments = useMemo(() => 
-    payments.filter(p => p.memberId === currentUser?.id && p.year === selectedYear),
+
+  const myPayments = useMemo(
+    () =>
+      payments.filter(
+        (p) => p.memberId === currentUser?.id && p.year === selectedYear
+      ),
     [payments, currentUser?.id, selectedYear]
   );
-  
-  const myLoans = useMemo(() => 
-    loans.filter(l => l.memberId === currentUser?.id),
+
+  const myLoans = useMemo(
+    () => loans.filter((l) => l.memberId === currentUser?.id),
     [loans, currentUser?.id]
   );
-  
+
+  const activeLoans = useMemo(
+    () => myLoans.filter((l) => l.status === 'active'),
+    [myLoans]
+  );
+
+  const repaidLoans = useMemo(
+    () => myLoans.filter((l) => l.status === 'repaid'),
+    [myLoans]
+  );
+
   const stats = useMemo(() => {
-    const paidMonths = myPayments.filter(p => p.paid).length;
-    const pendingMonths = myPayments.filter(p => !p.paid).length;
-    const totalPaid = myPayments.filter(p => p.paid).reduce((sum, p) => sum + p.amount, 0);
-    const activeLoans = myLoans.filter(l => l.status === 'active');
-    const totalLoanAmount = activeLoans.reduce((sum, l) => sum + (l.amount - l.repaidAmount), 0);
+    const paidMonths = myPayments.filter((p) => p.paid).length;
+    const pendingMonths = myPayments.filter((p) => !p.paid).length;
+    const totalPaid = myPayments
+      .filter((p) => p.paid)
+      .reduce((s, p) => s + p.amount, 0);
+    const active = myLoans.filter((l) => l.status === 'active');
+    const totalLoanAmt = active.reduce(
+      (s, l) => s + (l.amount - l.repaidAmount),
+      0
+    );
     const completionRate = Math.round((paidMonths / 12) * 100);
-    
     return {
       paidMonths,
       pendingMonths,
       totalPaid,
-      activeLoans,
-      totalLoanAmount,
-      completionRate
+      activeLoans: active,
+      totalLoanAmt,
+      completionRate,
     };
   }, [myPayments, myLoans]);
 
-  const getPaymentStatus = useCallback((month: string) => {
-    const payment = myPayments.find(p => p.month === month);
-    return payment?.paid || false;
-  }, [myPayments]);
+  const currentDate = useMemo(
+    () => ({
+      month: new Date().getMonth(),
+      year: new Date().getFullYear(),
+    }),
+    []
+  );
 
-  const currentDate = useMemo(() => ({
-    month: new Date().getMonth(),
-    year: new Date().getFullYear()
-  }), []);
+  const getPayment = useCallback(
+    (month: string) => myPayments.find((p) => p.month === month),
+    [myPayments]
+  );
 
   // Load meeting reports
   useEffect(() => {
-    const loadMeetingReports = async () => {
+    (async () => {
       try {
         const { dataService } = await import('../../services/dataService');
         const reports = await dataService.getMeetingReports();
         setMeetingReports(reports);
-      } catch (error) {
-        console.error('Error loading meeting reports:', error);
+      } catch (e) {
+        console.error('Meeting reports error:', e);
       }
-    };
-    
-    loadMeetingReports();
+    })();
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (userMenuRef.current && !userMenuRef.current.contains(target) && 
-          dropdownRef.current && !dropdownRef.current.contains(target)) {
-        setShowUserMenu(false);
-        setIsEditingUsername(false);
-        setNewUsername(currentUser?.username || '');
-      }
-    };
+  const handleUsernameUpdate = useCallback(
+    async (val: string) => {
+      await updateUsername(currentUser?.id || '', val);
+    },
+    [currentUser?.id, updateUsername]
+  );
 
-    if (showUserMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showUserMenu, currentUser?.username]);
-
-  useEffect(() => {
-    if (showUserMenu) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showUserMenu]);
-
-  const handleUsernameUpdate = useCallback(async () => {
-    if (!newUsername.trim() || newUsername.trim() === currentUser?.username) {
-      setIsEditingUsername(false);
-      setNewUsername(currentUser?.username || '');
-      return;
-    }
-
-    setIsUpdatingUsername(true);
-    setUsernameMessage('');
-
-    try {
-      const success = await updateUsername(currentUser?.id || '', newUsername.trim());
-      if (success) {
-        setUsernameMessage('Username updated successfully!');
-        setIsEditingUsername(false);
-        setShowUserMenu(false);
-        setTimeout(() => setUsernameMessage(''), 3000);
-      } else {
-        setUsernameMessage('Error: Username already taken or invalid.');
-      }
-    } catch (error) {
-      setUsernameMessage('Error: Failed to update username.');
-    } finally {
-      setIsUpdatingUsername(false);
-    }
-  }, [newUsername, currentUser, updateUsername]);
-
-  const cancelUsernameEdit = useCallback(() => {
-    setIsEditingUsername(false);
-    setNewUsername(currentUser?.username || '');
-    setUsernameMessage('');
-  }, [currentUser?.username]);
+  const borderColor = isDarkMode ? '#2E364A' : '#121212';
+  const shadow = isDarkMode ? '3px 3px 0px rgba(0,0,0,0.6)' : '3px 3px 0px #121212';
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="text-center">
-          <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4 ${isDarkMode ? 'border-emerald-400' : 'border-emerald-600'}`}></div>
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading your dashboard...</p>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: isDarkMode ? '#0E1117' : '#FAF7F2' }}
+      >
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl border-2 border-black dark:border-white bg-[#FF7A00] animate-spin mx-auto" />
+          <p className="text-sm font-bold text-neutral-600 dark:text-neutral-400">
+            Opening your tactile ledger…
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen relative overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <ShaderBackground />
-      
-      {/* Professional Header */}
-      <header className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-300 ${
-        isDarkMode 
-          ? 'bg-gray-900/80 border-gray-800/50' 
-          : 'bg-white/80 border-gray-200/50'
-      } shadow-sm`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo & Welcome */}
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-emerald-500/20">
-                <User className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Welcome back, {currentUser?.name}
-                </h1>
-                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  @{currentUser?.username}
-                </p>
-              </div>
-            </div>
-            
-            {/* Actions */}
-            <div className="flex items-center space-x-2">
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2.5 rounded-xl transition-all duration-300 ${
-                  isDarkMode
-                    ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                } shadow-sm`}
-                aria-label="Toggle dark mode"
-              >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
+    <div
+      className="min-h-screen transition-colors duration-200"
+      style={{
+        backgroundColor: isDarkMode ? '#0E1117' : '#FAF7F2',
+        color: isDarkMode ? '#F8FAFC' : '#121212',
+      }}
+    >
+      {/* ── Top Navigation Bar ── */}
+      <NavBar
+        name={currentUser?.name || ''}
+        username={currentUser?.username || ''}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
+        onOpenReports={() => setShowMeetings(true)}
+        onOpenProfile={() => setShowProfile(true)}
+        onOpenBankDetails={() => setShowQuickAction(true)}
+        reportCount={meetingReports.length}
+      />
 
-              {/* Meeting Reports Icon - Add this after Dark Mode Toggle */}
-              <button
-                onClick={() => setShowMeetingReports(true)}
-                className={`p-2.5 rounded-xl transition-all duration-300 relative ${
-                  isDarkMode
-                    ? 'bg-gray-800 hover:bg-gray-700 text-purple-400'
-                    : 'bg-gray-100 hover:bg-gray-200 text-purple-600'
-                } shadow-sm`}
-                title="Meeting Reports"
-              >
-                <FileText className="h-4 w-4" />
-                {meetingReports.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-purple-500 rounded-full border-2 border-gray-900"></span>
-                )}
-              </button>
-              
-              {/* User Menu */}
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-300 ${
-                    isDarkMode
-                      ? 'bg-gray-800 hover:bg-gray-700'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                  } shadow-sm`}
-                >
-                  <User className={`h-4 w-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-                  <svg className={`h-3 w-3 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''} ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Dropdown Menu */}
-      {showUserMenu && (
-        <div ref={dropdownRef} className="fixed inset-0 z-[9999]" style={{ pointerEvents: 'none' }}>
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" style={{ pointerEvents: 'auto' }} onClick={() => setShowUserMenu(false)} />
-          
-          <div className={`absolute right-4 top-20 w-80 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 ${
-            isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-          }`} style={{ pointerEvents: 'auto', zIndex: 10000 }}>
-            {/* Profile Section */}
-            <div className={`p-6 ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-              <div className="flex items-center space-x-4">
-                <div className="h-14 w-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-emerald-500/10">
-                  <span className="text-xl font-bold text-white">{currentUser?.name.charAt(0).toUpperCase()}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-base font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {currentUser?.name}
-                  </p>
-                  <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    @{currentUser?.username}
-                  </p>
-                  <StatusBadge status="success" text="Member" />
-                </div>
-              </div>
-            </div>
-
-            {/* Edit Username Section */}
-            <div className="p-4">
-              {isEditingUsername ? (
-                <div className="space-y-3">
-                  <label className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Change Username
-                  </label>
-                  <input
-                    type="text"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm rounded-xl transition-all duration-300 ${
-                      isDarkMode
-                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500'
-                        : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500'
-                    } border-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20`}
-                    placeholder="Enter new username"
-                    disabled={isUpdatingUsername}
-                    autoFocus
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={handleUsernameUpdate}
-                      disabled={isUpdatingUsername}
-                      className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
-                    >
-                      {isUpdatingUsername ? 'Saving...' : 'Save Changes'}
-                    </button>
-                    <button
-                      onClick={cancelUsernameEdit}
-                      disabled={isUpdatingUsername}
-                      className={`px-4 py-2.5 rounded-xl transition-all duration-300 ${
-                        isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsEditingUsername(true)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 ${
-                    isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <Edit3 className={`h-4 w-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                  <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Edit Username
-                  </span>
-                </button>
-              )}
-            </div>
-
-            {/* Logout */}
-            <div className={`p-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <button
-                onClick={() => { setShowUserMenu(false); logout(); }}
-                className="w-full px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 transition-all duration-300 text-sm font-medium"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
-        
-        {/* Warning Banner */}
-        <WarningBanner 
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* ── Warning Banners ── */}
+        <WarningBanner
           warnings={memberWarnings}
           onDismiss={markWarningAsRead}
           isDarkMode={isDarkMode}
         />
 
-        {/* Success Message */}
-        {usernameMessage && (
-          <div className={`mb-6 p-4 rounded-xl ${
-            usernameMessage.includes('successfully')
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
-              : 'bg-red-500/10 border-red-500/20 text-red-600'
-          } border`}>
-            <p className="text-sm font-medium flex items-center space-x-2">
-              {usernameMessage.includes('successfully') ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-              <span>{usernameMessage}</span>
+        {/* ── Section Title: My Overview ── */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-950 dark:text-white">
+              My Overview
+            </h1>
+            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Personal contribution status & ledger balances
             </p>
           </div>
-        )}
+          <span
+            className="text-xs font-bold text-neutral-600 dark:text-neutral-400 px-3 py-1 rounded-xl border-2"
+            style={{
+              borderColor,
+              backgroundColor: isDarkMode ? '#171B26' : '#FFFFFF',
+              boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+            }}
+          >
+            {selectedYear} Fiscal Period
+          </span>
+        </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <MetricCard
+        {/* ── 4 Primary Tactile Folder Cards Grid ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Card 1: Annual Contributions */}
+          <TactileFolderCard
+            tabLabel="CONTRIBUTIONS"
+            tabColor="#22C55E"
+            tabTextColor="#FFFFFF"
             icon={Calendar}
-            label="Payment Progress"
-            value={`${stats.paidMonths}/12`}
-            subValue={`${stats.completionRate}% complete`}
-            trend={stats.completionRate >= 80 ? 'up' : stats.completionRate >= 50 ? 'neutral' : 'down'}
-            colorScheme="green"
+            iconBg="#22C55E"
+            iconColor="#FFFFFF"
+            badge={
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(52,211,153,0.15)' : 'rgba(34,197,94,0.12)',
+                  color: isDarkMode ? '#34D399' : '#15803D',
+                }}
+              >
+                {stats.paidMonths}/12 Paid
+              </span>
+            }
+            title="Annual Contributions"
+            value={`${stats.completionRate}% on track`}
+            subtitle={`${stats.paidMonths} of 12 months deposited`}
             isDarkMode={isDarkMode}
+            delay={0}
           />
-          <MetricCard
+
+          {/* Card 2: Contributed Fund */}
+          <TactileFolderCard
+            tabLabel="SAVINGS"
+            tabColor="#FF7A00"
+            tabTextColor="#FFFFFF"
             icon={DollarSign}
-            label="Total Contributed"
+            iconBg="#FF7A00"
+            iconColor="#FFFFFF"
+            badge={
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(255,122,0,0.15)' : 'rgba(255,122,0,0.12)',
+                  color: isDarkMode ? '#FB923C' : '#C2410C',
+                }}
+              >
+                LKR 300/mo
+              </span>
+            }
+            title="Contributed Fund"
             value={`LKR ${stats.totalPaid.toLocaleString()}`}
-            subValue={`LKR ${MONTHLY_CONTRIBUTION * 12} yearly`}
-            colorScheme="blue"
+            subtitle="Personal equity in fund"
             isDarkMode={isDarkMode}
+            delay={0.05}
           />
-          <MetricCard
+
+          {/* Card 3: Group Mutual Pool */}
+          <TactileFolderCard
+            tabLabel="MUTUAL POOL"
+            tabColor="#3B82F6"
+            tabTextColor="#FFFFFF"
             icon={TrendingUp}
-            label="Group Funds"
+            iconBg="#3B82F6"
+            iconColor="#FFFFFF"
+            badge={
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(96,165,250,0.15)' : 'rgba(59,130,246,0.12)',
+                  color: isDarkMode ? '#60A5FA' : '#1D4ED8',
+                }}
+              >
+                Mutual Aid
+              </span>
+            }
+            title="Group Mutual Pool"
             value={`LKR ${groupStats.totalFunds.toLocaleString()}`}
-            subValue="Available for loans"
-            colorScheme="purple"
+            subtitle={`${groupStats.totalMembers} trusted friends pool`}
             isDarkMode={isDarkMode}
+            delay={0.1}
           />
-          <MetricCard
-            icon={CreditCard}
-            label="My Loans"
-            value={`LKR ${stats.totalLoanAmount.toLocaleString()}`}
-            subValue={`${stats.activeLoans.length} active`}
-            colorScheme={stats.totalLoanAmount > 0 ? 'orange' : 'green'}
+
+          {/* Card 4: 0% Emergency Loan */}
+          <TactileFolderCard
+            tabLabel="0% LOAN"
+            tabColor="#EC4899"
+            tabTextColor="#FFFFFF"
+            icon={Zap}
+            iconBg="#EC4899"
+            iconColor="#FFFFFF"
+            badge={
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(244,114,182,0.15)' : 'rgba(236,72,153,0.12)',
+                  color: isDarkMode ? '#F472B6' : '#BE185D',
+                }}
+              >
+                0% Interest
+              </span>
+            }
+            title="Emergency Aid"
+            value={stats.totalLoanAmt > 0 ? `LKR ${stats.totalLoanAmt.toLocaleString()}` : 'Eligible'}
+            subtitle={stats.activeLoans.length > 0 ? `${stats.activeLoans.length} active loan` : 'Instant access if needed'}
             isDarkMode={isDarkMode}
+            delay={0.15}
           />
         </div>
 
-        {/* Payment Calendar & Loans Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Payment Calendar - 2/3 width */}
+        {/* ── Main 2-Column Ledger & Loan Section ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* LEFT: 12-Month Contribution Matrix Folder Card (2 cols on lg) */}
           <div className="lg:col-span-2">
-            <div className={`rounded-2xl overflow-hidden ${
-              isDarkMode 
-                ? 'bg-gray-800/40 border border-gray-700/50' 
-                : 'bg-white/40 border border-white/60'
-            } backdrop-blur-xl shadow-lg`}>
-              {/* Header */}
-              <div className={`px-6 py-4 flex items-center justify-between border-b ${
-                isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
-              }`}>
+            <TactileFolderCard
+              tabLabel="LEDGER MATRIX"
+              tabColor="#06B6D4"
+              tabTextColor="#FFFFFF"
+              isDarkMode={isDarkMode}
+              delay={0.1}
+            >
+              {/* Header row with Year Selector */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b-2" style={{ borderColor }}>
                 <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Payment Status
+                  <h3 className="text-base font-black text-neutral-950 dark:text-white">
+                    Contribution Calendar
                   </h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    LKR {MONTHLY_CONTRIBUTION}/month
+                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    LKR {MONTHLY_CONTRIBUTION} / month · 12-Month Matrix
                   </p>
                 </div>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    isDarkMode
-                      ? 'bg-gray-700 text-white border-gray-600'
-                      : 'bg-white text-gray-900 border-gray-200'
-                  } border-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500`}
-                >
-                  {availableYears.map(year => (
-                    <option key={year} value={year}>{year}</option>
+
+                {/* Tactile Year Pills */}
+                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                  {availableYears.map((yr) => (
+                    <button
+                      key={yr}
+                      onClick={() => setSelectedYear(yr)}
+                      className="px-3 py-1 rounded-xl border-2 text-xs font-black transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                      style={{
+                        borderColor,
+                        backgroundColor: selectedYear === yr ? '#FF7A00' : (isDarkMode ? '#171B26' : '#FAF7F2'),
+                        color: selectedYear === yr ? '#FFFFFF' : (isDarkMode ? '#94A3B8' : '#64748B'),
+                        boxShadow: selectedYear === yr ? shadow : 'none',
+                      }}
+                    >
+                      {yr}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
-              {/* 2024 Information Message */}
+              {/* 2024 Initial Founding Note Banner */}
               {selectedYear === 2024 && (
-                <div className={`mx-6 mt-4 p-3 rounded-lg text-center text-sm ${
-                  isDarkMode 
-                    ? 'bg-blue-900/30 text-blue-200 border border-blue-700/50' 
-                    : 'bg-blue-50 text-blue-800 border border-blue-200'
-                }`}>
-                  💡 <strong>Note:</strong> Our FORT started in May 2024. Payment tracking begins from each member's join date. So do not worry about the unpaid marks.
+                <div
+                  className="mt-4 p-3 rounded-xl border-2 text-xs font-bold"
+                  style={{
+                    borderColor,
+                    backgroundColor: isDarkMode ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)',
+                    color: isDarkMode ? '#93C5FD' : '#1D4ED8',
+                  }}
+                >
+                  💡 <strong>Founding Year Note:</strong> Santha commenced May 2024. Months prior to your membership join date are normal and exempted.
                 </div>
               )}
 
-              {/* Calendar Grid */}
-              <div className="p-6">
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {/* 12-Month Tactile Stamp Grid */}
+              <div className="py-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
                   {months.map((month, index) => {
-                    const isPaid = getPaymentStatus(month);
+                    const payment = getPayment(month);
+                    const isPaid = payment?.paid ?? false;
                     const isCurrent = index === currentDate.month && selectedYear === currentDate.year;
-                    const isPast = selectedYear < currentDate.year || (selectedYear === currentDate.year && index < currentDate.month);
-                    
+                    const isPast =
+                      selectedYear < currentDate.year ||
+                      (selectedYear === currentDate.year && index < currentDate.month);
+
                     return (
-                      <div
+                      <MonthTile
                         key={month}
-                        className={`relative p-4 rounded-xl transition-all duration-300 border-2 ${
-                          isPaid
-                            ? isDarkMode 
-                              ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20'
-                              : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
-                            : isCurrent
-                            ? isDarkMode
-                              ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'
-                              : 'bg-amber-50 border-amber-200 hover:bg-amber-100'
-                            : isPast
-                            ? isDarkMode
-                              ? 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20'
-                              : 'bg-red-50 border-red-200 hover:bg-red-100'
-                            : isDarkMode
-                            ? 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-700/50'
-                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="text-center">
-                          <p className={`text-xs font-semibold mb-2 ${
-                            isPaid ? 'text-emerald-600 dark:text-emerald-400' :
-                            isCurrent ? 'text-amber-600 dark:text-amber-400' :
-                            isPast ? 'text-red-600 dark:text-red-400' :
-                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`}>
-                            {month.slice(0, 3).toUpperCase()}
-                          </p>
-                          <div className="flex items-center justify-center">
-                            {isPaid ? (
-                              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                            ) : isCurrent ? (
-                              <Clock className="h-6 w-6 text-amber-500" />
-                            ) : isPast ? (
-                              <AlertTriangle className="h-6 w-6 text-red-500" />
-                            ) : (
-                              <div className={`h-6 w-6 rounded-full border-2 ${
-                                isDarkMode ? 'border-gray-600' : 'border-gray-300'
-                              }`} />
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                        month={month}
+                        isPaid={isPaid}
+                        isCurrent={isCurrent}
+                        isPast={isPast && !isPaid}
+                        paidDate={payment?.paidDate}
+                        index={index}
+                        isDarkMode={isDarkMode}
+                      />
                     );
                   })}
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Target className={`h-4 w-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Annual Progress
-                      </span>
-                    </div>
-                    <span className={`text-sm font-bold ${
-                      stats.completionRate >= 80 ? 'text-emerald-500' : 
-                      stats.completionRate >= 50 ? 'text-amber-500' : 'text-red-500'
-                    }`}>
-                      {stats.completionRate}%
+                {/* Annual Progress Bar */}
+                <div className="mt-5 pt-4 border-t-2" style={{ borderColor }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                      Annual Ledger Completion
+                    </span>
+                    <span
+                      className="text-xs font-black tabular-nums"
+                      style={{
+                        color:
+                          stats.completionRate >= 80
+                            ? '#22C55E'
+                            : stats.completionRate >= 50
+                            ? '#FF7A00'
+                            : '#EF4444',
+                      }}
+                    >
+                      {stats.completionRate}% ({stats.paidMonths}/12)
                     </span>
                   </div>
-                  <div className={`w-full h-3 rounded-full overflow-hidden ${
-                    isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-                  }`}>
-                    <div
-                      className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                        stats.completionRate >= 80 
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500' 
-                          : stats.completionRate >= 50 
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
-                          : 'bg-gradient-to-r from-red-500 to-rose-500'
-                      }`}
-                      style={{ width: `${stats.completionRate}%` }}
+
+                  <div
+                    className="h-3 rounded-full border-2 overflow-hidden"
+                    style={{
+                      borderColor,
+                      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#E2E8F0',
+                    }}
+                  >
+                    <motion.div
+                      className="h-full rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${stats.completionRate}%` }}
+                      transition={{ duration: 1.1, ease: 'easeOut' }}
+                      style={{
+                        backgroundColor:
+                          stats.completionRate >= 80
+                            ? '#22C55E'
+                            : stats.completionRate >= 50
+                            ? '#FF7A00'
+                            : '#EF4444',
+                      }}
                     />
                   </div>
-                </div>
 
-                {/* Alert */}
-                {stats.pendingMonths > 0 && (
-                  <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                    <div className="flex items-center space-x-2">
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
-                      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                        {stats.pendingMonths} payment{stats.pendingMonths > 1 ? 's' : ''} pending
-                      </p>
+                  {stats.pendingMonths > 0 && (
+                    <div
+                      className="mt-3 flex items-center justify-between p-3 rounded-xl border-2 text-xs font-bold"
+                      style={{
+                        borderColor,
+                        backgroundColor: 'rgba(255,122,0,0.08)',
+                        color: isDarkMode ? '#FB923C' : '#C2410C',
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>
+                          {stats.pendingMonths} month{stats.pendingMonths > 1 ? 's' : ''} pending for {selectedYear}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowQuickAction(true)}
+                        className="px-2.5 py-1 rounded-lg border-2 bg-[#FF7A00] text-white font-black hover:opacity-90 transition-opacity"
+                        style={{ borderColor }}
+                      >
+                        Pay Now
+                      </button>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            </TactileFolderCard>
           </div>
 
-          {/* Loans & Meeting Reports Section - 1/3 width */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Loans Section */}
-            <div className={`rounded-2xl overflow-hidden ${
-              isDarkMode 
-                ? 'bg-gray-800/40 border border-gray-700/50' 
-                : 'bg-white/40 border border-white/60'
-            } backdrop-blur-xl shadow-lg`}>
-              <div className={`px-6 py-4 border-b ${
-                isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
-              }`}>
-                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  My Loans
-                </h3>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {myLoans.length} total
-                </p>
-              </div>
-              <div className="p-6">
-                {myLoans.length > 0 ? (
-                  <div className="space-y-4">
-                    {myLoans.map((loan) => {
-                      const outstanding = loan.amount - loan.repaidAmount;
-                      const progress = (loan.repaidAmount / loan.amount) * 100;
-                      const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'active';
-                      
-                      // Calculate days remaining
-                      const today = new Date();
-                      const dueDate = new Date(loan.dueDate);
-                      const daysRemaining = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                      const isDueSoon = daysRemaining <= 7 && daysRemaining > 0;
-                      
-                      return (
-                        <div
-                          key={loan.id}
-                          className={`p-5 rounded-xl border-2 transition-all duration-300 hover:shadow-lg ${
-                            loan.status === 'repaid'
-                              ? isDarkMode 
-                                ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50'
-                                : 'bg-emerald-50 border-emerald-200 hover:border-emerald-300'
-                              : isOverdue
-                              ? isDarkMode
-                                ? 'bg-red-500/10 border-red-500/30 hover:border-red-500/50'
-                                : 'bg-red-50 border-red-200 hover:border-red-300'
-                              : isDarkMode
-                              ? 'bg-gray-800/40 border-gray-700/50 hover:border-blue-500/50'
-                              : 'bg-white/40 border-gray-200 hover:border-blue-300'
-                          }`}
-                        >
-                          {/* Amount & Status Header */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <p className={`text-xs uppercase tracking-wide mb-1 ${
-                                isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                              }`}>
-                                Your Loan
-                              </p>
-                              <p className={`text-3xl font-bold mb-1 ${
-                                isDarkMode ? 'text-white' : 'text-gray-900'
-                              }`}>
-                                LKR {loan.amount.toLocaleString()}
-                              </p>
-                              
-                              {/* Days Countdown - Prominent */}
-                              {loan.status !== 'repaid' && (
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <Clock className={`h-3 w-3 ${
-                                    isOverdue ? 'text-red-400' :
-                                    isDueSoon ? 'text-amber-400' : 'text-blue-400'
-                                  }`} />
-                                  <p className={`text-xs font-medium ${
-                                    isOverdue ? 'text-red-400' :
-                                    isDueSoon ? 'text-amber-400' : 'text-blue-400'
-                                  }`}>
-                                    {isOverdue 
-                                      ? `${Math.abs(daysRemaining)} days overdue`
-                                      : `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} until due`
-                                    }
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Status Badge */}
-                            <div className={`px-3 py-1 rounded-full border ${
-                              loan.status === 'repaid'
-                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                                : isOverdue
-                                ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                                : isDueSoon
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                                : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
-                            }`}>
-                              <span className="text-xs font-semibold">
-                                {loan.status === 'repaid' ? '✓ Repaid' : 
-                                 isOverdue ? '⚠ Overdue' :
-                                 isDueSoon ? '⏰ Due Soon' : '⏳ Active'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Amount Due - Big & Clear (Only if not repaid) */}
-                          {loan.status !== 'repaid' && outstanding > 0 && (
-                            <div className={`mb-4 p-4 rounded-xl border ${
-                              isOverdue
-                                ? 'bg-gradient-to-br from-red-500/10 to-red-600/10 border-red-500/20'
-                                : 'bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20'
-                            }`}>
-                              <p className={`text-xs mb-1 ${
-                                isOverdue ? 'text-red-400' : 'text-orange-400'
-                              }`}>
-                                Amount Due
-                              </p>
-                              <p className={`text-2xl font-bold ${
-                                isOverdue ? 'text-red-300' : 'text-orange-300'
-                              }`}>
-                                LKR {outstanding.toLocaleString()}
-                              </p>
-                              <p className={`text-xs mt-1 ${
-                                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                              }`}>
-                                Due by {new Date(loan.dueDate).toLocaleDateString('en-US', { 
-                                  month: 'long', 
-                                  day: 'numeric', 
-                                  year: 'numeric' 
-                                })}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Payment Summary Grid */}
-                          <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div className={`text-center p-3 rounded-lg ${
-                              isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'
-                            }`}>
-                              <p className={`text-xs mb-1 ${
-                                isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
-                              }`}>
-                                Paid So Far
-                              </p>
-                              <p className={`text-base font-bold ${
-                                isDarkMode ? 'text-emerald-300' : 'text-emerald-700'
-                              }`}>
-                                LKR {loan.repaidAmount.toLocaleString()}
-                              </p>
-                            </div>
-                            <div className={`text-center p-3 rounded-lg ${
-                              isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'
-                            }`}>
-                              <p className={`text-xs mb-1 ${
-                                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                              }`}>
-                                Progress
-                              </p>
-                              <p className={`text-base font-bold ${
-                                isDarkMode ? 'text-blue-300' : 'text-blue-700'
-                              }`}>
-                                {Math.round(progress)}%
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Visual Progress Bar */}
-                          <div className="mb-3">
-                            <div className={`w-full h-2.5 rounded-full overflow-hidden ${
-                              isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-                            }`}>
-                              <div
-                                className={`h-full transition-all duration-500 ${
-                                  loan.status === 'repaid'
-                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                                    : progress > 0
-                                    ? 'bg-gradient-to-r from-emerald-500 to-blue-500'
-                                    : 'bg-gray-500'
-                                }`}
-                                style={{ width: `${progress}%` }}
-                              />
-                            </div>
-                            <p className={`text-xs text-center mt-1.5 ${
-                              isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                            }`}>
-                              LKR {loan.repaidAmount.toLocaleString()} of LKR {loan.amount.toLocaleString()} repaid
-                            </p>
-                          </div>
-                          
-                          {/* Helper Text for Zero Progress */}
-                          {progress === 0 && loan.status !== 'repaid' && (
-                            <div className={`p-3 rounded-lg border ${
-                              isDarkMode 
-                                ? 'bg-blue-500/5 border-blue-500/20' 
-                                : 'bg-blue-50 border-blue-200'
-                            }`}>
-                              <p className={`text-xs text-center ${
-                                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                              }`}>
-                                💡 No payments made yet. Contact admin to arrange repayment.
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Overdue Warning */}
-                          {isOverdue && (
-                            <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                              <div className="flex items-start space-x-2">
-                                <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5" />
-                                <div>
-                                  <p className="text-xs font-semibold text-red-400 mb-1">Payment Overdue</p>
-                                  <p className={`text-xs ${
-                                    isDarkMode ? 'text-red-300' : 'text-red-600'
-                                  }`}>
-                                    This loan is {Math.abs(daysRemaining)} days past due. Please contact the admin immediately.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Due Soon Warning */}
-                          {isDueSoon && !isOverdue && outstanding > 0 && (
-                            <div className="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                              <div className="flex items-start space-x-2">
-                                <Clock className="h-4 w-4 text-amber-400 mt-0.5" />
-                                <div>
-                                  <p className="text-xs font-semibold text-amber-400 mb-1">Due Soon</p>
-                                  <p className={`text-xs ${
-                                    isDarkMode ? 'text-amber-300' : 'text-amber-600'
-                                  }`}>
-                                    Only {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining. Make sure to complete your payment.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Success Message for Repaid */}
-                          {loan.status === 'repaid' && (
-                            <div className="mt-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                                <p className="text-xs font-semibold text-emerald-400">
-                                  ✓ Loan fully repaid! Great job!
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${
-                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-100'
-                    }`}>
-                      <CreditCard className={`h-12 w-12 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                    </div>
-                    <h4 className={`text-base font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      No Loans
-                    </h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      You don't have any active loans
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Meeting Report Card - NEW */}
-            <Suspense fallback={
-              <div className={`rounded-2xl p-6 ${
-                isDarkMode ? 'bg-gray-800/40 border border-gray-700/50' : 'bg-white/40 border border-white/60'
-              } backdrop-blur-xl shadow-lg animate-pulse`}>
-                <div className="h-32 bg-gray-700/20 rounded"></div>
-              </div>
-            }>
-              <MeetingReportsModal
-                latestReport={meetingReports[0] || null}
-                onViewAll={() => setShowMeetingReports(true)}
+          {/* RIGHT: Loan Card & Meeting Resolutions (1 col on lg) */}
+          <div className="space-y-5">
+            {activeLoans.length > 0 ? (
+              activeLoans.map((loan) => (
+                <LoanCard key={loan.id} loan={loan} isDarkMode={isDarkMode} />
+              ))
+            ) : (
+              <NoLoan
                 isDarkMode={isDarkMode}
+                onRequestLoan={() => setShowQuickAction(true)}
               />
-            </Suspense>
+            )}
+
+            {/* Past Loans Accordion */}
+            {repaidLoans.length > 0 && (
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPastLoans((prev) => !prev)}
+                  className="w-full flex items-center justify-between p-3.5 rounded-2xl border-2 text-xs font-bold transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                  style={{
+                    borderColor,
+                    backgroundColor: isDarkMode ? '#171B26' : '#FFFFFF',
+                    boxShadow: shadow,
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                    <span>Past Loans ({repaidLoans.length} Repaid)</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-neutral-500">
+                    <span>{showPastLoans ? 'Hide' : 'View Archive'}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        showPastLoans ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {showPastLoans && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="space-y-3 overflow-hidden"
+                    >
+                      {repaidLoans.map((loan) => (
+                        <LoanCard key={loan.id} loan={loan} isDarkMode={isDarkMode} />
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Community Resolutions Card */}
+            <MeetingReportCard
+              latestReport={meetingReports[0] || null}
+              onViewAll={() => setShowMeetings(true)}
+              isDarkMode={isDarkMode}
+            />
           </div>
         </div>
 
-        {/* Group Stats Footer */}
-        <div className={`mt-6 rounded-2xl overflow-hidden ${
-          isDarkMode 
-            ? 'bg-gray-800/40 border border-gray-700/50' 
-            : 'bg-white/40 border border-white/60'
-        } backdrop-blur-xl shadow-lg`}>
-          <div className={`px-6 py-4 border-b ${
-            isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-50 border-gray-200/50'
-          }`}>
-            <div className="flex items-center space-x-2">
-              <Activity className={`h-5 w-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                Group Overview
-              </h3>
-            </div>
+        {/* ── Group Overview Ledger Card ── */}
+        <TactileFolderCard
+          tabLabel="COMMUNITY SUMMARY"
+          tabColor="#64748B"
+          tabTextColor="#FFFFFF"
+          isDarkMode={isDarkMode}
+          delay={0.2}
+        >
+          <div className="flex items-center gap-2 pb-3 border-b-2" style={{ borderColor }}>
+            <Activity className="w-4 h-4 text-[#FF7A00]" />
+            <h3 className="text-sm font-black text-neutral-950 dark:text-white uppercase tracking-wider">
+              Group Mutual Ledger Summary
+            </h3>
           </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
-                  isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'
-                }`}>
-                  <User className={`h-6 w-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                </div>
-                <p className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {groupStats.totalMembers}
-                </p>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Active Members
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
-                  isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'
-                }`}>
-                  <DollarSign className={`h-6 w-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                </div>
-                <p className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  LKR {groupStats.monthlyCollection.toLocaleString()}
-                </p>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Monthly Collection
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl mb-3 ${
-                  isDarkMode ? 'bg-purple-500/10' : 'bg-purple-50'
-                }`}>
-                  <Award className={`h-6 w-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                </div>
-                <p className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {groupStats.activeLoans}
-                </p>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Active Loans
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Meeting Reports Modal */}
-      <MeetingReportsModal
-        isOpen={showMeetingReports}
-        onClose={() => setShowMeetingReports(false)}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
+            {[
+              {
+                label: 'Active Trusted Members',
+                value: String(groupStats.totalMembers),
+                icon: Users,
+                color: '#3B82F6',
+              },
+              {
+                label: 'Monthly Group Collection',
+                value: `LKR ${groupStats.monthlyCollection.toLocaleString()}`,
+                icon: DollarSign,
+                color: '#22C55E',
+              },
+              {
+                label: 'Active Emergency Loans',
+                value: String(groupStats.activeLoans),
+                icon: CreditCard,
+                color: '#FF7A00',
+              },
+            ].map(({ label, value, icon: Icon, color }, i) => (
+              <div
+                key={i}
+                className="p-3.5 rounded-xl border-2 flex items-center gap-3.5"
+                style={{
+                  borderColor,
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.02)' : '#FAF7F2',
+                }}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: color,
+                    borderColor,
+                    color: '#FFFFFF',
+                  }}
+                >
+                  <Icon className="w-5 h-5" strokeWidth={2.2} />
+                </div>
+                <div>
+                  <p className="text-lg font-black tabular-nums text-neutral-950 dark:text-white leading-tight">
+                    {value}
+                  </p>
+                  <p className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    {label}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TactileFolderCard>
+      </main>
+
+      {/* ── Slide-over Sheets & Modals ── */}
+      <ProfileSheet
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+        currentUser={currentUser}
+        isDarkMode={isDarkMode}
+        onLogout={logout}
+        onUsernameUpdate={handleUsernameUpdate}
+      />
+
+      <MeetingSheet
+        isOpen={showMeetings}
+        onClose={() => setShowMeetings(false)}
         reports={meetingReports}
+        isDarkMode={isDarkMode}
+      />
+
+      <QuickActionModal
+        isOpen={showQuickAction}
+        onClose={() => setShowQuickAction(false)}
         isDarkMode={isDarkMode}
       />
     </div>
