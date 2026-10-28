@@ -166,7 +166,7 @@ export default function Reports() {
               REPORTS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+              <span className="bg-[#818CF8] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
                 FINANCIAL AUDIT ENGINE v2.0
               </span>
               <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
@@ -178,7 +178,7 @@ export default function Reports() {
           <div className="flex items-center gap-2.5 flex-wrap">
             <button
               onClick={exportReport}
-              className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+              className="brutal-btn bg-[#818CF8] hover:bg-[#6366f1] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
             >
               <Download className="w-4 h-4 stroke-[2.5]" />
               <span>Export Audit JSON</span>
@@ -225,7 +225,7 @@ export default function Reports() {
                 onClick={() => toggleMonth(index)}
                 className={`py-2 px-1 text-center border-2 border-black font-mono text-xs font-black uppercase transition-all ${
                   isSelected
-                    ? 'bg-[#FFE600] text-black shadow-[2px_2px_0px_#000]'
+                    ? 'bg-[#818CF8] text-black shadow-[2px_2px_0px_#000]'
                     : 'bg-white text-black/60 hover:bg-gray-50'
                 }`}
               >
@@ -239,10 +239,10 @@ export default function Reports() {
       {/* ─── METRIC CARDS FOR SELECTED PERIOD ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
-        {/* Card 1: Collection Rate (Electric Yellow Hero) */}
-        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+        {/* Card 1: Collection Rate (Indigo Blueprint Hero) */}
+        <div className="brutal-card-reports p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="flex items-start justify-between relative z-10">
-            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+            <div className="w-10 h-10 bg-black text-[#818CF8] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">

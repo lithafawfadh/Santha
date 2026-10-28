@@ -32,6 +32,18 @@ export default function AdminDashboard() {
 
   const safeActivities = activities || [];
 
+  const TAB_THEMES: Record<string, { accent: string }> = {
+    overview: { accent: '#FFE600' },
+    payments: { accent: '#06D6A0' },
+    loans: { accent: '#38BDF8' },
+    donations: { accent: '#C084FC' },
+    finances: { accent: '#2DD4BF' },
+    members: { accent: '#FB923C' },
+    reports: { accent: '#818CF8' },
+    warnings: { accent: '#FF6B6B' },
+    meetings: { accent: '#F59E0B' },
+  };
+
   const tabSections = [
     {
       title: 'DASHBOARDS',
@@ -114,21 +126,23 @@ export default function AdminDashboard() {
                 {section.items.map(item => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
+                  const tabTheme = TAB_THEMES[item.id] || { accent: '#FFE600' };
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleTabChange(item.id)}
+                      style={isActive ? { backgroundColor: tabTheme.accent } : undefined}
                       className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-none border-2 border-black font-black text-xs tracking-wider transition-all duration-150 ${
                         isActive
-                          ? 'bg-black text-white shadow-[3px_3px_0px_#FFE600]'
-                          : 'bg-white text-black hover:bg-yellow-50 shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000]'
+                          ? 'text-black shadow-[3px_3px_0px_#000] translate-x-0.5'
+                          : 'bg-white text-black hover:bg-neutral-100 shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000]'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-[#FFE600]' : 'text-black'}`} />
+                        <Icon className="w-4 h-4 text-black stroke-[2.5]" />
                         <span>{item.label}</span>
                       </div>
-                      {isActive && <span className="w-2 h-2 bg-[#FFE600] inline-block border border-black"></span>}
+                      {isActive && <span className="w-2.5 h-2.5 bg-black inline-block"></span>}
                     </button>
                   );
                 })}
@@ -166,12 +180,23 @@ export default function AdminDashboard() {
           
           {/* Breadcrumb Title */}
           <div className="flex items-center gap-3">
-            <div className="lg:hidden w-8 h-8 bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-black shadow-[2px_2px_0px_#000]">
+            <div 
+              className="w-8 h-8 border-2 border-black flex items-center justify-center font-black text-black shadow-[2px_2px_0px_#000]"
+              style={{ backgroundColor: (TAB_THEMES[activeTab] || { accent: '#FFE600' }).accent }}
+            >
               FT
             </div>
-            <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-black">
-              {activeTabMeta?.label || 'DASHBOARD'}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-black font-sans">
+                {activeTabMeta?.label || 'DASHBOARD'}
+              </h2>
+              <span 
+                className="hidden sm:inline-block border-2 border-black text-[9px] font-mono font-black px-1.5 py-0.5 tracking-wider shadow-[1.5px_1.5px_0px_#000] text-black uppercase"
+                style={{ backgroundColor: (TAB_THEMES[activeTab] || { accent: '#FFE600' }).accent }}
+              >
+                LIVE
+              </span>
+            </div>
           </div>
 
           {/* Right Controls: Search, Notifications, Avatar Pill */}
@@ -246,17 +271,19 @@ export default function AdminDashboard() {
                 {allTabs.map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
+                  const tabTheme = TAB_THEMES[tab.id] || { accent: '#FFE600' };
                   return (
                     <button
                       key={tab.id}
                       onClick={() => handleTabChange(tab.id)}
+                      style={isActive ? { backgroundColor: tabTheme.accent } : undefined}
                       className={`flex flex-col items-center gap-2 p-4 border-2 border-black font-black text-xs uppercase tracking-wider transition-all ${
                         isActive
-                          ? 'bg-black text-white shadow-[3px_3px_0px_#FFE600]'
+                          ? 'text-black shadow-[3px_3px_0px_#000]'
                           : 'bg-white text-black shadow-[2px_2px_0px_#000]'
                       }`}
                     >
-                      <Icon className="w-6 h-6" />
+                      <Icon className="w-6 h-6 stroke-[2.5]" />
                       <span>{tab.label}</span>
                     </button>
                   );
@@ -304,9 +331,9 @@ export default function AdminDashboard() {
               {activeTab === 'meetings' && <MeetingReportsManagement />}
               {activeTab === 'finances' && (
                 <div className="h-[75vh] flex flex-col border-2 border-black">
-                  <div className="p-4 bg-[#FFE600] border-b-2 border-black flex justify-between items-center">
+                  <div className="p-4 bg-[#2DD4BF] border-b-2 border-black flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-black text-[#FFE600] flex items-center justify-center font-bold border border-black shadow-[2px_2px_0px_#000]">
+                      <div className="w-9 h-9 bg-black text-[#2DD4BF] flex items-center justify-center font-bold border border-black shadow-[2px_2px_0px_#000]">
                         <FileSpreadsheet className="w-5 h-5" />
                       </div>
                       <div>
@@ -342,6 +369,7 @@ export default function AdminDashboard() {
           {mobilePrimaryTabs.map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+            const tabTheme = TAB_THEMES[tab.id] || { accent: '#FFE600' };
             return (
               <button
                 key={tab.id}
@@ -350,7 +378,10 @@ export default function AdminDashboard() {
                   isActive ? 'text-black font-black' : 'text-black/60 font-bold'
                 }`}
               >
-                <div className={`p-1 border-2 ${isActive ? 'bg-[#FFE600] border-black shadow-[1.5px_1.5px_0px_#000]' : 'border-transparent'}`}>
+                <div 
+                  className={`p-1 border-2 ${isActive ? 'border-black shadow-[1.5px_1.5px_0px_#000]' : 'border-transparent'}`}
+                  style={isActive ? { backgroundColor: tabTheme.accent } : undefined}
+                >
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-[9px] uppercase tracking-wider mt-0.5">{tab.label}</span>

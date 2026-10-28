@@ -88,7 +88,7 @@ export default function WarningManagement() {
               WARNINGS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+              <span className="bg-[#FF6B6B] text-white border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
                 DISCIPLINARY & NOTICE ENGINE v2.0
               </span>
               <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
@@ -99,7 +99,7 @@ export default function WarningManagement() {
 
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
+            className="brutal-btn bg-[#FF6B6B] hover:bg-[#ef4444] text-white px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>{showCreateForm ? 'Close Form' : 'Issue Notice'}</span>
@@ -113,10 +113,10 @@ export default function WarningManagement() {
       {/* ─── ROW 1: METRIC SUMMARY CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         
-        {/* Card 1: Active Warnings (Hero Yellow Card) */}
-        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+        {/* Card 1: Active Warnings (Signal Coral Hero Card) */}
+        <div className="brutal-card-warnings p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="flex items-start justify-between relative z-10">
-            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+            <div className="w-10 h-10 bg-black text-[#FF6B6B] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
               <Bell className="w-5 h-5 text-white" />
             </div>
             <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
@@ -286,7 +286,7 @@ export default function WarningManagement() {
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="brutal-btn py-2.5 px-6 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
+                className="brutal-btn py-2.5 px-6 bg-[#FF6B6B] hover:bg-[#ef4444] text-white font-black text-xs uppercase tracking-wider"
               >
                 Dispatch Warning Notice
               </button>
@@ -306,7 +306,7 @@ export default function WarningManagement() {
       <div className="brutal-card overflow-hidden">
         <div className="p-4 bg-black text-white border-b-2 border-black flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-[#FFE600]" />
+            <Bell className="w-4 h-4 text-[#FF6B6B]" />
             <h3 className="font-black text-xs uppercase tracking-wider text-white">
               Notice Log Trail
             </h3>

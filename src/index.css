@@ -306,6 +306,48 @@ body {
   box-shadow: 4px 4px 0px 0px #000000;
 }
 
+.brutal-card-payments {
+  background-color: #06D6A0;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.brutal-card-loans {
+  background-color: #38BDF8;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.brutal-card-donations {
+  background-color: #C084FC;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.brutal-card-members {
+  background-color: #FB923C;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.brutal-card-reports {
+  background-color: #818CF8;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.brutal-card-warnings {
+  background-color: #FF6B6B;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.brutal-card-meetings {
+  background-color: #F59E0B;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
 .brutal-card-hover:hover {
   transform: translate(-1px, -1px);
   box-shadow: 5px 5px 0px 0px #000000;

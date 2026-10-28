@@ -197,7 +197,7 @@ export default function MeetingReportsManagement() {
               MEETINGS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+              <span className="bg-[#F59E0B] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
                 MINUTES & DECISIONS PROTOCOL v2.0
               </span>
               <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
@@ -208,7 +208,7 @@ export default function MeetingReportsManagement() {
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
+            className="brutal-btn bg-[#F59E0B] hover:bg-[#d97706] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>{showForm ? 'Close Form' : 'New Report'}</span>
@@ -336,7 +336,7 @@ export default function MeetingReportsManagement() {
                     onClick={() => toggleAttendee(m.id)}
                     className={`p-1.5 text-xs font-mono font-bold text-left border flex items-center justify-between ${
                       formData.attendees.includes(m.id)
-                        ? 'bg-[#FFE600] border-black font-black'
+                        ? 'bg-[#F59E0B] border-black font-black'
                         : 'bg-white border-black/40'
                     }`}
                   >
@@ -351,7 +351,7 @@ export default function MeetingReportsManagement() {
               <button
                 type="submit"
                 disabled={loading}
-                className="brutal-btn py-2.5 px-6 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
+                className="brutal-btn py-2.5 px-6 bg-[#F59E0B] hover:bg-[#d97706] text-black font-black text-xs uppercase tracking-wider"
               >
                 {loading ? 'Saving...' : editingReport ? 'Update Report' : 'Publish Report'}
               </button>
@@ -371,7 +371,7 @@ export default function MeetingReportsManagement() {
       <div className="brutal-card overflow-hidden">
         <div className="p-4 bg-black text-white border-b-2 border-black flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#FFE600]" />
+            <FileText className="w-4 h-4 text-[#F59E0B]" />
             <h3 className="font-black text-xs uppercase tracking-wider text-white">
               Official Minutes Archive
             </h3>

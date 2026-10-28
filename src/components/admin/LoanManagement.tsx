@@ -182,7 +182,7 @@ Verified by Admin: ${currentUser?.name || 'Lithaf'}`;
               LOANS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+              <span className="bg-[#38BDF8] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
                 CAPITAL RECOVERY PROTOCOL v2.0
               </span>
               <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
@@ -195,7 +195,7 @@ Verified by Admin: ${currentUser?.name || 'Lithaf'}`;
           <div className="flex items-center gap-2.5 flex-wrap">
             <button
               onClick={copyWhatsAppLoanSummary}
-              className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+              className="brutal-btn bg-white hover:bg-sky-50 text-black px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
             >
               {copiedSummary ? (
                 <>
@@ -212,9 +212,9 @@ Verified by Admin: ${currentUser?.name || 'Lithaf'}`;
 
             <button
               onClick={() => setShowAddForm(true)}
-              className="brutal-btn bg-black text-white hover:bg-neutral-800 px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[3px_3px_0px_#FFE600]"
+              className="brutal-btn bg-[#38BDF8] text-black hover:bg-[#0284c7] px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[3px_3px_0px_#000]"
             >
-              <Plus className="w-4 h-4 text-[#FFE600]" />
+              <Plus className="w-4 h-4 stroke-[3]" />
               <span>Issue Loan</span>
             </button>
           </div>
@@ -227,10 +227,10 @@ Verified by Admin: ${currentUser?.name || 'Lithaf'}`;
       {/* ─── ROW 1: THE 4 TACTILE METRIC CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
-        {/* CARD 1: ACTIVE PORTFOLIO (Electric Yellow Hero) */}
-        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+        {/* CARD 1: ACTIVE PORTFOLIO (Cyan Sky Hero) */}
+        <div className="brutal-card-loans p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="flex items-start justify-between relative z-10">
-            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+            <div className="w-10 h-10 bg-black text-[#38BDF8] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
               <CreditCard className="w-5 h-5 text-white" />
             </div>
             <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">

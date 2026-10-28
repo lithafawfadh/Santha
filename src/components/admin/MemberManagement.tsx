@@ -180,7 +180,7 @@ export default function MemberManagement() {
               MEMBERS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+              <span className="bg-[#FB923C] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
                 ACTIVE DIRECTORY & ROSTER v2.0
               </span>
               <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
@@ -193,16 +193,16 @@ export default function MemberManagement() {
             <button
               onClick={() => setShowInactive(!showInactive)}
               className={`brutal-btn px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
-                showInactive ? 'bg-black text-white' : 'bg-white text-black hover:bg-yellow-50'
+                showInactive ? 'bg-black text-white' : 'bg-white text-black hover:bg-orange-50'
               }`}
             >
-              <span>{showInactive ? 'Viewing Inactive' : 'View Inactive (5)'}</span>
+              <span>{showInactive ? 'Viewing Inactive' : `View Inactive (${inactiveMembers.length})`}</span>
             </button>
 
             {!showInactive && (
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+                className="brutal-btn bg-[#FB923C] hover:bg-[#f97316] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
               >
                 <UserPlus className="w-4 h-4 stroke-[2.5]" />
                 <span>{showAddForm ? 'Close Form' : 'Add Member'}</span>
@@ -218,10 +218,10 @@ export default function MemberManagement() {
       {/* ─── ROW 1: THE 3 METRIC CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         
-        {/* Card 1: Active Directory (Electric Yellow Hero) */}
-        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+        {/* Card 1: Active Directory (Solar Tangerine Hero) */}
+        <div className="brutal-card-members p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="flex items-start justify-between relative z-10">
-            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+            <div className="w-10 h-10 bg-black text-[#FB923C] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
               <UserCheck className="w-5 h-5 text-white" />
             </div>
             <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
@@ -353,7 +353,7 @@ export default function MemberManagement() {
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="brutal-btn py-2.5 px-6 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
+                className="brutal-btn py-2.5 px-6 bg-[#FB923C] hover:bg-[#f97316] text-black font-black text-xs uppercase tracking-wider"
               >
                 Save Member Record
               </button>

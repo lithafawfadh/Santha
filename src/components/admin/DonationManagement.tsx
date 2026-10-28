@@ -38,7 +38,7 @@ export default function DonationManagement() {
               DONATIONS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+              <span className="bg-[#C084FC] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
                 SOCIAL IMPACT & CHARITY VAULT v2.0
               </span>
               <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
@@ -49,7 +49,7 @@ export default function DonationManagement() {
 
           <button
             onClick={() => setShowAddDonation(true)}
-            className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
+            className="brutal-btn bg-[#C084FC] hover:bg-[#a855f7] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Record Donation</span>
@@ -63,10 +63,10 @@ export default function DonationManagement() {
       {/* ─── ROW 1: METRIC SUMMARY CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         
-        {/* Card 1: Total Donations (Electric Yellow Hero) */}
-        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+        {/* Card 1: Total Donations (Radiant Lavender Hero) */}
+        <div className="brutal-card-donations p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="flex items-start justify-between relative z-10">
-            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+            <div className="w-10 h-10 bg-black text-[#C084FC] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
               <Gift className="w-5 h-5 text-white" />
             </div>
             <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
@@ -185,7 +185,7 @@ export default function DonationManagement() {
               <div className="pt-2 flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 brutal-btn py-3 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
+                  className="flex-1 brutal-btn py-3 bg-[#C084FC] hover:bg-[#a855f7] text-black font-black text-xs uppercase tracking-wider"
                 >
                   Confirm Donation
                 </button>
@@ -206,12 +206,12 @@ export default function DonationManagement() {
       <div className="brutal-card overflow-hidden">
         <div className="p-4 bg-black text-white border-b-2 border-black flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Gift className="w-4 h-4 text-[#FFE600]" />
+            <Gift className="w-4 h-4 text-[#C084FC]" />
             <h3 className="font-black text-xs uppercase tracking-wider text-white">
               Donation Ledger History
             </h3>
           </div>
-          <span className="text-[10px] font-mono text-[#FFE600] font-bold">
+          <span className="text-[10px] font-mono text-[#C084FC] font-bold">
             All records verified
           </span>
         </div>
@@ -224,9 +224,9 @@ export default function DonationManagement() {
         ) : (
           <div className="divide-y-2 divide-black/10">
             {donations.map((donation) => (
-              <div key={donation.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-yellow-50/50 transition-colors">
+              <div key={donation.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-purple-50/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-sm text-black shadow-[1.5px_1.5px_0px_#000] flex-shrink-0">
+                  <div className="w-10 h-10 bg-[#C084FC] border-2 border-black flex items-center justify-center font-black text-sm text-black shadow-[1.5px_1.5px_0px_#000] flex-shrink-0">
                     <Heart className="w-5 h-5" />
                   </div>
                   <div>
