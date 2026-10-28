@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ArrowRight, Eye, EyeOff, User, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowRight, Eye, EyeOff, User, ArrowLeft, Coins, HeartHandshake, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Login() {
@@ -16,6 +16,7 @@ export default function Login() {
   const [isBlinking, setIsBlinking] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { login } = useApp();
 
   // Natural Blink Loop
@@ -35,13 +36,20 @@ export default function Login() {
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
+      let centerX = window.innerWidth / 2;
+      let centerY = window.innerHeight / 2;
+
+      // Track relative to the card on desktop
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        centerX = rect.left + rect.width / 2;
+        centerY = rect.top + rect.height * 0.7; // Character is near bottom of card
+      }
 
       // In Step 1, character is at the bottom, so eyes look slightly upward by default
       const defaultY = step === 'role' ? -3 : 0;
-      const deltaX = Math.max(-7, Math.min(7, ((clientX - centerX) / centerX) * 8));
-      const deltaY = Math.max(-6, Math.min(6, defaultY + ((clientY - centerY) / centerY) * 7));
+      const deltaX = Math.max(-7, Math.min(7, ((clientX - centerX) / (window.innerWidth / 2)) * 8));
+      const deltaY = Math.max(-6, Math.min(6, defaultY + ((clientY - centerY) / (window.innerHeight / 2)) * 7));
 
       setEyePos({ x: deltaX, y: deltaY });
     };
@@ -117,16 +125,108 @@ export default function Login() {
   return (
     <div 
       ref={containerRef}
-      className="min-h-[100dvh] w-full bg-[#050814] flex items-center justify-center p-0 sm:p-6 lg:p-8 relative overflow-hidden font-sans selection:bg-orange-500/30"
+      className="min-h-[100dvh] w-full bg-[#050814] flex items-center justify-center p-0 sm:p-6 lg:p-12 relative overflow-hidden font-sans selection:bg-orange-500/30"
     >
       {/* ─── AMBIENT DESKTOP BACKGROUND GLOW ─── */}
       <div className="hidden sm:block absolute inset-0 pointer-events-none">
-        <div className="absolute -top-[15%] -left-[10%] w-[65vw] h-[65vw] max-w-[700px] max-h-[700px] rounded-full bg-blue-900/25 blur-[120px]" />
-        <div className="absolute -bottom-[15%] -right-[10%] w-[60vw] h-[60vw] max-w-[650px] max-h-[650px] rounded-full bg-orange-600/20 blur-[130px]" />
+        <div className="absolute -top-[15%] -left-[10%] w-[65vw] h-[65vw] max-w-[700px] max-h-[700px] rounded-full bg-blue-900/20 blur-[130px]" />
+        <div className="absolute -bottom-[15%] -right-[10%] w-[60vw] h-[60vw] max-w-[650px] max-h-[650px] rounded-full bg-orange-600/15 blur-[140px]" />
+        {/* Subtle dot matrix texture for desktop */}
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px] opacity-70" />
       </div>
 
-      {/* ─── THE CARD SHELL (EDGE-TO-EDGE ON MOBILE, FLOATING PHONE ON DESKTOP) ─── */}
-      <div className="relative z-10 w-full h-[100dvh] sm:h-[720px] max-w-none sm:max-w-[420px] rounded-none sm:rounded-[48px] shadow-none sm:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.85),0_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden bg-[#FAF8F5]">
+      {/* ─── MAIN RESPONSIVE CONTAINER: EDGE-TO-EDGE ON MOBILE, 2-COLUMN SPLIT ON DESKTOP ─── */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-8 lg:gap-12 xl:gap-16">
+
+        {/* ─── LEFT COLUMN: DESKTOP BRANDING & HIGHLIGHTS (HIDDEN ON MOBILE) ─── */}
+        <div className="hidden lg:flex flex-col flex-1 max-w-lg xl:max-w-xl text-left select-none">
+          {/* Brand Tag Pill */}
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md mb-6 w-fit shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-[#FFE600] animate-pulse" />
+            <span className="text-xs font-mono font-bold tracking-widest text-[#FFE600] uppercase">
+              SANTHA LEDGER PROTOCOL
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-4xl xl:text-5xl font-black text-white tracking-tight leading-[1.12]">
+            Mutual Aid &amp; <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7A00] via-[#FFA149] to-[#FFE600]">
+              Zero-Interest
+            </span> <br />
+            Group Fund.
+          </h1>
+
+          <p className="text-sm xl:text-base text-zinc-400 mt-4 leading-relaxed max-w-md">
+            A transparent digital ledger built for our close-knit circle. Empowering friends with emergency relief, predictable monthly pooling, and collective accountability.
+          </p>
+
+          {/* 3 Value Pillars */}
+          <div className="mt-8 space-y-3.5">
+            {/* Pillar 1 */}
+            <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm transition-all hover:bg-white/[0.06] hover:border-white/15">
+              <div className="w-9 h-9 rounded-xl bg-[#FF7A00]/15 border border-[#FF7A00]/30 flex items-center justify-center text-[#FF7A00] shrink-0 mt-0.5">
+                <Coins className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  LKR 300 / Month Pooled Contribution
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                  Predictable, transparent mutual fund contributions collected every monthly cycle from active members.
+                </p>
+              </div>
+            </div>
+
+            {/* Pillar 2 */}
+            <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm transition-all hover:bg-white/[0.06] hover:border-white/15">
+              <div className="w-9 h-9 rounded-xl bg-[#06D6A0]/15 border border-[#06D6A0]/30 flex items-center justify-center text-[#06D6A0] shrink-0 mt-0.5">
+                <HeartHandshake className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  0% Interest Emergency Loans
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                  Fast emergency loans with zero interest, zero hidden fees, and flexible 2 to 4 month repayment terms.
+                </p>
+              </div>
+            </div>
+
+            {/* Pillar 3 */}
+            <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm transition-all hover:bg-white/[0.06] hover:border-white/15">
+              <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shrink-0 mt-0.5">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  Real-Time Transparent Ledger
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                  Every contribution, loan balance, exit refund, and meeting resolution is clearly audited and recorded.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Footer */}
+          <div className="flex items-center gap-3 pt-6 mt-6 border-t border-white/10 text-xs font-mono text-zinc-400">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              <span>Peer-to-Peer</span>
+            </span>
+            <span>•</span>
+            <span>Zero Intermediary Fees</span>
+            <span>•</span>
+            <span>Community Governed</span>
+          </div>
+        </div>
+
+        {/* ─── RIGHT COLUMN: THE CARD SHELL (EDGE-TO-EDGE ON MOBILE, FLOATING PHONE ON DESKTOP) ─── */}
+        <div 
+          ref={cardRef}
+          className="relative z-10 w-full h-[100dvh] sm:h-[720px] max-w-none sm:max-w-[420px] shrink-0 rounded-none sm:rounded-[48px] shadow-none sm:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.85),0_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden bg-[#FAF8F5]"
+        >
         
         {/* ─── TOP ORGANIC GEOMETRIC CUTOUTS (Step 1) ─── */}
         <motion.div 
@@ -434,6 +534,7 @@ export default function Login() {
           </div>
         </motion.div>
 
+        </div>
       </div>
     </div>
   );
