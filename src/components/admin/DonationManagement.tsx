@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Gift, Calendar, User, DollarSign } from 'lucide-react';
+import { Plus, Gift, Calendar, User, DollarSign, X, Heart, ArrowUpRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import GlassCard from '../common/GlassCard';
-import GlassButton from '../common/GlassButton';
 
 export default function DonationManagement() {
   const { donations, addDonation, currentUser } = useApp();
@@ -30,141 +28,229 @@ export default function DonationManagement() {
   const totalDonations = donations.reduce((sum, donation) => sum + donation.amount, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Extra Donations</h2>
-          <p className="text-gray-600 dark:text-gray-400">Record additional donations to boost group funds</p>
+    <div className="space-y-6 text-black animate-fadeIn">
+      
+      {/* ─── PAGE HEADER & CONTROLS (STACK Neo-Brutalist) ─── */}
+      <div className="space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-black uppercase font-sans">
+              DONATIONS
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+                SOCIAL IMPACT & CHARITY VAULT v2.0
+              </span>
+              <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
+                • {donations.length} RECORDED DONATIONS
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowAddDonation(true)}
+            className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Record Donation</span>
+          </button>
         </div>
-        <GlassButton
-          variant="primary"
-          onClick={() => setShowAddDonation(true)}
-          className="flex items-center px-4 py-2"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Donation
-        </GlassButton>
+
+        {/* Dashed divider */}
+        <div className="border-b-2 border-dashed border-black/30 w-full pt-1"></div>
       </div>
 
-      {/* Summary Card */}
-      <GlassCard variant="highlight" className="p-6 bg-gradient-to-r from-green-500 from-opacity-30 to-emerald-600 to-opacity-30 dark:from-green-600 dark:from-opacity-30 dark:to-emerald-700 dark:to-opacity-30 border-green-300 dark:border-green-600">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold mb-2 text-green-900 dark:text-green-100">Total Extra Donations</h3>
-            <p className="text-3xl font-bold text-green-900 dark:text-green-100">LKR {totalDonations.toLocaleString()}</p>
-            <p className="text-green-700 dark:text-green-200 mt-1">{donations.length} donation{donations.length !== 1 ? 's' : ''} recorded</p>
+      {/* ─── ROW 1: METRIC SUMMARY CARDS ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        
+        {/* Card 1: Total Donations (Electric Yellow Hero) */}
+        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <Gift className="w-5 h-5 text-white" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>ACTIVE VAULT</span>
+            </div>
           </div>
-          <div className="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 p-4 rounded-lg backdrop-blur-sm">
-            <Gift className="h-8 w-8 text-green-900 dark:text-green-100" />
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              TOTAL CHARITY FUNDS
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                LKR {totalDonations.toLocaleString()}
+              </h2>
+            </div>
           </div>
         </div>
-      </GlassCard>
 
-      {/* Add Donation Modal */}
+        {/* Card 2: Count */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <Heart className="w-5 h-5 text-[#FFE600]" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>COUNT</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              CONTRIBUTIONS LOGGED
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                {donations.length} Records
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Impact Status */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <DollarSign className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>RESERVE</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              EMERGENCY READINESS
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                100% STABLE
+              </h2>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ─── RECORD NEW DONATION MODAL ─── */}
       {showAddDonation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <GlassCard variant="gradient" className="p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Record New Donation</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="w-full max-w-md bg-white border-3 border-black shadow-[8px_8px_0px_#000] p-6 space-y-6">
+            <div className="bg-[#FFE600] border-2 border-black p-3 flex justify-between items-center">
+              <h3 className="font-black text-sm uppercase tracking-wider text-black">
+                Record New Donation
+              </h3>
+              <button
+                onClick={() => setShowAddDonation(false)}
+                className="w-7 h-7 bg-white border-2 border-black flex items-center justify-center text-black shadow-[1.5px_1.5px_0px_#000]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
             <form onSubmit={handleAddDonation} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Donation Amount (LKR)</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-black uppercase tracking-wider text-black">
+                  Donation Amount (LKR)
+                </label>
                 <input
                   type="number"
                   value={donationForm.amount}
                   onChange={(e) => setDonationForm({ ...donationForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
-                  placeholder="Enter amount"
+                  placeholder="e.g. 2500"
+                  className="w-full p-2.5 bg-white border-2 border-black text-sm font-black text-black focus:outline-none"
                   min="1"
                   step="0.01"
                   required
+                  autoFocus
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (Who gave it)</label>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black uppercase tracking-wider text-black">
+                  Benefactor / Description
+                </label>
                 <textarea
                   value={donationForm.description}
                   onChange={(e) => setDonationForm({ ...donationForm, description: e.target.value })}
-                  className="w-full px-3 py-2 backdrop-blur-lg bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-30 border border-white border-opacity-30 dark:border-gray-600 dark:border-opacity-30 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
-                  placeholder="e.g., Anonymous donor, John Smith, Community fundraiser..."
+                  placeholder="e.g., Anonymous benefactor, Community event..."
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
                   rows={3}
                   required
                 />
               </div>
-              <div className="flex justify-end space-x-3 mt-6">
-                <GlassButton
-                  variant="secondary"
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 brutal-btn py-3 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
+                >
+                  Confirm Donation
+                </button>
+                <button
+                  type="button"
                   onClick={() => setShowAddDonation(false)}
-                  className="px-4 py-2"
+                  className="brutal-btn px-4 py-3 bg-white text-black font-black text-xs uppercase"
                 >
                   Cancel
-                </GlassButton>
-                <GlassButton
-                  variant="primary"
-                  type="submit"
-                  className="px-4 py-2"
-                >
-                  Record Donation
-                </GlassButton>
+                </button>
               </div>
             </form>
-          </GlassCard>
+          </div>
         </div>
       )}
 
-      {/* Donations List */}
-      <GlassCard variant="gradient" className="overflow-hidden">
-        <div className="px-6 py-4 border-b border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20 bg-gradient-to-r from-green-500 from-opacity-10 to-emerald-500 to-opacity-10 dark:from-green-600 dark:from-opacity-10 dark:to-emerald-600 dark:to-opacity-10 backdrop-blur-sm">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Donation History</h3>
+      {/* ─── DONATION HISTORY LIST ─── */}
+      <div className="brutal-card overflow-hidden">
+        <div className="p-4 bg-black text-white border-b-2 border-black flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Gift className="w-4 h-4 text-[#FFE600]" />
+            <h3 className="font-black text-xs uppercase tracking-wider text-white">
+              Donation Ledger History
+            </h3>
+          </div>
+          <span className="text-[10px] font-mono text-[#FFE600] font-bold">
+            All records verified
+          </span>
         </div>
 
-        {donations.length > 0 ? (
-          <div className="divide-y divide-white divide-opacity-20 dark:divide-gray-700 dark:divide-opacity-20">
-            {donations
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((donation) => (
-                <div key={donation.id} className="p-6 hover:bg-white hover:bg-opacity-10 dark:hover:bg-gray-700 dark:hover:bg-opacity-10 transition-colors backdrop-blur-sm">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-green-500 bg-opacity-20 dark:bg-green-600 dark:bg-opacity-20 p-3 rounded-lg backdrop-blur-sm border border-green-300 border-opacity-30 dark:border-green-600 dark:border-opacity-30">
-                        <Gift className="h-6 w-6 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            LKR {donation.amount.toLocaleString()}
-                          </h4>
-                          <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs font-medium rounded-full backdrop-blur-sm">
-                            Donation
-                          </span>
-                        </div>
-                        <p className="text-gray-700 dark:text-gray-300 mb-2">{donation.description}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{new Date(donation.date).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <User className="h-4 w-4" />
-                            <span>Recorded by admin</span>
-                          </div>
-                        </div>
-                      </div>
+        {donations.length === 0 ? (
+          <div className="p-12 text-center space-y-2">
+            <Gift className="w-10 h-10 text-black/30 mx-auto" />
+            <p className="font-mono font-bold text-xs text-black/60">No extra donations recorded yet.</p>
+          </div>
+        ) : (
+          <div className="divide-y-2 divide-black/10">
+            {donations.map((donation) => (
+              <div key={donation.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-yellow-50/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-sm text-black shadow-[1.5px_1.5px_0px_#000] flex-shrink-0">
+                    <Heart className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-sm text-black">{donation.description}</h4>
+                    <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono font-bold text-black/60">
+                      <span>Date: {new Date(donation.date).toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span>ID: {donation.id.slice(0, 8)}</span>
                     </div>
                   </div>
                 </div>
-              ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="bg-gray-500 bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-20 p-4 rounded-full backdrop-blur-sm mx-auto mb-4 w-fit">
-              <Gift className="h-12 w-12 text-gray-400 dark:text-gray-500" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No donations recorded yet</h3>
-            <p className="text-gray-500 dark:text-gray-400">Start by recording your first extra donation.</p>
+
+                <div className="text-left sm:text-right">
+                  <span className="text-[9px] font-mono font-black uppercase text-black/60 block">Amount</span>
+                  <span className="text-lg font-black text-emerald-700 font-sans">
+                    +LKR {donation.amount.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-      </GlassCard>
+      </div>
+
     </div>
   );
 }

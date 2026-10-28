@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { UserPlus, UserX, UserCheck, Trash2, Calendar, AlertCircle, LogOut, DollarSign } from 'lucide-react';
+import { UserPlus, UserX, UserCheck, Trash2, Calendar, AlertCircle, LogOut, DollarSign, Search, X, Check, ArrowRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Loan } from '../../types';
-import GlassButton from '../common/GlassButton';
 
 type ModalStep = 'choose' | 'standard' | 'exit-blocked' | 'exit-confirm';
 
@@ -22,6 +21,7 @@ export default function MemberManagement() {
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Deactivation modal state
   const [memberToDeactivate, setMemberToDeactivate] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function MemberManagement() {
     joinDate: new Date().toISOString().split('T')[0]
   });
 
-  // ── Helpers ────────────────────────────────────────────
+  // Helpers
   const getActiveLoan = (memberId: string): Loan | undefined =>
     loans.find(l => l.memberId === memberId && l.status === 'active');
 
@@ -66,7 +66,7 @@ export default function MemberManagement() {
     setExitError(null);
   };
 
-  // ── Handlers ───────────────────────────────────────────
+  // Handlers
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMember.name || !newMember.username) {
@@ -144,7 +144,12 @@ export default function MemberManagement() {
     }
   };
 
-  const displayMembers = showInactive ? inactiveMembers : activeMembers;
+  const baseMembers = showInactive ? inactiveMembers : activeMembers;
+  const displayMembers = baseMembers.filter(m => 
+    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const activeMember = memberToDeactivate ? getMember(memberToDeactivate) : null;
   const activeLoan = memberToDeactivate ? getActiveLoan(memberToDeactivate) : undefined;
   const refundAmount = memberToDeactivate ? getRefundAmount(memberToDeactivate) : 0;
@@ -152,515 +157,500 @@ export default function MemberManagement() {
   const totalRefund = refundAmount + extraAmount;
 
   return (
-    <div className="space-y-6">
-
-      {/* Success Toast */}
+    <div className="space-y-6 text-black animate-fadeIn">
+      
+      {/* Success Notification */}
       {successMessage && (
-        <div className="fixed top-4 right-4 z-50 max-w-md p-4 bg-green-600/90 backdrop-blur-xl border border-green-400/50 rounded-2xl shadow-2xl text-white">
-          <div className="flex items-start space-x-3">
-            <UserCheck className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-200" />
-            <p className="text-sm font-medium">{successMessage}</p>
+        <div className="p-4 bg-emerald-100 border-2 border-black text-emerald-950 shadow-[3px_3px_0px_#000] flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <Check className="w-5 h-5 text-emerald-700 stroke-[3]" />
+            <p className="text-xs font-mono font-black">{successMessage}</p>
           </div>
+          <button onClick={() => setSuccessMessage(null)} className="p-1 hover:bg-black/10">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">
-            Member Management
-          </h2>
-          <p className="text-white/70 mt-1">
-            {activeMembers.length} active • {inactiveMembers.length} inactive
-          </p>
+      {/* ─── PAGE HEADER & CONTROLS (STACK Neo-Brutalist) ─── */}
+      <div className="space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-black uppercase font-sans">
+              MEMBERS
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+                ACTIVE DIRECTORY & ROSTER v2.0
+              </span>
+              <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
+                • {activeMembers.length} ACTIVE • {inactiveMembers.length} INACTIVE
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={() => setShowInactive(!showInactive)}
+              className={`brutal-btn px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                showInactive ? 'bg-black text-white' : 'bg-white text-black hover:bg-yellow-50'
+              }`}
+            >
+              <span>{showInactive ? 'Viewing Inactive' : 'View Inactive (5)'}</span>
+            </button>
+
+            {!showInactive && (
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+              >
+                <UserPlus className="w-4 h-4 stroke-[2.5]" />
+                <span>{showAddForm ? 'Close Form' : 'Add Member'}</span>
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setShowInactive(!showInactive)}
-            className={`px-4 py-2 rounded-xl backdrop-blur-xl border transition-all duration-300 font-medium shadow-lg ${
-              showInactive 
-                ? 'bg-orange-500/30 text-orange-200 border-orange-400/50 hover:bg-orange-500/40'
-                : 'bg-green-500/30 text-green-200 border-green-400/50 hover:bg-green-500/40'
-            }`}
-          >
-            {showInactive ? 'Show Active' : 'Show Inactive'}
-          </button>
-          {!showInactive && (
-            <GlassButton variant="primary" onClick={() => setShowAddForm(!showAddForm)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Member
-            </GlassButton>
-          )}
-        </div>
+
+        {/* Dashed divider */}
+        <div className="border-b-2 border-dashed border-black/30 w-full pt-1"></div>
       </div>
 
-      {/* Add Member Form */}
+      {/* ─── ROW 1: THE 3 METRIC CARDS ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        
+        {/* Card 1: Active Directory (Electric Yellow Hero) */}
+        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <UserCheck className="w-5 h-5 text-white" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>VERIFIED</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              ACTIVE ROSTER
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                {activeMembers.length} Members
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Inactive / Exited */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <UserX className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>EXITED</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              INACTIVE MEMBERS
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                {inactiveMembers.length} Records
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Compliance Status */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <Calendar className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>CYCLE 2026</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              MEMBERSHIP STATUS
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                100% Active
+              </h2>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ─── ADD MEMBER FORM (Collapsible Neo-Brutalist Frame) ─── */}
       {showAddForm && (
-        <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent mb-4">
-            Add New Member
-          </h3>
+        <div className="brutal-card p-6 bg-white space-y-4 animate-slideDown">
+          <div className="flex justify-between items-center border-b-2 border-black pb-2">
+            <h3 className="font-black text-sm uppercase tracking-wider text-black">
+              Register New Active Member
+            </h3>
+            <button onClick={() => setShowAddForm(false)} className="p-1 hover:bg-gray-100">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
           <form onSubmit={handleAddMember} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Full Name *</label>
+              <div className="space-y-1">
+                <label className="text-xs font-black uppercase tracking-wider text-black">Full Name *</label>
                 <input
                   type="text"
                   value={newMember.name}
                   onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                  className="w-full px-4 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="John Doe"
+                  placeholder="e.g. John Doe"
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Username *</label>
+
+              <div className="space-y-1">
+                <label className="text-xs font-black uppercase tracking-wider text-black">Username *</label>
                 <input
                   type="text"
                   value={newMember.username}
                   onChange={(e) => setNewMember({ ...newMember, username: e.target.value.toLowerCase() })}
-                  className="w-full px-4 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="johndoe"
+                  placeholder="e.g. johndoe"
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Email (Optional)</label>
+
+              <div className="space-y-1">
+                <label className="text-xs font-black uppercase tracking-wider text-black">Email (Optional)</label>
                 <input
                   type="email"
                   value={newMember.email}
                   onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                  className="w-full px-4 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="john@example.com"
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Password (Optional)</label>
-                <input
-                  type="password"
-                  value={newMember.password}
-                  onChange={(e) => setNewMember({ ...newMember, password: e.target.value })}
-                  className="w-full px-4 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="••••••••"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Join Date *</label>
+
+              <div className="space-y-1">
+                <label className="text-xs font-black uppercase tracking-wider text-black">Join Date *</label>
                 <input
                   type="date"
                   value={newMember.joinDate}
                   onChange={(e) => setNewMember({ ...newMember, joinDate: e.target.value })}
-                  className="w-full px-4 py-2 backdrop-blur-xl bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
                   required
                 />
               </div>
             </div>
-            <div className="flex space-x-3 pt-4">
-              <GlassButton type="submit" variant="primary">Add Member</GlassButton>
-              <GlassButton type="button" variant="secondary" onClick={() => {
-                setShowAddForm(false);
-                setNewMember({ name: '', username: '', email: '', password: '', joinDate: new Date().toISOString().split('T')[0] });
-              }}>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="submit"
+                className="brutal-btn py-2.5 px-6 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
+              >
+                Save Member Record
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                className="brutal-btn py-2.5 px-4 bg-white text-black font-black text-xs uppercase"
+              >
                 Cancel
-              </GlassButton>
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Members List */}
-      {displayMembers.length === 0 ? (
-        <div className="text-center py-16 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20">
-          <UserX className="h-16 w-16 text-white/30 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white/70 mb-2">
-            No {showInactive ? 'Inactive' : 'Active'} Members
-          </h3>
-          <p className="text-white/50">
-            {showInactive ? 'All members are currently active' : 'Add your first member to get started'}
-          </p>
+      {/* ─── SEARCH BAR ─── */}
+      <div className="brutal-card p-3 max-w-md">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/50" />
+          <input
+            type="text"
+            placeholder="Search member by name or username..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-8 py-1.5 bg-white border-2 border-black text-xs font-mono font-bold text-black focus:outline-none"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="absolute right-2 top-1/2 -translate-y-1/2">
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
-      ) : (
-        <div className="grid gap-4">
-          {displayMembers.map((member) => (
-            <div
-              key={member.id}
-              className={`p-6 rounded-2xl backdrop-blur-xl border shadow-lg transition-all duration-300 hover:scale-[1.01] ${
-                member.status === 'inactive'
-                  ? 'bg-gray-800/40 border-gray-700/50 opacity-75'
-                  : 'bg-white/10 border-white/20 hover:bg-white/15'
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                {/* Member Info */}
-                <div className="flex items-center space-x-4">
-                  <div className="h-14 w-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-emerald-500/20">
-                    <span className="text-xl font-bold text-white">{member.name.charAt(0).toUpperCase()}</span>
+      </div>
+
+      {/* ─── MEMBERS LIST (Tactile Cards) ─── */}
+      <div className="space-y-3">
+        {displayMembers.length === 0 ? (
+          <div className="brutal-card p-12 text-center space-y-2">
+            <UserX className="w-10 h-10 text-black/30 mx-auto" />
+            <p className="font-mono font-bold text-xs text-black/60">
+              No {showInactive ? 'inactive' : 'active'} members found matching "{searchTerm}"
+            </p>
+          </div>
+        ) : (
+          displayMembers.map((member) => {
+            const memberActiveLoan = getActiveLoan(member.id);
+            const paidCount = getPaidPaymentCount(member.id);
+
+            return (
+              <div
+                key={member.id}
+                className="brutal-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 border-2 border-black flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_#000] ${
+                    member.status === 'inactive' ? 'bg-gray-200 text-gray-700' : 'bg-[#FFE600] text-black'
+                  }`}>
+                    {member.name.slice(0, 2).toUpperCase()}
                   </div>
+
                   <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                        {member.name}
-                      </h3>
-                      {member.status === 'inactive' && (
-                        <span className="px-2 py-1 bg-red-500/20 text-red-300 rounded-full text-xs font-medium border border-red-500/30">
-                          Inactive
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-base text-black">{member.name}</h3>
+                      <span className={`px-2 py-0.5 text-[9px] font-mono font-black uppercase border border-black ${
+                        member.status === 'inactive' ? 'bg-red-100 text-red-900' : 'bg-emerald-100 text-emerald-900'
+                      }`}>
+                        {member.status === 'inactive' ? 'Inactive' : 'Active'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 mt-1 text-[11px] font-mono font-bold text-black/60 flex-wrap">
+                      <span>@{member.username}</span>
+                      <span>•</span>
+                      <span>Joined: {new Date(member.joinDate).toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span className="text-black">Paid: {paidCount} Months (LKR {(paidCount * 300).toLocaleString()})</span>
+                      {memberActiveLoan && (
+                        <span className="bg-amber-100 border border-black px-1.5 py-0.2 text-[9px] text-amber-900 font-bold">
+                          Active Loan: LKR {(memberActiveLoan.amount - memberActiveLoan.repaidAmount).toLocaleString()}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-white/70">@{member.username}</p>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-white/60">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>Joined: {new Date(member.joinDate).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    {member.deactivatedAt && (
-                      <div className="mt-2 space-y-1">
-                        <p className="text-xs text-white/50">
-                          Deactivated: {new Date(member.deactivatedAt).toLocaleDateString()}
-                        </p>
-                        {member.deactivationReason && (
-                          <div className="flex items-start space-x-1">
-                            <AlertCircle className="h-3 w-3 text-orange-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-orange-300">{member.deactivationReason}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                {/* Actions */}
+                <div className="flex items-center gap-2 self-end sm:self-auto">
                   {member.status === 'active' ? (
                     <button
                       onClick={() => handleOpenDeactivate(member.id)}
-                      className="flex-1 sm:flex-none px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 rounded-xl border border-orange-500/30 transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg"
+                      className="brutal-btn py-1.5 px-3 bg-red-100 hover:bg-red-200 text-red-900 text-xs font-black uppercase flex items-center gap-1.5"
                     >
-                      <UserX className="h-4 w-4" />
-                      <span>Deactivate</span>
+                      <UserX className="w-3.5 h-3.5" />
+                      <span>Deactivate / Exit</span>
                     </button>
                   ) : (
                     <>
                       <button
                         onClick={() => handleReactivate(member.id)}
-                        className="flex-1 sm:flex-none px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded-xl border border-green-500/30 transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg"
+                        className="brutal-btn py-1.5 px-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-xs font-black uppercase flex items-center gap-1.5"
                       >
-                        <UserCheck className="h-4 w-4" />
+                        <UserCheck className="w-3.5 h-3.5" />
                         <span>Reactivate</span>
                       </button>
                       <button
                         onClick={() => handlePermanentDelete(member.id, member.name)}
-                        className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-xl border border-red-500/30 transition-all duration-300 flex items-center justify-center shadow-lg"
-                        title="Permanently delete all records"
+                        className="brutal-btn p-2 bg-red-600 hover:bg-red-700 text-white"
+                        title="Permanently Delete"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            );
+          })
+        )}
+      </div>
 
-      {/* ═══════════════════════════════════════════════════
-          DEACTIVATION MODAL
-      ═══════════════════════════════════════════════════ */}
+      {/* ─── DEACTIVATION / EXIT MODAL ─── */}
       {memberToDeactivate && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900/95 backdrop-blur-xl rounded-2xl p-6 max-w-lg w-full border border-white/20 shadow-2xl">
-
-            {/* ── SCREEN 1: Choose deactivation type ── */}
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="w-full max-w-lg bg-white border-3 border-black shadow-[8px_8px_0px_#000] p-6 space-y-6">
+            
+            {/* Step 1: Choose Type */}
             {modalStep === 'choose' && (
-              <div>
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="h-12 w-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
-                    <UserX className="h-6 w-6 text-orange-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">Deactivate Member</h3>
-                    <p className="text-white/60 text-sm">{activeMember?.name}</p>
-                  </div>
+              <div className="space-y-4">
+                <div className="bg-[#FFE600] border-2 border-black p-3 flex justify-between items-center">
+                  <h3 className="font-black text-sm uppercase tracking-wider text-black">
+                    Deactivate Member: {activeMember?.name}
+                  </h3>
+                  <button onClick={resetModal} className="w-7 h-7 bg-white border-2 border-black flex items-center justify-center text-black">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                <p className="text-white/70 text-sm mb-6">
-                  Choose the type of deactivation for this member:
+
+                <p className="text-xs font-mono font-bold text-black/70">
+                  Select the appropriate protocol for this member's deactivation:
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Standard Deactivation */}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={handleChooseStandard}
-                    className="flex flex-col items-start p-5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 hover:border-orange-400/60 transition-all duration-300 text-left group"
+                    className="p-4 bg-gray-50 border-2 border-black text-left shadow-[2px_2px_0px_#000] hover:bg-yellow-50 space-y-1"
                   >
-                    <div className="h-10 w-10 bg-orange-500/20 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                      <UserX className="h-5 w-5 text-orange-400" />
-                    </div>
-                    <h4 className="text-white font-semibold mb-1">Standard Deactivation</h4>
-                    <p className="text-white/55 text-xs leading-relaxed">
-                      For violations, bans, or admin decisions. No financial refund is issued.
+                    <p className="font-black text-xs uppercase text-black">A. Standard Deactivation</p>
+                    <p className="text-[10px] font-mono text-black/60">
+                      Temporary pause or penalty. Preserves all history; no refund is issued.
                     </p>
                   </button>
 
-                  {/* Member Exit with Refund */}
                   <button
                     onClick={() => handleChooseExit(memberToDeactivate)}
-                    className="flex flex-col items-start p-5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 transition-all duration-300 text-left group"
+                    className="p-4 bg-emerald-50 border-2 border-black text-left shadow-[2px_2px_0px_#000] hover:bg-emerald-100 space-y-1"
                   >
-                    <div className="h-10 w-10 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                      <LogOut className="h-5 w-5 text-emerald-400" />
-                    </div>
-                    <h4 className="text-white font-semibold mb-1">Member Exit with Refund</h4>
-                    <p className="text-white/55 text-xs leading-relaxed">
-                      Member is leaving voluntarily. Their total paid contributions will be refunded.
+                    <p className="font-black text-xs uppercase text-emerald-950">B. Official Exit & Refund</p>
+                    <p className="text-[10px] font-mono text-emerald-900">
+                      Permanent exit. Calculates total contributions for refund from treasury.
                     </p>
                   </button>
                 </div>
-                <div className="mt-5 flex justify-end">
-                  <button
-                    onClick={resetModal}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-300 border border-white/20 text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
+
+                <button onClick={resetModal} className="w-full brutal-btn py-2.5 bg-white text-xs font-black uppercase">
+                  Cancel
+                </button>
               </div>
             )}
 
-            {/* ── SCREEN 2: Standard deactivation form ── */}
+            {/* Step 2: Standard Deactivation Form */}
             {modalStep === 'standard' && (
-              <div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="h-12 w-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
-                    <UserX className="h-6 w-6 text-orange-400" />
-                  </div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent">
-                    Standard Deactivation
+              <div className="space-y-4">
+                <div className="bg-[#FFE600] border-2 border-black p-3 flex justify-between items-center">
+                  <h3 className="font-black text-sm uppercase tracking-wider text-black">
+                    Standard Deactivation: {activeMember?.name}
                   </h3>
+                  <button onClick={resetModal} className="w-7 h-7 bg-white border-2 border-black flex items-center justify-center text-black">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                <p className="text-white/70 mb-4 text-sm">
-                  This will mark <strong className="text-white">{activeMember?.name}</strong> as inactive. All payment and loan records will be preserved.
-                </p>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-white/80 mb-2">Reason (optional but recommended)</label>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black uppercase text-black">Reason for deactivation</label>
                   <textarea
                     value={deactivationReason}
                     onChange={(e) => setDeactivationReason(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-orange-500 focus:outline-none backdrop-blur-xl"
+                    placeholder="e.g. Relocated, voluntary break, violation..."
+                    className="w-full p-2.5 bg-white border-2 border-black text-xs font-mono font-bold text-black"
                     rows={3}
-                    placeholder="e.g., Moved abroad, Violated group rules..."
                   />
                 </div>
-                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-4">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-blue-300">No refund will be issued. The member's historical data remains accessible for reports and audits.</p>
-                  </div>
-                </div>
-                <div className="flex space-x-3">
+
+                <div className="flex gap-2">
                   <button
                     onClick={confirmStandardDeactivation}
                     disabled={isProcessing}
-                    className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white rounded-xl font-medium transition-all duration-300 shadow-lg"
+                    className="flex-1 brutal-btn py-2.5 bg-red-600 text-white font-black text-xs uppercase"
                   >
-                    {isProcessing ? 'Processing...' : 'Confirm Deactivation'}
+                    {isProcessing ? 'Saving...' : 'Confirm Deactivation'}
                   </button>
-                  <button
-                    onClick={resetModal}
-                    className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-300 border border-white/20"
-                  >
+                  <button onClick={resetModal} className="brutal-btn px-4 py-2.5 bg-white text-black text-xs font-black uppercase">
                     Cancel
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ── SCREEN 3: Exit BLOCKED — active loan ── */}
+            {/* Step 3: Exit Blocked by Active Loan */}
             {modalStep === 'exit-blocked' && activeLoan && (
-              <div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="h-12 w-12 bg-red-500/20 rounded-xl flex items-center justify-center">
-                    <AlertCircle className="h-6 w-6 text-red-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">⛔ Exit Blocked</h3>
-                    <p className="text-red-300 text-sm font-medium">Outstanding Loan</p>
-                  </div>
+              <div className="space-y-4">
+                <div className="bg-red-500 text-white border-2 border-black p-3 flex justify-between items-center">
+                  <h3 className="font-black text-sm uppercase tracking-wider">
+                    ⛔ Exit Blocked: Active Loan
+                  </h3>
+                  <button onClick={resetModal} className="w-7 h-7 bg-white text-black border-2 border-black flex items-center justify-center">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                <p className="text-white/70 text-sm mb-5">
-                  <strong className="text-white">{activeMember?.name}</strong> cannot exit the organization while they have an active loan. The loan must be fully repaid first.
+                <p className="text-xs font-mono font-bold text-black/80">
+                  <strong>{activeMember?.name}</strong> has an active loan of <strong>LKR {(activeLoan.amount - activeLoan.repaidAmount).toLocaleString()}</strong> that must be fully repaid before processing an official exit.
                 </p>
 
-                {/* Loan Details */}
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-5">
-                  <p className="text-sm font-semibold text-red-300 mb-3 flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span>Loan Details</span>
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-white/60">Loan Amount:</span>
-                    <span className="text-white font-medium">LKR {activeLoan.amount.toLocaleString()}</span>
-                    <span className="text-white/60">Issued:</span>
-                    <span className="text-white font-medium">{new Date(activeLoan.issueDate).toLocaleDateString()}</span>
-                    <span className="text-white/60">Due Date:</span>
-                    <span className="text-white font-medium">{new Date(activeLoan.dueDate).toLocaleDateString()}</span>
-                    <span className="text-white/60">Repaid So Far:</span>
-                    <span className="text-green-300 font-medium">LKR {activeLoan.repaidAmount.toLocaleString()}</span>
-                    <span className="text-white/60">Outstanding:</span>
-                    <span className="text-red-300 font-bold">LKR {(activeLoan.amount - activeLoan.repaidAmount).toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-5">
-                  <div className="flex items-start space-x-2">
-                    <UserCheck className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-emerald-300">
-                      Once this loan is fully repaid, you can process their exit and issue the refund of <strong>LKR {refundAmount.toLocaleString()}</strong>.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={resetModal}
-                  className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-300 border border-white/20"
-                >
+                <button onClick={resetModal} className="w-full brutal-btn py-2.5 bg-white text-xs font-black uppercase">
                   Close
                 </button>
               </div>
             )}
 
-            {/* ── SCREEN 4: Exit CONFIRM — refund calculation ── */}
+            {/* Step 4: Exit Confirm with Refund Calculation */}
             {modalStep === 'exit-confirm' && (
-              <div>
-                <div className="flex items-center space-x-3 mb-5">
-                  <div className="h-12 w-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                    <LogOut className="h-6 w-6 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                      Member Exit with Refund
-                    </h3>
-                    <p className="text-white/60 text-sm">{activeMember?.name}</p>
-                  </div>
+              <div className="space-y-4">
+                <div className="bg-emerald-500 text-white border-2 border-black p-3 flex justify-between items-center">
+                  <h3 className="font-black text-sm uppercase tracking-wider">
+                    Member Exit & Refund Authorization
+                  </h3>
+                  <button onClick={resetModal} className="w-7 h-7 bg-white text-black border-2 border-black flex items-center justify-center">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Member info */}
-                <div className="flex items-center space-x-4 mb-5 text-sm text-white/70">
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Joined: {activeMember ? new Date(activeMember.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}</span>
-                  </div>
-                </div>
-
-                {/* Refund Calculation Box */}
-                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-5 mb-4">
-                  <p className="text-sm font-semibold text-emerald-300 mb-4 flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span>Refund Calculation</span>
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Monthly contributions ({paidMonths} × LKR 300):</span>
-                      <span className="text-white font-medium">LKR {refundAmount.toLocaleString()}</span>
-                    </div>
-                    {extraAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-white/70">Extra contributions:</span>
-                        <span className="text-blue-300 font-medium">+ LKR {extraAmount.toLocaleString()}</span>
-                      </div>
-                    )}
-                    <div className="border-t border-emerald-500/30 pt-2 flex justify-between">
-                      <span className="text-emerald-300 font-semibold">Total Refund:</span>
-                      <span className="text-emerald-300 font-bold text-lg">LKR {totalRefund.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  {paidMonths === 0 && extraAmount === 0 && (
-                    <p className="text-xs text-white/50 mt-3">⚠️ No payments recorded. Refund will be LKR 0 unless you add extra contributions below.</p>
-                  )}
-                </div>
-
-                {/* Extra Contributions Input */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-white/80 mb-1">
-                    Extra Contributions to Refund
-                    <span className="ml-2 text-xs text-white/45 font-normal">(donations, additional payments, etc.)</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-sm font-medium">LKR</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={extraAmountInput}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        setExtraAmountInput(raw);
-                        const parsed = parseFloat(raw);
-                        setExtraAmount(!isNaN(parsed) && parsed > 0 ? parsed : 0);
-                      }}
-                      placeholder="0"
-                      className="w-full pl-12 pr-4 py-2.5 bg-white/10 border border-white/20 hover:border-blue-400/50 focus:border-blue-400 rounded-xl text-white placeholder-white/30 focus:ring-2 focus:ring-blue-500/40 focus:outline-none backdrop-blur-xl transition-all"
-                    />
+                <div className="p-3 bg-emerald-50 border-2 border-black space-y-1 font-mono text-xs">
+                  <div className="flex justify-between">
+                    <span>Monthly Contributions ({paidMonths} × 300):</span>
+                    <span className="font-black">LKR {refundAmount.toLocaleString()}</span>
                   </div>
                   {extraAmount > 0 && (
-                    <p className="text-xs text-blue-300 mt-1.5">
-                      ✓ Total refund updated to LKR {totalRefund.toLocaleString()}
-                    </p>
+                    <div className="flex justify-between text-blue-700">
+                      <span>Extra Contributions:</span>
+                      <span className="font-black">+LKR {extraAmount.toLocaleString()}</span>
+                    </div>
                   )}
+                  <div className="border-t-2 border-black pt-1.5 flex justify-between font-black text-sm text-emerald-950">
+                    <span>Total Refund Due:</span>
+                    <span>LKR {totalRefund.toLocaleString()}</span>
+                  </div>
                 </div>
 
-                {/* Admin Notes */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-white/80 mb-2">Admin Notes (optional)</label>
-                  <textarea
-                    value={exitNotes}
-                    onChange={(e) => setExitNotes(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-emerald-500 focus:outline-none backdrop-blur-xl"
-                    rows={2}
-                    placeholder="e.g. Member relocated abroad, left on good terms..."
+                <div className="space-y-1">
+                  <label className="text-[11px] font-black uppercase text-black">Extra Contributions to Refund (Optional)</label>
+                  <input
+                    type="number"
+                    value={extraAmountInput}
+                    onChange={(e) => {
+                      setExtraAmountInput(e.target.value);
+                      const parsed = parseFloat(e.target.value);
+                      setExtraAmount(!isNaN(parsed) && parsed > 0 ? parsed : 0);
+                    }}
+                    placeholder="0"
+                    className="w-full p-2 bg-white border-2 border-black text-xs font-bold"
                   />
                 </div>
 
-                {/* Warning */}
-                <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl mb-5">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="h-4 w-4 text-orange-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-orange-300">
-                      This action is permanent. <strong>{activeMember?.name}</strong> will be deactivated and <strong>LKR {totalRefund.toLocaleString()}</strong> will be deducted from the group fund.
-                    </p>
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-black uppercase text-black">Admin Notes</label>
+                  <input
+                    type="text"
+                    value={exitNotes}
+                    onChange={(e) => setExitNotes(e.target.value)}
+                    placeholder="e.g. Relocated, good standing..."
+                    className="w-full p-2 bg-white border-2 border-black text-xs font-bold"
+                  />
                 </div>
 
-                {/* Error */}
                 {exitError && (
-                  <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl mb-4">
-                    <p className="text-sm text-red-300">{exitError}</p>
-                  </div>
+                  <p className="p-2 bg-red-100 border border-red-500 text-red-900 text-xs font-bold">{exitError}</p>
                 )}
 
-                <div className="flex space-x-3">
+                <div className="flex gap-2 pt-2">
                   <button
                     onClick={confirmMemberExit}
                     disabled={isProcessing}
-                    className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-600/50 text-white rounded-xl font-medium transition-all duration-300 shadow-lg flex items-center justify-center space-x-2"
+                    className="flex-1 brutal-btn py-3 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase"
                   >
-                    {isProcessing ? (
-                      <>
-                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>  
-                        <UserCheck className="h-4 w-4" />
-                        <span>Confirm Exit & Issue LKR {totalRefund.toLocaleString()}</span>
-                      </>
-                    )}
+                    {isProcessing ? 'Processing...' : `Confirm Exit & Issue LKR ${totalRefund.toLocaleString()}`}
                   </button>
-                  <button
-                    onClick={resetModal}
-                    disabled={isProcessing}
-                    className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-300 border border-white/20"
-                  >
+                  <button onClick={resetModal} className="brutal-btn px-4 py-3 bg-white text-xs font-black uppercase">
                     Cancel
                   </button>
                 </div>
@@ -670,6 +660,7 @@ export default function MemberManagement() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

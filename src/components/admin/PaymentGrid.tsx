@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Check, Search, Download, CheckCircle2, AlertTriangle, TrendingUp, Filter, ArrowUp, Sparkles, X, FileSpreadsheet } from 'lucide-react';
+import {
+  Check, Search, Download, CheckCircle2, AlertTriangle, TrendingUp,
+  Filter, ArrowUp, Sparkles, X, Calendar, Share2, Copy, Flame, User as UserIcon
+} from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import GlassButton from '../common/GlassButton';
 
 export default function PaymentGrid() {
-  const { payments, updatePayment, currentUser, allUsers } = useApp();
+  const { payments, updatePayment, currentUser, allUsers, activeMembers } = useApp();
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,36 +15,42 @@ export default function PaymentGrid() {
   const [justPaidCell, setJustPaidCell] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [pendingCells, setPendingCells] = useState<Record<string, boolean>>({});
+  const [mobileViewMode, setMobileViewMode] = useState<'cards' | 'grid'>('cards');
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+  const [copiedReminder, setCopiedReminder] = useState(false);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const members = useMemo(() => 
-    allUsers.filter(user => user.role === 'member' && user.status === 'active'),
-    [allUsers]
-  );
+  
+  // Strictly filter only active members
+  const members = useMemo(() => {
+    if (activeMembers && activeMembers.length > 0) {
+      return activeMembers;
+    }
+    return allUsers.filter(user => user.role === 'member' && user.status === 'active');
+  }, [activeMembers, allUsers]);
   
   const currentMonthIndex = new Date().getMonth();
   const currentMonth = months[currentMonthIndex];
   
-  // Get available years from payments data
+  // Available years from payment records
   const availableYears = useMemo(() => {
     const years = [...new Set(payments.map(p => p.year))].sort((a, b) => b - a);
     return years.length > 0 ? years : [new Date().getFullYear()];
   }, [payments]);
 
-  // Optimized Matrix Calculation using lookup map
+  // Payment Matrix Map O(P + M*12)
   const paymentMatrix = useMemo(() => {
     const matrix: { [key: string]: { [key: string]: boolean } } = {};
-    
-    // Create a lookup map for faster access O(P)
     const paymentLookup = new Map<string, boolean>();
+
     payments.forEach(p => {
       if (p.year === selectedYear) {
         paymentLookup.set(`${p.memberId}_${p.month}`, p.paid);
       }
     });
 
-    // Build matrix O(M * 12)
     members.forEach(member => {
       matrix[member.id] = {};
       months.forEach(month => {
@@ -53,7 +61,7 @@ export default function PaymentGrid() {
     return matrix;
   }, [payments, members, selectedYear]);
 
-  // Memoize member stats to avoid repeated work during render
+  // Member Stats Memoization
   const memberStatsMap = useMemo(() => {
     const stats: { [key: string]: any } = {};
     
@@ -72,8 +80,6 @@ export default function PaymentGrid() {
       }
       
       const unpaidCount = months.slice(0, currentMonthIndex + 1).filter(month => !memberMatrix[month]).length;
-      
-      // Calculate total paid amount for the selected year
       const totalPaid = payments
         .filter(p => p.memberId === memberId && p.year === selectedYear && p.paid)
         .reduce((sum, p) => sum + p.amount, 0);
@@ -88,6 +94,7 @@ export default function PaymentGrid() {
     return memberStatsMap[memberId] || { paidCountYTD: 0, paidCountTotal: 0, streak: 0, unpaidCount: 0, totalPaid: 0 };
   };
 
+  // Monthly Gross Totals
   const monthlyTotals = useMemo(() => {
     const previousYearTotal = payments
       .filter(p => p.year === selectedYear - 1 && p.paid)
@@ -102,7 +109,7 @@ export default function PaymentGrid() {
         .filter(p => p.month === month && p.year === selectedYear && p.paid)
         .reduce((sum, p) => sum + p.amount, 0);
       
-      monthlyGrosses[month] = (month === 'January') ? monthlyGross + previousYearTotal : monthlyGross;
+      monthlyGrosses[month] = monthlyGross;
       runningTotal += monthlyGross;
       cumulativeTotals[month] = runningTotal;
     });
@@ -111,12 +118,12 @@ export default function PaymentGrid() {
       .filter(p => p.year === selectedYear && p.paid)
       .reduce((sum, p) => sum + p.amount, 0);
     
-    const yearlyGross = currentYearGross + previousYearTotal;
+    const yearlyGross = currentYearGross;
 
     return { monthlyGrosses, cumulativeTotals, yearlyGross, previousYearTotal };
   }, [payments, selectedYear]);
 
-  // Filter members based on search and unpaid filter
+  // Filtered members list
   const filteredMembers = useMemo(() => {
     return members.filter(member => {
       const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -140,13 +147,12 @@ export default function PaymentGrid() {
     return 'past';
   };
 
+  // Toggle Payment Status
   const togglePayment = async (memberId: string, month: string) => {
     const paymentId = `${memberId}_${month}_${selectedYear}`;
     const cellKey = `${memberId}_${month}_${selectedYear}`;
 
-    if (pendingCells[cellKey]) {
-      return;
-    }
+    if (pendingCells[cellKey]) return;
 
     const currentStatus = paymentMatrix[memberId]?.[month];
     const newStatus = !currentStatus;
@@ -154,7 +160,6 @@ export default function PaymentGrid() {
     setPendingCells(prev => ({ ...prev, [cellKey]: true }));
     
     try {
-      // AppContext handles optimistic update
       await updatePayment(paymentId, newStatus, currentUser?.id);
       
       if (newStatus) {
@@ -180,9 +185,8 @@ export default function PaymentGrid() {
   };
 
   const markAllAsPaidForCurrentMonth = async () => {
-    if (!window.confirm(`Mark all members as paid for ${currentMonth}?`)) return;
+    if (!window.confirm(`Mark all active members as paid for ${currentMonth}?`)) return;
     
-    // Process in sequence but AppContext updates local state immediately
     for (const member of members) {
       if (!paymentMatrix[member.id]?.[currentMonth]) {
         await togglePayment(member.id, currentMonth);
@@ -196,6 +200,7 @@ export default function PaymentGrid() {
     setTimeout(() => setShowConfetti(false), 3000);
   };
 
+  // Export to CSV
   const exportToCSV = () => {
     const headers = ['Member', ...months, 'Total Paid', 'Percentage'];
     const rows = filteredMembers.map(member => {
@@ -209,16 +214,35 @@ export default function PaymentGrid() {
       ];
     });
     
-    const csvContent = [headers, ...rows]
-      .map(row => row.join(','))
-      .join('\n');
-    
+    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `payment-tracking-${selectedYear}.csv`;
     link.click();
+  };
+
+  // WhatsApp Reminder Generator
+  const copyWhatsAppUnpaidReminder = () => {
+    const unpaidMembers = members.filter(m => !paymentMatrix[m.id]?.[currentMonth]);
+    
+    const message = `🔔 *F.O.R.T LEDGER - PAYMENT REMINDER*
+🗓 *Cycle:* ${currentMonth} ${selectedYear}
+────────────────────────
+Hi members, friendly reminder regarding the monthly collection for *${currentMonth}*.
+
+💰 *Contribution:* LKR 300
+✅ *Status:* ${members.length - unpaidMembers.length}/${members.length} members settled.
+
+⏳ *Pending Members:*
+${unpaidMembers.length === 0 ? '🎉 All active members have settled for this cycle!' : unpaidMembers.map(m => `• ${m.name}`).join('\n')}
+────────────────────────
+Please send your payments to maintain our 100% group compliance target. Thank you!`;
+
+    navigator.clipboard.writeText(message);
+    setCopiedReminder(true);
+    setTimeout(() => setCopiedReminder(false), 2500);
   };
 
   useEffect(() => {
@@ -233,8 +257,10 @@ export default function PaymentGrid() {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Summary stats for the view
+  // Summary Metrics
   const currentMonthStats = getMonthlyStats(currentMonth);
+  const currentMonthCollected = monthlyTotals.monthlyGrosses[currentMonth] || 0;
+  const unpaidMembersCount = members.length - currentMonthStats.paid;
   const totalOutstanding = members.reduce((sum, member) => {
     const stats = getMemberStats(member.id);
     return sum + (stats.unpaidCount * 300);
@@ -242,271 +268,542 @@ export default function PaymentGrid() {
   
   const overallCompletionRate = members.length > 0 ? Math.round(
     (members.reduce((sum, member) => sum + getMemberStats(member.id).paidCountYTD, 0) / (members.length * (currentMonthIndex + 1))) * 100
-  ) : 0;
+  ) : 100;
 
   return (
-    <div className="space-y-6 relative" ref={scrollContainerRef}>
+    <div className="space-y-6 text-black animate-fadeIn" ref={scrollContainerRef}>
+      
+      {/* Confetti Burst */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
           <div className="text-6xl animate-bounce">🎉 🎊 ✨</div>
         </div>
       )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-blue-500/20 border border-blue-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-sm text-white/80 mb-1">This Month ({currentMonth})</p>
-              <p className="text-3xl font-bold text-white drop-shadow-lg">{currentMonthStats.paid}/{currentMonthStats.total}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-full bg-white/20 rounded-full h-1.5">
-                  <div className="bg-blue-400 h-1.5 rounded-full transition-all duration-500" style={{ width: `${currentMonthStats.percentage}%` }} />
-                </div>
-                <span className="text-xs text-blue-200 font-semibold">{currentMonthStats.percentage}%</span>
-              </div>
-            </div>
-            <TrendingUp className="h-10 w-10 text-blue-300" />
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-orange-500/20 border border-orange-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-sm text-white/80 mb-1">Total Outstanding</p>
-              <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {totalOutstanding.toLocaleString()}</p>
-              <p className="text-xs text-orange-200 mt-2">{members.length - currentMonthStats.paid} members pending</p>
-            </div>
-            <AlertTriangle className="h-10 w-10 text-orange-300" />
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-green-500/20 border border-green-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-sm text-white/80 mb-1">Overall Completion</p>
-              <p className="text-3xl font-bold text-white drop-shadow-lg">{overallCompletionRate}%</p>
-              <p className="text-xs text-green-200 mt-2">Year to date progress</p>
-            </div>
-            <CheckCircle2 className="h-10 w-10 text-green-300" />
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-purple-500/20 border border-purple-300/30 shadow-lg p-5 hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-sm text-white/80 mb-1">YTD Collection</p>
-              <p className="text-2xl font-bold text-white drop-shadow-lg">LKR {monthlyTotals.yearlyGross.toLocaleString()}</p>
-              <p className="text-xs text-purple-200 mt-2">Total collected {selectedYear}</p>
-            </div>
-            <Download className="h-10 w-10 text-purple-300" />
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions Bar */}
-      <div className="rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg p-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/50" />
-              <input
-                type="text"
-                placeholder="Search members by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white placeholder-white/50 transition-all"
-              />
-              {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+      {/* ─── PAGE HEADER & CONTROLS (STACK Neo-Brutalist) ─── */}
+      <div className="space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-black uppercase font-sans">
+              PAYMENTS
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+                REAL-TIME CONTRIBUTION MATRIX v2.0
+              </span>
+              <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
+                • {members.length} ACTIVE MEMBERS AUDITED
+              </span>
             </div>
           </div>
-          
-          <div className="flex flex-wrap gap-2">
-            <GlassButton variant={showOnlyUnpaid ? "primary" : "secondary"} onClick={() => setShowOnlyUnpaid(!showOnlyUnpaid)} className="px-4 py-2.5 text-sm font-medium">
-              <Filter className="h-4 w-4 mr-2" />
-              {showOnlyUnpaid ? 'Show All' : 'Show Unpaid'}
-            </GlassButton>
-            
-            <GlassButton variant="accent" onClick={markAllAsPaidForCurrentMonth} className="px-4 py-2.5 text-sm font-medium">
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Mark All Paid
-            </GlassButton>
-            
-            <GlassButton variant="secondary" onClick={exportToCSV} className="px-4 py-2.5 text-sm font-medium">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </GlassButton>
 
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-4 py-2.5 backdrop-blur-lg bg-white/20 border border-white/30 rounded-lg text-sm font-medium text-white hover:bg-white/30 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+          {/* Quick Actions Header Toolbar */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={copyWhatsAppUnpaidReminder}
+              className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
             >
-              {availableYears.map(year => (
-                <option key={year} value={year} className="bg-slate-800">{year}</option>
-              ))}
-            </select>
+              {copiedReminder ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-800 stroke-[3]" />
+                  <span>Copied Reminder!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>WhatsApp Reminder</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={markAllAsPaidForCurrentMonth}
+              className="brutal-btn bg-white hover:bg-emerald-50 text-emerald-800 px-3.5 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+              <span>Mark All Paid</span>
+            </button>
+
+            <button
+              onClick={exportToCSV}
+              className="brutal-btn bg-white hover:bg-gray-50 text-black px-3 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+            >
+              <Download className="w-4 h-4" />
+              <span>CSV</span>
+            </button>
+
+            {/* Year Selector */}
+            <div className="relative">
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="brutal-btn bg-white text-black px-3 py-2 text-xs font-black uppercase tracking-wider appearance-none pr-8 cursor-pointer"
+              >
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+              <Calendar className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-black" />
+            </div>
+
+            {/* Mobile View Toggle */}
+            <div className="lg:hidden flex border-2 border-black shadow-[2px_2px_0px_#000]">
+              <button
+                onClick={() => setMobileViewMode('cards')}
+                className={`px-2.5 py-1.5 text-[10px] font-black uppercase ${
+                  mobileViewMode === 'cards' ? 'bg-black text-white' : 'bg-white text-black'
+                }`}
+              >
+                Cards
+              </button>
+              <button
+                onClick={() => setMobileViewMode('grid')}
+                className={`px-2.5 py-1.5 text-[10px] font-black uppercase ${
+                  mobileViewMode === 'grid' ? 'bg-black text-white' : 'bg-white text-black'
+                }`}
+              >
+                Grid
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Dashed divider */}
+        <div className="border-b-2 border-dashed border-black/30 w-full pt-1"></div>
+      </div>
+
+      {/* ─── ROW 1: THE 4 TACTILE METRIC CARDS ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        
+        {/* CARD 1: CURRENT MONTH (Electric Yellow Hero) */}
+        <div className="brutal-card-yellow p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-[#FFE600] flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <Calendar className="w-5 h-5 text-white" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black flex items-center gap-1 shadow-[2px_2px_0px_#000]">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+              <span>{currentMonthStats.percentage}%</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              {currentMonth.toUpperCase()} COLLECTION
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                {currentMonthStats.paid} / {members.length}
+              </h2>
+              <span className="text-xs font-mono font-bold text-black/70">
+                (LKR {currentMonthCollected.toLocaleString()})
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 2: TOTAL OUTSTANDING */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <AlertTriangle className="w-5 h-5 text-[#FFE600]" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>{unpaidMembersCount} Due</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              TOTAL OUTSTANDING
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                LKR {totalOutstanding.toLocaleString()}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 3: YTD COMPLETION RATE */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>YTD STATS</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              COMPLETION RATE
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                {overallCompletionRate}%
+              </h2>
+              <span className="text-xs font-mono font-bold text-emerald-700">
+                On Schedule
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 4: YTD COLLECTION TOTAL */}
+        <div className="brutal-card p-5 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="flex items-start justify-between relative z-10">
+            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg border border-black shadow-[2px_2px_0px_#000]">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+              <span>{selectedYear}</span>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <p className="text-[11px] font-black tracking-wider uppercase text-black underline underline-offset-4 decoration-2">
+              TOTAL COLLECTED
+            </p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <h2 className="text-3xl font-black text-black tracking-tight font-sans">
+                LKR {monthlyTotals.yearlyGross.toLocaleString()}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ─── SEARCH & FILTER TOOLBAR ─── */}
+      <div className="brutal-card p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        
+        {/* Search input with 2px black border */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/50" />
+          <input
+            type="text"
+            placeholder="Search active member by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-8 py-2 bg-white border-2 border-black text-xs font-mono font-bold text-black placeholder:text-black/40 focus:outline-none focus:shadow-[3px_3px_0px_#FFE600] transition-all"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/50 hover:text-black"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowOnlyUnpaid(!showOnlyUnpaid)}
+            className={`brutal-btn px-3 py-1.5 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
+              showOnlyUnpaid ? 'bg-black text-white' : 'bg-white text-black hover:bg-yellow-50'
+            }`}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span>{showOnlyUnpaid ? 'Showing Unpaid' : 'Show Unpaid Only'}</span>
+          </button>
+
+          <span className="text-xs font-mono font-bold text-black/60 hidden sm:inline ml-2">
+            {filteredMembers.length} of {members.length} active members
+          </span>
         </div>
       </div>
 
-      {/* Payment Grid */}
-      <div className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl overflow-hidden">
-        <div className="px-6 py-5 border-b border-white/20 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-bold text-white drop-shadow-lg">Payment Tracking</h2>
-              <p className="text-sm text-white/80 drop-shadow mt-1">
-                {filteredMembers.length} of {members.length} members shown • Click checkboxes to toggle
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <div className="w-3 h-3 bg-green-500/60 border-2 border-green-400 rounded"></div>
-                <span className="text-white/90 font-medium">Paid</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <div className="w-3 h-3 bg-orange-500/60 border-2 border-orange-400 rounded animate-pulse"></div>
-                <span className="text-white/90 font-medium">Current</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <div className="w-3 h-3 bg-red-500/60 border-2 border-red-400 rounded"></div>
-                <span className="text-white/90 font-medium">Overdue</span>
-              </div>
-            </div>
+      {/* ─── MOBILE CARDS VIEW (Clean & No Horizontal Scroll) ─── */}
+      <div className={`lg:hidden ${mobileViewMode === 'cards' ? 'block' : 'hidden'} space-y-3`}>
+        {filteredMembers.length === 0 ? (
+          <div className="brutal-card p-8 text-center">
+            <p className="text-sm font-mono font-bold text-black/60">No members found matching "{searchTerm}"</p>
           </div>
+        ) : (
+          filteredMembers.map((member) => {
+            const stats = getMemberStats(member.id);
+            const isPaidCurrentMonth = paymentMatrix[member.id]?.[currentMonth];
+            const isPending = !!pendingCells[`${member.id}_${currentMonth}_${selectedYear}`];
+            const isExpanded = expandedMemberId === member.id;
+
+            return (
+              <div key={member.id} className="brutal-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-sm text-black shadow-[2px_2px_0px_#000]">
+                      {member.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-black text-sm text-black leading-tight">{member.name}</h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-mono text-black/60">
+                          Paid: LKR {stats.totalPaid.toLocaleString()}
+                        </span>
+                        {stats.streak > 0 && (
+                          <span className="bg-amber-100 border border-black text-[9px] font-mono font-black px-1 text-amber-900 flex items-center gap-0.5">
+                            <Flame className="w-2.5 h-2.5 text-amber-600 fill-amber-500" /> {stats.streak}m
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <span
+                    className={`px-2 py-0.5 text-[10px] font-black border-2 border-black shadow-[1.5px_1.5px_0px_#000] ${
+                      isPaidCurrentMonth
+                        ? 'bg-[#06D6A0] text-black'
+                        : 'bg-[#FFEAEA] text-red-600'
+                    }`}
+                  >
+                    {isPaidCurrentMonth ? 'SETTLED' : 'DUE'}
+                  </span>
+                </div>
+
+                {/* YTD Progress Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] font-mono font-bold text-black/60">
+                    <span>Yearly Progress</span>
+                    <span>{stats.paidCountTotal} / 12 Months ({Math.round((stats.paidCountTotal / 12) * 100)}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 border border-black h-2 overflow-hidden">
+                    <div
+                      className="bg-black h-full transition-all duration-300"
+                      style={{ width: `${(stats.paidCountTotal / 12) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Primary Action Button */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => togglePayment(member.id, currentMonth)}
+                    disabled={isPending}
+                    className={`flex-1 brutal-btn py-2 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 ${
+                      isPaidCurrentMonth
+                        ? 'bg-white hover:bg-gray-100 text-black'
+                        : 'bg-[#FFE600] hover:bg-[#FFF275] text-black'
+                    }`}
+                  >
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>{isPaidCurrentMonth ? `Paid for ${currentMonth} (Tap to Undo)` : `Mark Paid for ${currentMonth}`}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setExpandedMemberId(isExpanded ? null : member.id)}
+                    className="brutal-btn px-3 py-2 bg-white text-xs font-black uppercase"
+                  >
+                    {isExpanded ? 'Less' : '12M'}
+                  </button>
+                </div>
+
+                {/* Expandable 12-Month Mini Grid */}
+                {isExpanded && (
+                  <div className="pt-2 border-t-2 border-dashed border-black/20">
+                    <p className="text-[10px] font-mono font-black uppercase text-black/60 mb-2">
+                      Full Year 12-Month Log ({selectedYear})
+                    </p>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {months.map((m, idx) => {
+                        const isMthPaid = paymentMatrix[member.id]?.[m];
+                        return (
+                          <button
+                            key={m}
+                            onClick={() => togglePayment(member.id, m)}
+                            className={`p-1.5 border border-black text-[10px] font-mono font-black flex items-center justify-between shadow-[1px_1px_0px_#000] ${
+                              isMthPaid
+                                ? 'bg-[#06D6A0] text-black'
+                                : idx <= currentMonthIndex
+                                ? 'bg-[#FFEAEA] text-red-600'
+                                : 'bg-gray-100 text-gray-400'
+                            }`}
+                          >
+                            <span>{m.slice(0, 3)}</span>
+                            <span>{isMthPaid ? '✓' : '•'}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* ─── DESKTOP & TABLET MATRIX TABLE (Sticky Columns & Rows) ─── */}
+      <div className={`brutal-card overflow-hidden ${mobileViewMode === 'cards' ? 'hidden lg:block' : 'block'}`}>
+        
+        {/* Table Top Controls & Info Bar */}
+        <div className="p-4 bg-[#FFE600] border-b-2 border-black flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-black text-xs uppercase tracking-wider text-black">
+              12-Month Matrix
+            </span>
+            <span className="bg-black text-white text-[10px] font-mono font-bold px-1.5 py-0.5 border border-black">
+              YEAR {selectedYear}
+            </span>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-black/70">
+            Click any cell to toggle payment status • Instant Cloud Sync
+          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="sticky top-0 z-20">
-              <tr className="border-b border-white/20 bg-white/10 backdrop-blur-xl">
-                <th className="px-6 py-5 text-left text-xs font-bold text-white/90 uppercase tracking-wider sticky left-0 bg-white/10 backdrop-blur-xl z-30 min-w-[200px]">
-                  <div>Member</div>
-                  <div className="text-xs text-white/60 normal-case font-normal mt-1">Progress & Stats</div>
-                </th>
+        {/* Matrix Container */}
+        <div className="overflow-x-auto custom-scrollbar max-h-[70vh]">
+          <table className="w-full border-collapse text-left select-none">
+            <thead>
+              <tr className="bg-white border-b-2 border-black">
                 
-                {months.map((month, index) => {
+                {/* Sticky Left: Member Name Column Header */}
+                <th className="sticky left-0 bg-white z-30 p-3.5 border-r-2 border-black text-xs font-black uppercase tracking-wider text-black min-w-[200px] shadow-[2px_0px_0px_0px_#000]">
+                  Active Member ({filteredMembers.length})
+                </th>
+
+                {/* Month Headers */}
+                {months.map((month, idx) => {
+                  const status = getCurrentMonthStatus(month, idx);
+                  const isCurrent = status === 'current';
                   const stats = getMonthlyStats(month);
-                  const status = getCurrentMonthStatus(month, index);
-                  const colorClass = stats.percentage >= 80 ? 'text-green-300' : stats.percentage >= 50 ? 'text-yellow-300' : stats.percentage < 50 && index <= currentMonthIndex ? 'text-red-300' : 'text-white/50';
-                  
+
                   return (
-                    <th key={month} className={`px-5 py-5 text-center text-xs font-bold uppercase tracking-wider min-w-[120px] transition-all duration-300 relative group ${status === 'current' ? 'bg-blue-500/30 scale-105' : ''}`}>
-                      <div className={`font-bold transition-all ${status === 'current' ? 'text-blue-200 text-base' : colorClass}`}>
-                        {month.slice(0, 3).toUpperCase()}
-                        {status === 'current' && <div className="inline-block ml-1.5 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>}
+                    <th
+                      key={month}
+                      className={`p-3 text-center text-xs font-black uppercase tracking-wider min-w-[85px] border-r-2 border-black ${
+                        isCurrent ? 'bg-[#FFE600] text-black' : 'bg-white text-black'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span>{month.slice(0, 3)}</span>
+                        {isCurrent && <span className="w-1.5 h-1.5 bg-black rounded-full animate-ping"></span>}
                       </div>
-                      <div className={`text-xs mt-2 font-semibold ${colorClass}`}>{stats.paid}/{stats.total}</div>
-                      <div className="w-full bg-white/20 rounded-full h-1.5 mt-2">
-                        <div className={`h-1.5 rounded-full transition-all duration-500 ${stats.percentage >= 80 ? 'bg-green-500' : stats.percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${stats.percentage}%` }} />
+                      <div className="text-[9px] font-mono font-bold text-black/60 mt-0.5">
+                        {stats.paid}/{stats.total}
                       </div>
                     </th>
                   );
                 })}
-                
-                <th className="px-6 py-5 text-center text-xs font-bold text-white/90 uppercase tracking-wider sticky right-0 bg-white/10 backdrop-blur-xl z-30 min-w-[140px]">
-                  <div>Total</div>
-                  <div className="text-xs text-white/60 normal-case font-normal mt-1">Progress</div>
+
+                {/* Sticky Right: Summary Column Header */}
+                <th className="sticky right-0 bg-white z-30 p-3 text-center text-xs font-black uppercase tracking-wider text-black min-w-[130px] border-l-2 border-black shadow-[-2px_0px_0px_0px_#000]">
+                  Total / Progress
                 </th>
+              </tr>
+
+              {/* Monthly Gross Totals Row (Pinned just below header) */}
+              <tr className="bg-black text-white border-b-2 border-black font-mono text-xs">
+                <th className="sticky left-0 bg-black z-30 p-2.5 border-r-2 border-black text-[11px] font-black uppercase tracking-wider text-[#FFE600] shadow-[2px_0px_0px_0px_#000]">
+                  GROSS INFLOW
+                </th>
+                {months.map(month => (
+                  <td key={month} className="p-2 text-center border-r-2 border-white/20 text-[10px] font-black text-white">
+                    {monthlyTotals.monthlyGrosses[month] ? `${monthlyTotals.monthlyGrosses[month]}` : '-'}
+                  </td>
+                ))}
+                <td className="sticky right-0 bg-black z-30 p-2 text-center border-l-2 border-white/20 text-xs font-black text-[#FFE600] shadow-[-2px_0px_0px_0px_#000]">
+                  LKR {monthlyTotals.yearlyGross.toLocaleString()}
+                </td>
               </tr>
             </thead>
 
-            <tbody className="bg-white/5 divide-y divide-white/10 backdrop-blur-sm">
-              <tr className="bg-gradient-to-r from-red-500/20 to-pink-500/20 border-b-2 border-red-300/50 backdrop-blur-sm sticky top-[73px] z-10">
-                <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-xl z-20">
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm font-bold text-red-200 drop-shadow">Gross</div>
-                    <div className="px-2 py-0.5 bg-red-500/40 text-red-100 text-xs rounded-full">Monthly</div>
-                  </div>
-                </td>
-                {months.map((month) => (
-                  <td key={month} className="px-5 py-4 text-center">
-                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-sm px-3 py-2 rounded-lg backdrop-blur-sm shadow-lg hover:scale-105 transition-transform">
-                      LKR {monthlyTotals.monthlyGrosses[month]?.toLocaleString() || '0'}
-                    </div>
-                  </td>
-                ))}
-                <td className="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-xl z-20">
-                  <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-sm px-3 py-2 rounded-lg backdrop-blur-sm shadow-lg">
-                    LKR {monthlyTotals.yearlyGross.toLocaleString()}
-                  </div>
-                </td>
-              </tr>
-              
+            <tbody className="divide-y-2 divide-black/10 bg-white">
               {filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <Search className="h-12 w-12 text-white/30" />
-                      <p className="text-white/70 text-lg">No members found matching "{searchTerm}"</p>
-                    </div>
+                  <td colSpan={14} className="p-12 text-center font-mono font-bold text-black/60">
+                    No active members found matching "{searchTerm}"
                   </td>
                 </tr>
               ) : (
-                filteredMembers.map((member, memberIndex) => {
+                filteredMembers.map((member, memberIdx) => {
                   const stats = getMemberStats(member.id);
-                  const percentage = stats.paidCountTotal ? Math.round((stats.paidCountTotal / 12) * 100) : 0;
                   const isAllPaidYTD = stats.paidCountYTD === currentMonthIndex + 1;
-                  
+
                   return (
-                    <tr key={member.id} className={`group hover:bg-white/15 transition-all duration-200 ${memberIndex % 2 === 0 ? 'bg-white/5' : 'bg-white/0'}`}>
-                      <td className="px-6 py-5 whitespace-nowrap sticky left-0 bg-white/5 group-hover:bg-white/15 backdrop-blur-xl z-10">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
-                              <span className="text-base font-bold text-white drop-shadow">{member.name.charAt(0).toUpperCase()}</span>
+                    <tr
+                      key={member.id}
+                      className={`hover:bg-yellow-50/70 transition-colors ${
+                        memberIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                      }`}
+                    >
+                      {/* Sticky Left: Member Identity Column */}
+                      <td className="sticky left-0 bg-white group-hover:bg-yellow-50 z-20 p-3.5 border-r-2 border-black whitespace-nowrap shadow-[2px_0px_0px_0px_#000]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-xs text-black shadow-[1.5px_1.5px_0px_#000] flex-shrink-0">
+                            {member.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-black text-xs text-black truncate">{member.name}</span>
+                              {isAllPaidYTD && (
+                                <span className="bg-emerald-100 text-emerald-800 text-[9px] font-mono font-black px-1 border border-emerald-600">
+                                  PAID
+                                </span>
+                              )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <div className="text-sm font-semibold text-white truncate">{member.name}</div>
-                                {isAllPaidYTD && <div className="px-2 py-0.5 bg-green-500/40 text-green-100 text-xs rounded-full font-medium flex items-center gap-1 animate-pulse"><Sparkles className="h-3 w-3" />Paid!</div>}
-                                {stats.unpaidCount >= 3 && !isAllPaidYTD && <div className="px-2 py-0.5 bg-red-500/40 text-red-100 text-xs rounded-full font-medium flex items-center gap-1"><AlertTriangle className="h-3 w-3" />{stats.unpaidCount} overdue</div>}
-                              </div>
-                              <div className="flex items-center gap-3 text-xs text-white/70">
-                                {stats.streak > 0 && <div className="flex items-center gap-1 text-orange-300"><span>🔥</span><span className="font-semibold">{stats.streak}m streak</span></div>}
-                                <div className="flex items-center gap-1"><span>Paid:</span><span className="font-semibold text-white/90">LKR {stats.totalPaid.toLocaleString()}</span></div>
-                              </div>
+                            <div className="flex items-center gap-2 text-[10px] font-mono text-black/60">
+                              <span>LKR {stats.totalPaid.toLocaleString()}</span>
+                              {stats.streak > 0 && (
+                                <span className="text-amber-700 font-bold flex items-center">
+                                  🔥 {stats.streak}m
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
                       </td>
-                      
-                      {months.map((month, index) => {
+
+                      {/* 12 Interactive Month Checkbox Cells */}
+                      {months.map((month, idx) => {
                         const isPaid = paymentMatrix[member.id]?.[month];
-                        const status = getCurrentMonthStatus(month, index);
-                        const isJustPaid = justPaidCell === `${member.id}_${month}`;
+                        const status = getCurrentMonthStatus(month, idx);
                         const isPending = !!pendingCells[`${member.id}_${month}_${selectedYear}`];
-                        
+                        const isJustPaid = justPaidCell === `${member.id}_${month}`;
+
                         return (
-                          <td key={month} className="px-5 py-5 text-center">
-                            <div className="flex items-center justify-center">
-                              <button
-                                onClick={() => togglePayment(member.id, month)}
-                                disabled={isPending}
-                                className={`relative w-9 h-9 rounded-lg border-2 transition-all duration-200 flex items-center justify-center shadow-md hover:scale-110 focus:ring-2 focus:ring-white/50 focus:outline-none ${isPaid ? 'bg-green-500/60 border-green-400 hover:bg-green-500/80' : status === 'current' ? 'bg-orange-500/60 border-orange-400 hover:bg-orange-500/80 animate-pulse' : status === 'past' ? 'bg-red-500/60 border-red-400 hover:bg-red-500/80' : 'bg-white/10 border-white/30 hover:bg-white/20'} ${isJustPaid ? 'animate-bounce' : ''}`}
-                                title={isPending ? 'Saving...' : isPaid ? `Paid - Click to unmark` : `LKR 300 - Click to mark paid`}
-                              >
-                                {isPaid && <Check className="h-5 w-5 text-white drop-shadow" />}
-                                {isJustPaid && <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">Just Paid! 🎉</div>}
-                              </button>
-                            </div>
+                          <td key={month} className="p-2 text-center border-r-2 border-black/10">
+                            <button
+                              onClick={() => togglePayment(member.id, month)}
+                              disabled={isPending}
+                              title={isPaid ? `${member.name} - ${month}: Paid (Click to unmark)` : `${member.name} - ${month}: Click to mark Paid`}
+                              className={`w-8 h-8 sm:w-9 sm:h-9 mx-auto border-2 border-black flex items-center justify-center font-black transition-all ${
+                                isPaid
+                                  ? 'bg-[#06D6A0] text-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5'
+                                  : status === 'current'
+                                  ? 'bg-[#FFEAEA] text-red-600 hover:bg-[#FFD6D6] shadow-[1.5px_1.5px_0px_#000]'
+                                  : status === 'past'
+                                  ? 'bg-[#FFF0F0] text-red-500 hover:bg-[#FFD6D6]'
+                                  : 'bg-gray-100 text-gray-400 border-dashed hover:border-black'
+                              } ${isJustPaid ? 'scale-110 ring-2 ring-[#FFE600]' : ''}`}
+                            >
+                              {isPaid ? (
+                                <Check className="w-4 h-4 stroke-[3]" />
+                              ) : status === 'current' ? (
+                                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                              ) : (
+                                <span className="text-[10px]">•</span>
+                              )}
+                            </button>
                           </td>
                         );
                       })}
-                      
-                      <td className="px-6 py-5 whitespace-nowrap text-center sticky right-0 bg-white/5 group-hover:bg-white/15 backdrop-blur-xl z-10">
-                        <div className="space-y-2">
-                          <div className="text-lg font-bold text-white drop-shadow">{stats.paidCountTotal}/12</div>
-                          <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
-                            <div className={`h-2.5 rounded-full transition-all duration-500 ${percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : percentage >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-red-500 to-pink-500'}`} style={{ width: `${percentage}%` }} />
+
+                      {/* Sticky Right: Member Progress Column */}
+                      <td className="sticky right-0 bg-white group-hover:bg-yellow-50 z-20 p-3 text-center border-l-2 border-black shadow-[-2px_0px_0px_0px_#000]">
+                        <div className="space-y-1">
+                          <p className="font-mono font-black text-xs text-black">
+                            {stats.paidCountTotal} / 12
+                          </p>
+                          <div className="w-20 mx-auto bg-gray-200 border border-black h-2 overflow-hidden">
+                            <div
+                              className="bg-black h-full"
+                              style={{ width: `${(stats.paidCountTotal / 12) * 100}%` }}
+                            />
                           </div>
-                          <div className={`text-xs font-semibold ${percentage >= 80 ? 'text-green-300' : percentage >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>{percentage}% Complete</div>
                         </div>
                       </td>
                     </tr>
@@ -517,22 +814,40 @@ export default function PaymentGrid() {
           </table>
         </div>
 
-        <div className="px-6 py-4 bg-white/10 border-t border-white/20 backdrop-blur-sm">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-            <div className="text-white/80">Monthly Contribution: <span className="font-semibold text-white">LKR 300</span></div>
-            <div className="flex items-center gap-4">
-              <div className="text-white/80">Annual Target: <span className="font-semibold text-white">LKR {(members.length * 300 * 12).toLocaleString()}</span></div>
-              <div className="text-white/80">YTD Collected: <span className="font-semibold text-green-300">LKR {monthlyTotals.yearlyGross.toLocaleString()}</span></div>
-            </div>
+        {/* Matrix Footer */}
+        <div className="p-4 bg-white border-t-2 border-black flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono font-bold text-black/70">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 bg-[#06D6A0] border border-black inline-block"></span>
+              <span>Paid / Settled</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 bg-[#FFEAEA] border border-black inline-block"></span>
+              <span>Pending Action</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 bg-[#FFE600] border border-black inline-block"></span>
+              <span>Current Cycle ({currentMonth})</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span>Contribution: <strong>LKR 300/mo</strong></span>
+            <span>Annual Target: <strong>LKR {(members.length * 300 * 12).toLocaleString()}</strong></span>
           </div>
         </div>
       </div>
 
+      {/* Floating Scroll to Top button */}
       {showScrollTop && (
-        <button onClick={scrollToTop} className="fixed bottom-8 right-8 p-4 rounded-full backdrop-blur-xl bg-blue-500/30 border border-blue-400/50 text-white shadow-2xl hover:scale-110 transition-all duration-300 z-40 animate-bounce">
-          <ArrowUp className="h-6 w-6" />
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 w-11 h-11 bg-[#FFE600] border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center text-black active:translate-x-0.5 active:translate-y-0.5 z-40 transition-all"
+        >
+          <ArrowUp className="w-5 h-5 stroke-[2.5]" />
         </button>
       )}
+
     </div>
   );
 }

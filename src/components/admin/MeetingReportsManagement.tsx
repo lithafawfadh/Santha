@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
 import {
-  FileText,
-  Plus,
-  Calendar,
-  Users,
-  Trash2,
-  Edit3,
-  Save,
-  X,
-  CheckCircle,
+  FileText, Plus, Calendar, Users, Trash2, Edit3, Save, X, CheckCircle, ArrowRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { MeetingReport } from '../../types';
-import GlassButton from '../common/GlassButton';
 
 export default function MeetingReportsManagement() {
-  const { currentUser, isDarkMode, allUsers } = useApp();
+  const { currentUser, allUsers, activeMembers } = useApp();
   const [reports, setReports] = useState<MeetingReport[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -30,7 +21,11 @@ export default function MeetingReportsManagement() {
     attendees: [] as string[],
   });
 
-  // Load reports on mount
+  // Active members only for attendee selection
+  const members = activeMembers && activeMembers.length > 0
+    ? activeMembers
+    : allUsers.filter(u => u.role === 'member' && u.status === 'active');
+
   React.useEffect(() => {
     loadReports();
   }, []);
@@ -72,7 +67,6 @@ export default function MeetingReportsManagement() {
       };
 
       if (editingReport) {
-        // Update existing report
         const success = await dataService.updateMeetingReport(
           editingReport.id,
           reportData
@@ -84,7 +78,6 @@ export default function MeetingReportsManagement() {
           setMessage('Error: Failed to update report');
         }
       } else {
-        // Create new report
         const newReport = await dataService.addMeetingReport(reportData);
         if (newReport) {
           setMessage('Meeting report published successfully!');
@@ -93,7 +86,6 @@ export default function MeetingReportsManagement() {
         }
       }
 
-      // Reload reports and reset form
       await loadReports();
       resetForm();
       setTimeout(() => setMessage(''), 3000);
@@ -148,14 +140,21 @@ export default function MeetingReportsManagement() {
       decisions: [''],
       attendees: [],
     });
-    setShowForm(false);
     setEditingReport(null);
+    setShowForm(false);
   };
 
   const addArrayField = (field: 'agenda' | 'decisions') => {
     setFormData((prev) => ({
       ...prev,
       [field]: [...prev[field], ''],
+    }));
+  };
+
+  const removeArrayField = (field: 'agenda' | 'decisions', index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
     }));
   };
 
@@ -170,507 +169,281 @@ export default function MeetingReportsManagement() {
     }));
   };
 
-  const removeArrayField = (field: 'agenda' | 'decisions', index: number) => {
+  const toggleAttendee = (memberId: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
+      attendees: prev.attendees.includes(memberId)
+        ? prev.attendees.filter((id) => id !== memberId)
+        : [...prev.attendees, memberId],
     }));
   };
-
-  const toggleAttendee = (memberName: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      attendees: prev.attendees.includes(memberName)
-        ? prev.attendees.filter((name) => name !== memberName)
-        : [...prev.attendees, memberName],
-    }));
-  };
-
-  const activeMembers = allUsers.filter(
-    (u) => u.role === 'member' && u.status === 'active'
-  );
 
   return (
-    <div className="space-y-6">
-      {/* Message */}
+    <div className="space-y-6 text-black animate-fadeIn">
+      
+      {/* Toast Notification */}
       {message && (
-        <div
-          className={`p-4 rounded-xl border ${
-            message.includes('success')
-              ? 'bg-green-500/10 border-green-500/30 text-green-400'
-              : 'bg-red-500/10 border-red-500/30 text-red-400'
-          }`}
-        >
-          <p className="text-sm font-medium flex items-center space-x-2">
-            {message.includes('success') ? (
-              <CheckCircle className="h-4 w-4" />
-            ) : (
-              <X className="h-4 w-4" />
-            )}
-            <span>{message}</span>
-          </p>
+        <div className="p-4 bg-emerald-100 border-2 border-black text-emerald-950 shadow-[3px_3px_0px_#000] flex items-center justify-between">
+          <p className="text-xs font-mono font-black">{message}</p>
+          <button onClick={() => setMessage('')}><X className="w-4 h-4" /></button>
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2
-            className={`text-2xl font-bold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}
+      {/* ─── PAGE HEADER & CONTROLS (STACK Neo-Brutalist) ─── */}
+      <div className="space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-black uppercase font-sans">
+              MEETINGS
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="bg-[#FFE600] border-2 border-black text-[11px] font-mono font-black px-2 py-0.5 tracking-wider shadow-[2px_2px_0px_#000]">
+                MINUTES & DECISIONS PROTOCOL v2.0
+              </span>
+              <span className="text-xs font-mono font-bold text-black/50 hidden sm:inline">
+                • {reports.length} ARCHIVED SESSIONS
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="brutal-btn bg-[#FFE600] hover:bg-[#FFF275] text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
           >
-            Meeting Reports Management
-          </h2>
-          <p
-            className={`text-sm mt-1 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}
-          >
-            Create and manage meeting reports for all members to view
-          </p>
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>{showForm ? 'Close Form' : 'New Report'}</span>
+          </button>
         </div>
-        {!showForm && (
-          <GlassButton
-            variant="primary"
-            onClick={() => setShowForm(true)}
-            className="flex items-center space-x-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New Report</span>
-          </GlassButton>
-        )}
+
+        {/* Dashed divider */}
+        <div className="border-b-2 border-dashed border-black/30 w-full pt-1"></div>
       </div>
 
-      {/* Form */}
+      {/* ─── NEW / EDIT REPORT FORM ─── */}
       {showForm && (
-        <div
-          className={`rounded-2xl p-6 border-2 ${
-            isDarkMode
-              ? 'bg-gray-800/40 border-purple-500/30'
-              : 'bg-white/80 border-purple-300'
-          } backdrop-blur-xl shadow-lg`}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3
-              className={`text-xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}
-            >
-              {editingReport ? 'Edit Meeting Report' : 'New Meeting Report'}
+        <div className="brutal-card p-6 bg-white space-y-4 animate-slideDown">
+          <div className="flex justify-between items-center border-b-2 border-black pb-2">
+            <h3 className="font-black text-sm uppercase tracking-wider text-black">
+              {editingReport ? 'Edit Meeting Report' : 'Draft New Meeting Report'}
             </h3>
-            <button
-              onClick={resetForm}
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-              }`}
-            >
-              <X className="h-5 w-5" />
+            <button onClick={resetForm} className="p-1 hover:bg-gray-100">
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
-            <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}
-              >
-                Meeting Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, title: e.target.value }))
-                }
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${
-                  isDarkMode
-                    ? 'bg-gray-700/50 border-gray-600 text-white focus:border-purple-500'
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-purple-500'
-                } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
-                placeholder="e.g., December 2024 Monthly Meeting"
-                required
-              />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-black uppercase text-black">Meeting Title *</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g. October 2026 Monthly General Meeting"
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-black uppercase text-black">Meeting Date *</label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                  className="w-full p-2.5 bg-white border-2 border-black text-xs font-bold text-black focus:outline-none"
+                  required
+                />
+              </div>
             </div>
 
-            {/* Date */}
-            <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}
-              >
-                Meeting Date *
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, date: e.target.value }))
-                }
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${
-                  isDarkMode
-                    ? 'bg-gray-700/50 border-gray-600 text-white focus:border-purple-500'
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-purple-500'
-                } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
-                required
-              />
-            </div>
-
-            {/* Agenda */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label
-                  className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}
-                >
-                  Agenda Points
-                </label>
+            {/* Agenda Points */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-black uppercase text-black">Agenda Points</label>
                 <button
                   type="button"
                   onClick={() => addArrayField('agenda')}
-                  className={`text-xs px-3 py-1 rounded-lg transition-colors ${
-                    isDarkMode
-                      ? 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400'
-                      : 'bg-blue-50 hover:bg-blue-100 text-blue-600'
-                  }`}
+                  className="px-2 py-0.5 bg-gray-100 border border-black text-[10px] font-bold"
                 >
                   + Add Point
                 </button>
               </div>
-              <div className="space-y-2">
-                {formData.agenda.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={item}
-                      onChange={(e) =>
-                        updateArrayField('agenda', index, e.target.value)
-                      }
-                      className={`flex-1 px-4 py-2 rounded-xl border-2 transition-all ${
-                        isDarkMode
-                          ? 'bg-gray-700/50 border-gray-600 text-white focus:border-blue-500'
-                          : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
-                      placeholder={`Agenda point ${index + 1}`}
-                    />
-                    {formData.agenda.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeArrayField('agenda', index)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          isDarkMode
-                            ? 'hover:bg-red-500/20 text-red-400'
-                            : 'hover:bg-red-50 text-red-600'
-                        }`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {formData.agenda.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => updateArrayField('agenda', idx, e.target.value)}
+                    placeholder={`Point ${idx + 1}...`}
+                    className="flex-1 p-2 bg-white border-2 border-black text-xs font-mono font-bold"
+                  />
+                  {formData.agenda.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeArrayField('agenda', idx)}
+                      className="px-2.5 bg-red-100 border border-black text-red-900"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Decisions */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label
-                  className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}
-                >
-                  Decisions Made
-                </label>
+            {/* Decisions Made */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-black uppercase text-black">Decisions & Resolutions</label>
                 <button
                   type="button"
                   onClick={() => addArrayField('decisions')}
-                  className={`text-xs px-3 py-1 rounded-lg transition-colors ${
-                    isDarkMode
-                      ? 'bg-green-500/10 hover:bg-green-500/20 text-green-400'
-                      : 'bg-green-50 hover:bg-green-100 text-green-600'
-                  }`}
+                  className="px-2 py-0.5 bg-gray-100 border border-black text-[10px] font-bold"
                 >
                   + Add Decision
                 </button>
               </div>
-              <div className="space-y-2">
-                {formData.decisions.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={item}
-                      onChange={(e) =>
-                        updateArrayField('decisions', index, e.target.value)
-                      }
-                      className={`flex-1 px-4 py-2 rounded-xl border-2 transition-all ${
-                        isDarkMode
-                          ? 'bg-gray-700/50 border-gray-600 text-white focus:border-green-500'
-                          : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                      } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-                      placeholder={`Decision ${index + 1}`}
-                    />
-                    {formData.decisions.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeArrayField('decisions', index)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          isDarkMode
-                            ? 'hover:bg-red-500/20 text-red-400'
-                            : 'hover:bg-red-50 text-red-600'
-                        }`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {formData.decisions.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => updateArrayField('decisions', idx, e.target.value)}
+                    placeholder={`Decision ${idx + 1}...`}
+                    className="flex-1 p-2 bg-white border-2 border-black text-xs font-mono font-bold"
+                  />
+                  {formData.decisions.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeArrayField('decisions', idx)}
+                      className="px-2.5 bg-red-100 border border-black text-red-900"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Attendees */}
-            <div>
-              <label
-                className={`block text-sm font-medium mb-3 ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}
-              >
-                Attendees ({formData.attendees.length} selected)
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {activeMembers.map((member) => (
+            {/* Attendees Selection */}
+            <div className="space-y-1">
+              <label className="text-xs font-black uppercase text-black">Select Attendees ({formData.attendees.length})</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-36 overflow-y-auto p-2 bg-gray-50 border-2 border-black">
+                {members.map(m => (
                   <button
-                    key={member.id}
+                    key={m.id}
                     type="button"
-                    onClick={() => toggleAttendee(member.name)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      formData.attendees.includes(member.name)
-                        ? isDarkMode
-                          ? 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/50'
-                          : 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                        : isDarkMode
-                        ? 'bg-gray-700/50 text-gray-400 border-2 border-gray-600 hover:border-gray-500'
-                        : 'bg-gray-100 text-gray-600 border-2 border-gray-300 hover:border-gray-400'
+                    onClick={() => toggleAttendee(m.id)}
+                    className={`p-1.5 text-xs font-mono font-bold text-left border flex items-center justify-between ${
+                      formData.attendees.includes(m.id)
+                        ? 'bg-[#FFE600] border-black font-black'
+                        : 'bg-white border-black/40'
                     }`}
                   >
-                    {formData.attendees.includes(member.name) && '✓ '}
-                    {member.name}
+                    <span className="truncate">{m.name}</span>
+                    <span>{formData.attendees.includes(m.id) ? '✓' : ''}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex items-center space-x-3 pt-4">
-              <GlassButton
-                variant="primary"
+            <div className="flex gap-2 pt-2">
+              <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center space-x-2 flex-1"
+                className="brutal-btn py-2.5 px-6 bg-[#FFE600] hover:bg-[#FFF275] text-black font-black text-xs uppercase tracking-wider"
               >
-                {editingReport ? (
-                  <Save className="h-4 w-4" />
-                ) : (
-                  <Plus className="h-4 w-4" />
-                )}
-                <span>
-                  {loading
-                    ? 'Saving...'
-                    : editingReport
-                    ? 'Update Report'
-                    : 'Publish Report'}
-                </span>
-              </GlassButton>
-              <GlassButton
-                variant="secondary"
+                {loading ? 'Saving...' : editingReport ? 'Update Report' : 'Publish Report'}
+              </button>
+              <button
                 type="button"
                 onClick={resetForm}
-                disabled={loading}
-                className="px-6"
+                className="brutal-btn py-2.5 px-4 bg-white text-black font-black text-xs uppercase"
               >
                 Cancel
-              </GlassButton>
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Reports List */}
-      <div
-        className={`rounded-2xl overflow-hidden ${
-          isDarkMode
-            ? 'bg-gray-800/40 border border-gray-700/50'
-            : 'bg-white/40 border border-white/60'
-        } backdrop-blur-xl shadow-lg`}
-      >
-        <div
-          className={`px-6 py-4 border-b ${
-            isDarkMode
-              ? 'bg-gray-800/50 border-gray-700/50'
-              : 'bg-gray-50 border-gray-200/50'
-          }`}
-        >
-          <h3
-            className={`text-lg font-bold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}
-          >
-            Published Reports ({reports.length})
-          </h3>
+      {/* ─── PUBLISHED REPORTS LIST ─── */}
+      <div className="brutal-card overflow-hidden">
+        <div className="p-4 bg-black text-white border-b-2 border-black flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#FFE600]" />
+            <h3 className="font-black text-xs uppercase tracking-wider text-white">
+              Official Minutes Archive
+            </h3>
+          </div>
+          <span className="text-[10px] font-mono text-[#FFE600] font-bold">
+            {reports.length} Reports
+          </span>
         </div>
 
-        <div className="p-6">
-          {loading && reports.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-              <p
-                className={`text-sm mt-4 ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}
-              >
-                Loading reports...
-              </p>
-            </div>
-          ) : reports.length === 0 ? (
-            <div className="text-center py-12">
-              <div
-                className={`p-4 rounded-full mx-auto mb-4 w-fit ${
-                  isDarkMode ? 'bg-gray-700/30' : 'bg-gray-100'
-                }`}
-              >
-                <FileText
-                  className={`h-12 w-12 ${
-                    isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                  }`}
-                />
-              </div>
-              <h4
-                className={`text-base font-semibold mb-2 ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}
-              >
-                No Reports Published Yet
-              </h4>
-              <p
-                className={`text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}
-              >
-                Click "New Report" to create your first meeting report
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {reports.map((report) => (
-                <div
-                  key={report.id}
-                  className={`p-5 rounded-xl border-2 transition-all ${
-                    isDarkMode
-                      ? 'bg-gray-900/50 border-gray-700/50 hover:border-gray-600'
-                      : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4
-                        className={`text-lg font-bold mb-2 ${
-                          isDarkMode ? 'text-white' : 'text-gray-900'
-                        }`}
-                      >
-                        {report.title}
-                      </h4>
-                      <div className="flex items-center space-x-4 text-sm mb-3">
-                        <div className="flex items-center space-x-2">
-                          <Calendar
-                            className={`h-4 w-4 ${
-                              isDarkMode ? 'text-purple-400' : 'text-purple-600'
-                            }`}
-                          />
-                          <span
-                            className={
-                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                            }
-                          >
-                            {new Date(report.date).toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Users
-                            className={`h-4 w-4 ${
-                              isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                            }`}
-                          />
-                          <span
-                            className={
-                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                            }
-                          >
-                            {report.attendees.length} attendee
-                            {report.attendees.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span
-                            className={`font-medium ${
-                              isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                            }`}
-                          >
-                            {report.agenda.length} agenda point
-                            {report.agenda.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                        <div>
-                          <span
-                            className={`font-medium ${
-                              isDarkMode ? 'text-green-400' : 'text-green-600'
-                            }`}
-                          >
-                            {report.decisions.length} decision
-                            {report.decisions.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <button
-                        onClick={() => handleEdit(report)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          isDarkMode
-                            ? 'hover:bg-blue-500/20 text-blue-400'
-                            : 'hover:bg-blue-50 text-blue-600'
-                        }`}
-                        title="Edit"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(report.id)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          isDarkMode
-                            ? 'hover:bg-red-500/20 text-red-400'
-                            : 'hover:bg-red-50 text-red-600'
-                        }`}
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+        {reports.length === 0 ? (
+          <div className="p-12 text-center space-y-2">
+            <FileText className="w-10 h-10 text-black/30 mx-auto" />
+            <p className="font-mono font-bold text-xs text-black/60">No meeting reports published yet.</p>
+          </div>
+        ) : (
+          <div className="divide-y-2 divide-black/10">
+            {reports.map((report) => (
+              <div key={report.id} className="p-5 hover:bg-yellow-50/50 space-y-3 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="font-black text-base text-black">{report.title}</h4>
+                    <div className="flex items-center gap-3 mt-0.5 text-[11px] font-mono text-black/60 font-bold">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date(report.date).toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5" />
+                        {report.attendees.length} Attendees
+                      </span>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      onClick={() => handleEdit(report)}
+                      className="brutal-btn p-1.5 bg-white hover:bg-gray-100 text-black"
+                      title="Edit Report"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(report.id)}
+                      className="brutal-btn p-1.5 bg-red-100 hover:bg-red-200 text-red-900"
+                      title="Delete Report"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono pt-1">
+                  <div className="p-3 bg-gray-50 border border-black/40 space-y-1">
+                    <p className="font-black uppercase text-black text-[10px]">Agenda Items ({report.agenda.length})</p>
+                    {report.agenda.map((ag, i) => (
+                      <p key={i} className="text-black/80 truncate">• {ag}</p>
+                    ))}
+                  </div>
+                  <div className="p-3 bg-emerald-50 border border-emerald-600 space-y-1">
+                    <p className="font-black uppercase text-emerald-950 text-[10px]">Decisions Made ({report.decisions.length})</p>
+                    {report.decisions.map((dec, i) => (
+                      <p key={i} className="text-emerald-900 font-bold truncate">✓ {dec}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
     </div>
   );
 }
