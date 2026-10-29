@@ -1,6 +1,7 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import { AppProvider, useApp } from './context/AppContext';
 import Login from './components/Login';
 import OfflineBadge from './components/common/OfflineBadge';
@@ -19,9 +20,16 @@ function AppContent() {
     }
   }, [isDarkMode]);
 
-  // Mobile Hardware Back Button Handling
+  // Mobile Hardware Back Button & Capgo OTA Ready
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
+
+    // Notify Capgo updater that app launched successfully
+    try {
+      CapacitorUpdater.notifyAppReady();
+    } catch (e) {
+      console.warn('CapacitorUpdater error:', e);
+    }
 
     let lastBackPress = 0;
     const backListenerPromise = CapApp.addListener('backButton', ({ canGoBack }) => {
