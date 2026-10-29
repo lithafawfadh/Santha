@@ -44,6 +44,8 @@ interface AppContextType {
   memberExits: MemberExit[];
   processMemberExit: (memberId: string, extraAmount?: number, notes?: string) => Promise<{ success: boolean; refundAmount: number; error?: string }>;
   clearActivities: () => Promise<void>;
+  isOffline: boolean;
+  lastSyncedAt: string | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -74,19 +76,57 @@ const generatePaymentsForMember = (memberId: string, memberJoinDate: string): Pa
   return payments;
 };
 
+interface CachedAppData {
+  payments: Payment[];
+  loans: Loan[];
+  donations: Donation[];
+  allUsers: User[];
+  warnings: Warning[];
+  memberExits: MemberExit[];
+  activities: ActivityLog[];
+  lastSyncedAt: string;
+}
+
+const CACHE_KEY = 'santha_cached_data_v1';
+
+const getInitialCache = (): CachedAppData => {
+  try {
+    const raw = typeof window !== 'undefined' ? window.localStorage.getItem(CACHE_KEY) : null;
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (e) {
+    console.error('Failed to parse cached app data', e);
+  }
+  return {
+    payments: [],
+    loans: [],
+    donations: [],
+    allUsers: [],
+    warnings: [],
+    memberExits: [],
+    activities: [],
+    lastSyncedAt: ''
+  };
+};
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useLocalStorage<User | null>('santha_user', null);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [donations, setDonations] = useState<Donation[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [memberExits, setMemberExits] = useState<MemberExit[]>([]);
-  const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState<boolean>(() => !!currentUser);
+  const initialCache = useMemo(() => getInitialCache(), []);
+  const [payments, setPayments] = useState<Payment[]>(initialCache.payments || []);
+  const [loans, setLoans] = useState<Loan[]>(initialCache.loans || []);
+  const [donations, setDonations] = useState<Donation[]>(initialCache.donations || []);
+  const [allUsers, setAllUsers] = useState<User[]>(initialCache.allUsers || []);
+  const [memberExits, setMemberExits] = useState<MemberExit[]>(initialCache.memberExits || []);
+  const [activities, setActivities] = useState<ActivityLog[]>(initialCache.activities || []);
+  const hasCachedData = (initialCache.payments && initialCache.payments.length > 0) || (initialCache.allUsers && initialCache.allUsers.length > 0);
+  const [loading, setLoading] = useState<boolean>(() => !!currentUser && !hasCachedData);
+  const [isOffline, setIsOffline] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(initialCache.lastSyncedAt || null);
   
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
   const [isDarkMode, setIsDarkMode] = useLocalStorage(darkModeKey, false);
-  const [warnings, setWarnings] = useState<Warning[]>([]);
+  const [warnings, setWarnings] = useState<Warning[]>(initialCache.warnings || []);
   
   const [groupStats, setGroupStats] = useState<GroupStats>({
     totalMembers: 0,
@@ -176,8 +216,29 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
     setWarnings(warningsData);
     setMemberExits(exitsData);
     setActivities(activitiesData);
+
+    const now = new Date().toISOString();
+    setLastSyncedAt(now);
+    setIsOffline(false);
+
+    try {
+      const cacheToSave: CachedAppData = {
+        payments: paymentsData,
+        loans: loansData,
+        donations: donationsData,
+        allUsers: usersData,
+        warnings: warningsData,
+        memberExits: exitsData,
+        activities: activitiesData,
+        lastSyncedAt: now
+      };
+      window.localStorage.setItem(CACHE_KEY, JSON.stringify(cacheToSave));
+    } catch (cacheErr) {
+      console.warn('Could not save data cache to localStorage:', cacheErr);
+    }
   } catch (error) {
     console.error('Error refreshing data:', error);
+    setIsOffline(true);
   } finally {
     if (showGlobalLoading) {
       setLoading(false);
@@ -187,15 +248,37 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
 
   useEffect(() => {
     if (currentUser) {
-      setLoading(true);
+      if (!hasCachedData) {
+        setLoading(true);
+      }
       // Timeout fallback: if loading doesn't resolve in 8s, force it to stop
       const timeout = setTimeout(() => {
         setLoading(false);
       }, 8000);
-      refreshData().finally(() => clearTimeout(timeout));
+      refreshData(!hasCachedData).finally(() => clearTimeout(timeout));
     } else {
       setLoading(false);
     }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      if (currentUser) {
+        refreshData(false);
+      }
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [currentUser?.id]);
 
   useEffect(() => {
@@ -698,7 +781,9 @@ const markWarningAsRead = async (warningId: string) => {
       toggleDarkMode,
       memberExits,
       processMemberExit,
-      clearActivities
+      clearActivities,
+      isOffline,
+      lastSyncedAt
     }}>
       {children}
     </AppContext.Provider>
