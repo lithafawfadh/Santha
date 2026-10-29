@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Copy, Check, X, Camera, ShieldCheck, Users, DollarSign, CreditCard, Heart, ArrowUpRight } from 'lucide-react';
+import { Share2, Copy, Check, X, Camera, Users, DollarSign, CreditCard, ArrowUpRight } from 'lucide-react';
 import { GroupStats, User, Payment, Loan } from '../../types';
 
 interface WhatsAppSnapshotModalProps {
@@ -56,9 +56,7 @@ export default function WhatsAppSnapshotModal({
 ────────────────────────
 💰 *Total Available Funds:* LKR ${groupStats.totalFunds.toLocaleString()}
 📥 *This Month Collection:* LKR ${groupStats.monthlyCollection.toLocaleString()} (${Math.round(actualComplianceRate)}% Paid - ${paidCount}/${activeMembersList.length})
-💳 *Active Loans Out:* ${activeLoans.length} Loans (LKR ${totalLoanAmount.toLocaleString()})
-❤️ *Charity & Social Reserve:* LKR ${totalDonations.toLocaleString()}
-🛡 *Treasury Status:* 100% Audited & Balanced
+💳 *Active Loans Out:* LKR ${totalLoanAmount.toLocaleString()} (${activeLoans.length} Active ${activeLoans.length === 1 ? 'Loan' : 'Loans'})
 ────────────────────────
 👥 *Member Roll Call:*
 ${activeMembersList.map(m => {
@@ -138,61 +136,33 @@ Verified by Admin: ${adminName}`;
             </div>
           </div>
 
-          {/* 4 Compact Telemetry Grid Boxes */}
+          {/* Dual-Pillar Telemetry Grid: Inflow vs Outflow */}
           <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
-            {/* Box 1: Collection */}
-            <div className="bg-white border-2 border-black p-2.5 sm:p-3 shadow-[2px_2px_0px_#000]">
+            {/* Box 1: Collection / Inflow */}
+            <div className="bg-white border-2 border-black p-3 sm:p-3.5 shadow-[2px_2px_0px_#000]">
               <div className="flex items-center justify-between text-black/60 mb-1">
                 <span className="text-[9px] font-black tracking-wider uppercase">Collection</span>
-                <DollarSign className="w-3 h-3 text-black" />
+                <DollarSign className="w-3.5 h-3.5 text-black" />
               </div>
-              <p className="text-base sm:text-lg font-black text-black">
+              <p className="text-lg sm:text-xl font-black text-black tracking-tight">
                 LKR {groupStats.monthlyCollection.toLocaleString()}
               </p>
-              <span className="text-[9px] font-mono font-bold text-emerald-600 block">
+              <span className="text-[10px] font-mono font-bold text-emerald-600 block mt-0.5">
                 {Math.round(actualComplianceRate)}% Paid ({paidCount}/{activeMembersList.length})
               </span>
             </div>
 
-            {/* Box 2: Loans Out */}
-            <div className="bg-white border-2 border-black p-2.5 sm:p-3 shadow-[2px_2px_0px_#000]">
+            {/* Box 2: Active Loans / Capital Out */}
+            <div className="bg-white border-2 border-black p-3 sm:p-3.5 shadow-[2px_2px_0px_#000]">
               <div className="flex items-center justify-between text-black/60 mb-1">
                 <span className="text-[9px] font-black tracking-wider uppercase">Active Loans</span>
-                <CreditCard className="w-3 h-3 text-black" />
+                <CreditCard className="w-3.5 h-3.5 text-black" />
               </div>
-              <p className="text-base sm:text-lg font-black text-black">
-                {activeLoans.length} Active
+              <p className="text-lg sm:text-xl font-black text-black tracking-tight">
+                LKR {totalLoanAmount.toLocaleString()}
               </p>
-              <span className="text-[9px] font-mono font-bold text-black/70 block">
-                LKR {totalLoanAmount.toLocaleString()} Out
-              </span>
-            </div>
-
-            {/* Box 3: Social Reserve / Charity */}
-            <div className="bg-white border-2 border-black p-2.5 sm:p-3 shadow-[2px_2px_0px_#000]">
-              <div className="flex items-center justify-between text-black/60 mb-1">
-                <span className="text-[9px] font-black tracking-wider uppercase">Charity Fund</span>
-                <Heart className="w-3 h-3 text-black" />
-              </div>
-              <p className="text-base sm:text-lg font-black text-black">
-                LKR {totalDonations.toLocaleString()}
-              </p>
-              <span className="text-[9px] font-mono font-bold text-emerald-600 block">
-                Impact Ready
-              </span>
-            </div>
-
-            {/* Box 4: Operational Health */}
-            <div className="bg-white border-2 border-black p-2.5 sm:p-3 shadow-[2px_2px_0px_#000]">
-              <div className="flex items-center justify-between text-black/60 mb-1">
-                <span className="text-[9px] font-black tracking-wider uppercase">Ledger Health</span>
-                <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              </div>
-              <p className="text-base sm:text-lg font-black text-emerald-600">
-                100% STABLE
-              </p>
-              <span className="text-[9px] font-mono font-bold text-black/70 block">
-                0 Critical Alerts
+              <span className="text-[10px] font-mono font-bold text-black/70 block mt-0.5">
+                {activeLoans.length} Active {activeLoans.length === 1 ? 'Loan' : 'Loans'} Out
               </span>
             </div>
           </div>
