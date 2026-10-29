@@ -17,48 +17,55 @@ export default function Login() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const rafId = useRef<number | null>(null);
   const { login } = useApp();
 
   // Natural Blink Loop
   useEffect(() => {
     const blinkInterval = setInterval(() => {
       setIsBlinking(true);
-      setTimeout(() => setIsBlinking(false), 160);
-    }, 4200);
+      setTimeout(() => setIsBlinking(false), 140);
+    }, 4000);
     return () => clearInterval(blinkInterval);
   }, []);
 
-  // Interactive Eye Tracking (Mouse / Touch)
+  // Hardware-accelerated Smooth Eye Tracking (RAF Throttled)
   useEffect(() => {
     const handleMove = (e: MouseEvent | TouchEvent) => {
-      if (focusTarget !== 'none') return; // Field focus takes priority
+      if (focusTarget !== 'none') return;
 
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      if (rafId.current !== null) return;
 
-      let centerX = window.innerWidth / 2;
-      let centerY = window.innerHeight / 2;
+      rafId.current = requestAnimationFrame(() => {
+        rafId.current = null;
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-      // Track relative to the card on desktop
-      if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        centerX = rect.left + rect.width / 2;
-        centerY = rect.top + rect.height * 0.7; // Character is near bottom of card
-      }
+        let centerX = window.innerWidth / 2;
+        let centerY = window.innerHeight / 2;
 
-      // In Step 1, character is at the bottom, so eyes look slightly upward by default
-      const defaultY = step === 'role' ? -3 : 0;
-      const deltaX = Math.max(-7, Math.min(7, ((clientX - centerX) / (window.innerWidth / 2)) * 8));
-      const deltaY = Math.max(-6, Math.min(6, defaultY + ((clientY - centerY) / (window.innerHeight / 2)) * 7));
+        if (cardRef.current) {
+          const rect = cardRef.current.getBoundingClientRect();
+          centerX = rect.left + rect.width / 2;
+          centerY = rect.top + rect.height * 0.7;
+        }
 
-      setEyePos({ x: deltaX, y: deltaY });
+        const defaultY = step === 'role' ? -3 : 0;
+        const deltaX = Math.max(-7, Math.min(7, ((clientX - centerX) / (window.innerWidth / 2)) * 8));
+        const deltaY = Math.max(-6, Math.min(6, defaultY + ((clientY - centerY) / (window.innerHeight / 2)) * 7));
+
+        setEyePos({ x: deltaX, y: deltaY });
+      });
     };
 
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('mousemove', handleMove, { passive: true });
+    window.addEventListener('touchmove', handleMove, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('touchmove', handleMove);
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current);
+      }
     };
   }, [focusTarget, step]);
 
@@ -69,7 +76,6 @@ export default function Login() {
     } else if (focusTarget === 'password') {
       setEyePos({ x: showPassword ? 3 : -6, y: showPassword ? 5 : -4 });
     } else if (step === 'role') {
-      // In Step 1, eyes look upward toward the buttons
       setEyePos({ x: 0, y: -4 });
     }
   }, [focusTarget, username, showPassword, step]);
@@ -114,33 +120,31 @@ export default function Login() {
     }
   };
 
-  // Buttery iOS spring easing
-  const springConfig = {
+  // Ultra-fluid, buttery native iOS/Android spring
+  const fluidSpring = {
     type: 'spring',
-    stiffness: 300,
-    damping: 28,
-    mass: 0.85
+    stiffness: 420,
+    damping: 36,
+    mass: 0.55
   };
 
   return (
     <div 
       ref={containerRef}
-      className="min-h-[100dvh] w-full bg-[#050814] flex items-center justify-center p-0 sm:p-6 lg:p-12 relative overflow-hidden font-sans selection:bg-orange-500/30"
+      className="fixed inset-0 w-full h-[100dvh] bg-[#050814] flex items-center justify-center p-0 sm:p-6 lg:p-12 overflow-hidden font-sans selection:bg-orange-500/30 touch-none overscroll-none"
     >
       {/* ─── AMBIENT DESKTOP BACKGROUND GLOW ─── */}
       <div className="hidden sm:block absolute inset-0 pointer-events-none">
         <div className="absolute -top-[15%] -left-[10%] w-[65vw] h-[65vw] max-w-[700px] max-h-[700px] rounded-full bg-blue-900/20 blur-[130px]" />
         <div className="absolute -bottom-[15%] -right-[10%] w-[60vw] h-[60vw] max-w-[650px] max-h-[650px] rounded-full bg-orange-600/15 blur-[140px]" />
-        {/* Subtle dot matrix texture for desktop */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px] opacity-70" />
       </div>
 
       {/* ─── MAIN RESPONSIVE CONTAINER: EDGE-TO-EDGE ON MOBILE, 2-COLUMN SPLIT ON DESKTOP ─── */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-8 lg:gap-12 xl:gap-16">
+      <div className="relative z-10 w-full h-full sm:h-auto max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-8 lg:gap-12 xl:gap-16">
 
         {/* ─── LEFT COLUMN: DESKTOP BRANDING & HIGHLIGHTS (HIDDEN ON MOBILE) ─── */}
         <div className="hidden lg:flex flex-col flex-1 max-w-lg xl:max-w-xl text-left select-none">
-          {/* Brand Tag Pill */}
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md mb-6 w-fit shadow-sm">
             <span className="w-2 h-2 rounded-full bg-[#FFE600] animate-pulse" />
             <span className="text-xs font-mono font-bold tracking-widest text-[#FFE600] uppercase">
@@ -148,7 +152,6 @@ export default function Login() {
             </span>
           </div>
 
-          {/* Headline */}
           <h1 className="text-4xl xl:text-5xl font-black text-white tracking-tight leading-[1.12]">
             Mutual Aid &amp; <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7A00] via-[#FFA149] to-[#FFE600]">
@@ -161,9 +164,7 @@ export default function Login() {
             A transparent digital ledger built for our close-knit circle. Empowering friends with emergency relief, predictable monthly pooling, and collective accountability.
           </p>
 
-          {/* 3 Value Pillars */}
           <div className="mt-8 space-y-3.5">
-            {/* Pillar 1 */}
             <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm transition-all hover:bg-white/[0.06] hover:border-white/15">
               <div className="w-9 h-9 rounded-xl bg-[#FF7A00]/15 border border-[#FF7A00]/30 flex items-center justify-center text-[#FF7A00] shrink-0 mt-0.5">
                 <Coins className="w-4 h-4" />
@@ -178,7 +179,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Pillar 2 */}
             <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm transition-all hover:bg-white/[0.06] hover:border-white/15">
               <div className="w-9 h-9 rounded-xl bg-[#06D6A0]/15 border border-[#06D6A0]/30 flex items-center justify-center text-[#06D6A0] shrink-0 mt-0.5">
                 <HeartHandshake className="w-4 h-4" />
@@ -193,7 +193,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Pillar 3 */}
             <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm transition-all hover:bg-white/[0.06] hover:border-white/15">
               <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shrink-0 mt-0.5">
                 <CheckCircle2 className="w-4 h-4" />
@@ -209,7 +208,6 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Trust Footer */}
           <div className="flex items-center gap-3 pt-6 mt-6 border-t border-white/10 text-xs font-mono text-zinc-400">
             <span className="flex items-center gap-1.5 text-emerald-400">
               <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
@@ -222,21 +220,21 @@ export default function Login() {
           </div>
         </div>
 
-        {/* ─── RIGHT COLUMN: THE CARD SHELL (EDGE-TO-EDGE ON MOBILE, FLOATING PHONE ON DESKTOP) ─── */}
+        {/* ─── RIGHT COLUMN: THE CARD SHELL (100% FULL BLEED ON MOBILE, ZERO GAPS) ─── */}
         <div 
           ref={cardRef}
-          className="relative z-10 w-full h-[100dvh] sm:h-[720px] max-w-none sm:max-w-[420px] shrink-0 rounded-none sm:rounded-[48px] shadow-none sm:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.85),0_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden bg-[#FAF8F5]"
+          className="relative z-10 w-full h-full sm:h-[720px] max-w-none sm:max-w-[420px] shrink-0 rounded-none sm:rounded-[48px] shadow-none sm:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.85),0_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden bg-[#FAF8F5] transform-gpu"
         >
         
         {/* ─── TOP ORGANIC GEOMETRIC CUTOUTS (Step 1) ─── */}
         <motion.div 
           animate={{
-            y: step === 'credentials' ? -130 : 0,
+            y: step === 'credentials' ? -140 : 0,
             opacity: step === 'credentials' ? 0 : 1,
-            scale: step === 'credentials' ? 0.8 : 1,
+            scale: step === 'credentials' ? 0.85 : 1,
           }}
-          transition={springConfig}
-          className="absolute top-0 inset-x-0 h-28 pointer-events-none z-10 overflow-hidden"
+          transition={fluidSpring}
+          className="absolute top-0 inset-x-0 h-28 pointer-events-none z-10 overflow-hidden transform-gpu"
         >
           {/* Organic Amber Left Blob */}
           <div className="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-[#FF7A00]" />
@@ -252,12 +250,11 @@ export default function Login() {
         <motion.div
           animate={{
             opacity: step === 'role' ? 1 : 0,
-            y: step === 'role' ? 0 : -40,
-            filter: step === 'role' ? 'blur(0px)' : 'blur(4px)',
+            y: step === 'role' ? 0 : -35,
             pointerEvents: step === 'role' ? 'auto' : 'none',
           }}
-          transition={springConfig}
-          className="absolute inset-x-0 top-0 bottom-44 z-20 flex flex-col justify-center px-7 sm:px-9 pt-10 text-[#081226]"
+          transition={fluidSpring}
+          className="absolute inset-x-0 top-0 bottom-44 z-20 flex flex-col justify-center px-7 sm:px-9 pt-10 text-[#081226] transform-gpu"
         >
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#081226] leading-[1.12]">
@@ -274,9 +271,9 @@ export default function Login() {
               {/* Member Access Button */}
               <motion.button
                 whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleRoleSelect('member')}
-                className="w-full py-4 px-6 rounded-2xl bg-[#081226] text-white font-bold text-sm tracking-wide shadow-lg shadow-black/20 flex items-center justify-center space-x-2 transition-all hover:bg-[#0D1B3A]"
+                className="w-full py-4 px-6 rounded-2xl bg-[#081226] text-white font-bold text-sm tracking-wide shadow-lg shadow-black/20 flex items-center justify-center space-x-2 transition-transform active:scale-[0.98]"
               >
                 <User className="w-4 h-4 text-[#FF7A00]" />
                 <span>Member Access</span>
@@ -285,9 +282,9 @@ export default function Login() {
               {/* Admin Console Button */}
               <motion.button
                 whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleRoleSelect('admin')}
-                className="w-full py-4 px-6 rounded-2xl bg-[#FAF8F5] text-[#081226] font-bold text-sm tracking-wide border-2 border-[#081226] flex items-center justify-center space-x-2 transition-all hover:bg-[#F2EDE4]"
+                className="w-full py-4 px-6 rounded-2xl bg-[#FAF8F5] text-[#081226] font-bold text-sm tracking-wide border-2 border-[#081226] flex items-center justify-center space-x-2 transition-transform active:scale-[0.98]"
               >
                 <Shield className="w-4 h-4 text-[#081226]" />
                 <span>Admin Console</span>
@@ -296,17 +293,15 @@ export default function Login() {
           </div>
         </motion.div>
 
-        {/* ─── THE UNIFIED MASCOT DOME (ATTACHED BODY & EYES TOGETHER) ─── */}
-        {/* In Step 1: Anchored to the bottom (h-[185px]) with eyes looking up. */}
-        {/* In Step 2: Smoothly expands to fill 100% height, and face glides seamlessly atop the form! */}
+        {/* ─── THE UNIFIED MASCOT DOME (Hardware Accelerated GPU Motion) ─── */}
         <motion.div
           animate={{
             height: step === 'credentials' ? '100%' : '185px',
             borderTopLeftRadius: step === 'credentials' ? '0px' : '90px',
             borderTopRightRadius: step === 'credentials' ? '0px' : '90px',
           }}
-          transition={springConfig}
-          className="absolute inset-x-0 bottom-0 bg-gradient-to-b from-[#FF7A00] via-[#FF6A00] to-[#E65100] z-30 shadow-[0_-12px_40px_rgba(255,122,0,0.3)] overflow-hidden flex flex-col justify-between"
+          transition={fluidSpring}
+          className="absolute inset-x-0 bottom-0 bg-gradient-to-b from-[#FF7A00] via-[#FF6A00] to-[#E65100] z-30 shadow-[0_-12px_40px_rgba(255,122,0,0.3)] overflow-hidden flex flex-col justify-between transform-gpu will-change-[height,border-radius]"
         >
           {/* ─── STEP 2 TOP HEADER BAR (Only visible in credentials step) ─── */}
           <div className="w-full pt-4 sm:pt-6 px-6 sm:px-7 flex items-center justify-between z-20">
@@ -319,7 +314,7 @@ export default function Login() {
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={handleBack}
-                  className="inline-flex items-center space-x-1.5 py-1.5 px-3.5 rounded-full bg-black/15 hover:bg-black/25 text-[#081226] text-xs font-bold transition-all shadow-sm"
+                  className="inline-flex items-center space-x-1.5 py-1.5 px-3.5 rounded-full bg-black/15 hover:bg-black/25 text-[#081226] text-xs font-bold transition-all shadow-sm active:scale-95"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back</span>
@@ -340,15 +335,13 @@ export default function Login() {
           <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-7 -mt-4 z-10 w-full max-w-[360px] mx-auto">
             
             {/* Animated Mascot Facial Features */}
-            {/* In Step 1: Sits at 12px from dome top (looking up). In Step 2: Smoothly positions right above the title (looking down). */}
             <motion.div
               animate={{
-                y: step === 'credentials' ? 0 : 0,
-                scale: step === 'credentials' ? 1.05 : 1,
+                scale: step === 'credentials' ? 1.04 : 1,
                 marginBottom: step === 'credentials' ? '14px' : '0px',
               }}
-              transition={springConfig}
-              className="flex flex-col items-center pointer-events-none select-none"
+              transition={fluidSpring}
+              className="flex flex-col items-center pointer-events-none select-none transform-gpu"
             >
               {/* White Top Tuft */}
               <motion.div 
@@ -364,7 +357,7 @@ export default function Login() {
                     y: focusTarget === 'password' && !showPassword ? 5 : 0,
                     rotate: focusTarget === 'password' && !showPassword ? 16 : 0 
                   }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.18 }}
                   className="w-7 h-2 rounded-full bg-[#081226]"
                 />
                 <motion.div 
@@ -372,7 +365,7 @@ export default function Login() {
                     y: focusTarget === 'password' && !showPassword ? 5 : 0,
                     rotate: focusTarget === 'password' && !showPassword ? -16 : 0 
                   }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.18 }}
                   className="w-7 h-2 rounded-full bg-[#081226]"
                 />
               </div>
@@ -392,8 +385,8 @@ export default function Login() {
                       y: eyePos.y,
                       scaleY: focusTarget === 'password' && !showPassword ? 0.35 : 1
                     }}
-                    transition={{ type: 'spring', stiffness: 450, damping: 25 }}
-                    className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5"
+                    transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                    className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5 transform-gpu"
                   >
                     <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
                     <div className="w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 right-2 opacity-80" />
@@ -413,8 +406,8 @@ export default function Login() {
                       y: eyePos.y,
                       scaleY: focusTarget === 'password' && !showPassword ? 0.35 : 1
                     }}
-                    transition={{ type: 'spring', stiffness: 450, damping: 25 }}
-                    className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5"
+                    transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                    className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5 transform-gpu"
                   >
                     <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
                     <div className="w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 right-2 opacity-80" />
@@ -429,18 +422,17 @@ export default function Login() {
               </div>
             </motion.div>
 
-            {/* Step 2 Form Content (Directly below the Mascot with zero awkward gap) */}
+            {/* Step 2 Form Content */}
             <motion.div
               animate={{
                 opacity: step === 'credentials' ? 1 : 0,
-                y: step === 'credentials' ? 0 : 25,
+                y: step === 'credentials' ? 0 : 20,
                 height: step === 'credentials' ? 'auto' : 0,
                 pointerEvents: step === 'credentials' ? 'auto' : 'none',
               }}
-              transition={springConfig}
-              className="w-full flex flex-col items-center"
+              transition={fluidSpring}
+              className="w-full flex flex-col items-center transform-gpu"
             >
-              {/* Title & Subtitle */}
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#081226] text-center mb-1">
                 {role === 'admin' ? 'Enter Admin Key' : 'Enter Your Name'}
               </h2>
@@ -450,7 +442,6 @@ export default function Login() {
 
               {/* The Form Fields */}
               <form onSubmit={handleSubmit} className="w-full space-y-3">
-                {/* Username Input */}
                 <div className="relative">
                   <input
                     id="username-field"
@@ -465,7 +456,6 @@ export default function Login() {
                   />
                 </div>
 
-                {/* Password Input (Admin Only) */}
                 {role === 'admin' && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -493,7 +483,6 @@ export default function Login() {
                   </motion.div>
                 )}
 
-                {/* Error Banner */}
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -504,13 +493,12 @@ export default function Login() {
                   </motion.div>
                 )}
 
-                {/* Primary Submit Button */}
                 <motion.button
                   whileHover={{ scale: 1.015 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-[#081226] text-white font-extrabold text-sm tracking-wide shadow-xl shadow-black/25 flex items-center justify-center space-x-2 mt-2 hover:bg-[#0D1B3A] transition-all"
+                  className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-[#081226] text-white font-extrabold text-sm tracking-wide shadow-xl shadow-black/25 flex items-center justify-center space-x-2 mt-2 hover:bg-[#0D1B3A] transition-transform active:scale-[0.98]"
                 >
                   {isLoading ? (
                     <>
@@ -529,7 +517,10 @@ export default function Login() {
           </div>
 
           {/* Subtitle Footer */}
-          <div className="w-full text-center text-[11px] font-semibold text-[#081226]/60 pb-4 pt-1">
+          <div 
+            style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+            className="w-full text-center text-[11px] font-semibold text-[#081226]/60 pt-1"
+          >
             Santha Mutual Aid • Zero-Interest Group Ledger
           </div>
         </motion.div>
