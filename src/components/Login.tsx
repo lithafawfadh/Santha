@@ -12,7 +12,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusTarget, setFocusTarget] = useState<'none' | 'username' | 'password'>('none');
-  const [eyePos, setEyePos] = useState({ x: 0, y: 0 });
+  const [eyePos, setEyePos] = useState({ x: 0, y: -4 });
   const [isBlinking, setIsBlinking] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -20,27 +20,23 @@ export default function Login() {
   const rafId = useRef<number | null>(null);
   const { login } = useApp();
 
-  // Natural Blink Loop
+  // Natural Blink Loop (Runs scaleY on GPU)
   useEffect(() => {
     const blinkInterval = setInterval(() => {
       setIsBlinking(true);
-      setTimeout(() => setIsBlinking(false), 140);
-    }, 4000);
+      setTimeout(() => setIsBlinking(false), 130);
+    }, 4500);
     return () => clearInterval(blinkInterval);
   }, []);
 
-  // Hardware-accelerated Smooth Eye Tracking (RAF Throttled)
+  // Desktop Mouse-only eye tracking (Throttled with RAF, zero touch stutter on mobile)
   useEffect(() => {
-    const handleMove = (e: MouseEvent | TouchEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (focusTarget !== 'none') return;
-
       if (rafId.current !== null) return;
 
       rafId.current = requestAnimationFrame(() => {
         rafId.current = null;
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
         let centerX = window.innerWidth / 2;
         let centerY = window.innerHeight / 2;
 
@@ -51,18 +47,16 @@ export default function Login() {
         }
 
         const defaultY = step === 'role' ? -3 : 0;
-        const deltaX = Math.max(-7, Math.min(7, ((clientX - centerX) / (window.innerWidth / 2)) * 8));
-        const deltaY = Math.max(-6, Math.min(6, defaultY + ((clientY - centerY) / (window.innerHeight / 2)) * 7));
+        const deltaX = Math.max(-7, Math.min(7, ((e.clientX - centerX) / (window.innerWidth / 2)) * 7));
+        const deltaY = Math.max(-6, Math.min(6, defaultY + ((e.clientY - centerY) / (window.innerHeight / 2)) * 6));
 
         setEyePos({ x: deltaX, y: deltaY });
       });
     };
 
-    window.addEventListener('mousemove', handleMove, { passive: true });
-    window.addEventListener('touchmove', handleMove, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('mousemove', handleMouseMove);
       if (rafId.current !== null) {
         cancelAnimationFrame(rafId.current);
       }
@@ -77,6 +71,8 @@ export default function Login() {
       setEyePos({ x: showPassword ? 3 : -6, y: showPassword ? 5 : -4 });
     } else if (step === 'role') {
       setEyePos({ x: 0, y: -4 });
+    } else {
+      setEyePos({ x: 0, y: 1 });
     }
   }, [focusTarget, username, showPassword, step]);
 
@@ -120,12 +116,19 @@ export default function Login() {
     }
   };
 
-  // Ultra-fluid, buttery native iOS/Android spring
-  const fluidSpring = {
+  // Apple HIG Sheet Presentation Spring (Pure GPU compositor motion)
+  const appleSheetSpring = {
     type: 'spring',
-    stiffness: 420,
-    damping: 36,
+    damping: 32,
+    stiffness: 350,
     mass: 0.55
+  };
+
+  const contentFadeSpring = {
+    type: 'spring',
+    damping: 30,
+    stiffness: 380,
+    mass: 0.5
   };
 
   return (
@@ -135,8 +138,8 @@ export default function Login() {
     >
       {/* ─── AMBIENT DESKTOP BACKGROUND GLOW ─── */}
       <div className="hidden sm:block absolute inset-0 pointer-events-none">
-        <div className="absolute -top-[15%] -left-[10%] w-[65vw] h-[65vw] max-w-[700px] max-h-[700px] rounded-full bg-blue-900/20 blur-[130px]" />
-        <div className="absolute -bottom-[15%] -right-[10%] w-[60vw] h-[60vw] max-w-[650px] max-h-[650px] rounded-full bg-orange-600/15 blur-[140px]" />
+        <div className="absolute -top-[15%] -left-[10%] w-[65vw] h-[65vw] max-w-[700px] max-h-[700px] rounded-full bg-blue-900/20 blur-[100px]" />
+        <div className="absolute -bottom-[15%] -right-[10%] w-[60vw] h-[60vw] max-w-[650px] max-h-[650px] rounded-full bg-orange-600/15 blur-[100px]" />
         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px] opacity-70" />
       </div>
 
@@ -229,12 +232,11 @@ export default function Login() {
         {/* ─── TOP ORGANIC GEOMETRIC CUTOUTS (Step 1) ─── */}
         <motion.div 
           animate={{
-            y: step === 'credentials' ? -140 : 0,
+            y: step === 'credentials' ? -120 : 0,
             opacity: step === 'credentials' ? 0 : 1,
-            scale: step === 'credentials' ? 0.85 : 1,
           }}
-          transition={fluidSpring}
-          className="absolute top-0 inset-x-0 h-28 pointer-events-none z-10 overflow-hidden transform-gpu"
+          transition={contentFadeSpring}
+          className="absolute top-0 inset-x-0 h-28 pointer-events-none z-10 overflow-hidden transform-gpu will-change-transform"
         >
           {/* Organic Amber Left Blob */}
           <div className="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-[#FF7A00]" />
@@ -250,11 +252,11 @@ export default function Login() {
         <motion.div
           animate={{
             opacity: step === 'role' ? 1 : 0,
-            y: step === 'role' ? 0 : -35,
+            y: step === 'role' ? 0 : -25,
             pointerEvents: step === 'role' ? 'auto' : 'none',
           }}
-          transition={fluidSpring}
-          className="absolute inset-x-0 top-0 bottom-44 z-20 flex flex-col justify-center px-7 sm:px-9 pt-10 text-[#081226] transform-gpu"
+          transition={contentFadeSpring}
+          className="absolute inset-x-0 top-0 bottom-[190px] z-20 flex flex-col justify-center px-7 sm:px-9 pt-10 text-[#081226] transform-gpu will-change-transform"
         >
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#081226] leading-[1.12]">
@@ -269,103 +271,93 @@ export default function Login() {
             {/* The Stacked Role Buttons */}
             <div className="mt-8 space-y-3.5">
               {/* Member Access Button */}
-              <motion.button
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.97 }}
+              <button
+                type="button"
                 onClick={() => handleRoleSelect('member')}
-                className="w-full py-4 px-6 rounded-2xl bg-[#081226] text-white font-bold text-sm tracking-wide shadow-lg shadow-black/20 flex items-center justify-center space-x-2 transition-transform active:scale-[0.98]"
+                className="w-full py-4 px-6 rounded-2xl bg-[#081226] text-white font-bold text-sm tracking-wide shadow-lg shadow-black/20 flex items-center justify-center space-x-2 transition-transform active:scale-[0.97]"
               >
                 <User className="w-4 h-4 text-[#FF7A00]" />
                 <span>Member Access</span>
-              </motion.button>
+              </button>
 
               {/* Admin Console Button */}
-              <motion.button
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.97 }}
+              <button
+                type="button"
                 onClick={() => handleRoleSelect('admin')}
-                className="w-full py-4 px-6 rounded-2xl bg-[#FAF8F5] text-[#081226] font-bold text-sm tracking-wide border-2 border-[#081226] flex items-center justify-center space-x-2 transition-transform active:scale-[0.98]"
+                className="w-full py-4 px-6 rounded-2xl bg-[#FAF8F5] text-[#081226] font-bold text-sm tracking-wide border-2 border-[#081226] flex items-center justify-center space-x-2 transition-transform active:scale-[0.97]"
               >
                 <Shield className="w-4 h-4 text-[#081226]" />
                 <span>Admin Console</span>
-              </motion.button>
+              </button>
             </div>
           </div>
         </motion.div>
 
-        {/* ─── THE UNIFIED MASCOT DOME (Hardware Accelerated GPU Motion) ─── */}
+        {/* ─── THE UNIFIED MASCOT DOME (100% GPU TRANSFORM - ZERO REFLOW) ─── */}
+        {/* Full height container positioned via translateY for pure 60/120fps hardware acceleration */}
         <motion.div
           animate={{
-            height: step === 'credentials' ? '100%' : '185px',
-            borderTopLeftRadius: step === 'credentials' ? '0px' : '90px',
-            borderTopRightRadius: step === 'credentials' ? '0px' : '90px',
+            y: step === 'credentials' ? '0%' : 'calc(100% - 190px)',
+            borderTopLeftRadius: step === 'credentials' ? '0px' : '64px',
+            borderTopRightRadius: step === 'credentials' ? '0px' : '64px',
           }}
-          transition={fluidSpring}
-          className="absolute inset-x-0 bottom-0 bg-gradient-to-b from-[#FF7A00] via-[#FF6A00] to-[#E65100] z-30 shadow-[0_-12px_40px_rgba(255,122,0,0.3)] overflow-hidden flex flex-col justify-between transform-gpu will-change-[height,border-radius]"
+          transition={appleSheetSpring}
+          className="absolute inset-0 h-full w-full bg-gradient-to-b from-[#FF7A00] via-[#FF6A00] to-[#E65100] z-30 shadow-[0_-12px_40px_rgba(255,122,0,0.3)] overflow-hidden flex flex-col justify-between transform-gpu will-change-transform"
         >
           {/* ─── STEP 2 TOP HEADER BAR (Only visible in credentials step) ─── */}
-          <div className="w-full pt-4 sm:pt-6 px-6 sm:px-7 flex items-center justify-between z-20">
+          <div className="w-full pt-4 sm:pt-6 px-6 sm:px-7 flex items-center justify-between z-20 min-h-[52px]">
             {step === 'credentials' ? (
-              <>
-                <motion.button
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full flex items-center justify-between"
+              >
+                <button
                   type="button"
                   onClick={handleBack}
-                  className="inline-flex items-center space-x-1.5 py-1.5 px-3.5 rounded-full bg-black/15 hover:bg-black/25 text-[#081226] text-xs font-bold transition-all shadow-sm active:scale-95"
+                  className="inline-flex items-center space-x-1.5 py-1.5 px-3.5 rounded-full bg-black/15 hover:bg-black/25 text-[#081226] text-xs font-bold transition-transform active:scale-95 shadow-sm"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back</span>
-                </motion.button>
+                </button>
 
-                <motion.div 
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="px-3 py-1 rounded-full bg-white/20 text-xs font-bold text-[#081226] tracking-wide shadow-sm"
-                >
+                <div className="px-3 py-1 rounded-full bg-white/20 text-xs font-bold text-[#081226] tracking-wide shadow-sm">
                   {role === 'admin' ? 'Admin Portal' : 'Member Portal'}
-                </motion.div>
-              </>
+                </div>
+              </motion.div>
             ) : <div className="h-7" />}
           </div>
 
-          {/* ─── OPTION 1: THE UNIFIED CENTERED HERO & FORM BLOCK ─── */}
-          <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-7 -mt-4 z-10 w-full max-w-[360px] mx-auto">
+          {/* ─── CENTER HERO & FORM BLOCK ─── */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-7 z-10 w-full max-w-[360px] mx-auto">
             
             {/* Animated Mascot Facial Features */}
             <motion.div
               animate={{
-                scale: step === 'credentials' ? 1.04 : 1,
-                marginBottom: step === 'credentials' ? '14px' : '0px',
+                scale: step === 'credentials' ? 1.05 : 1,
+                y: step === 'credentials' ? -6 : 0,
               }}
-              transition={fluidSpring}
-              className="flex flex-col items-center pointer-events-none select-none transform-gpu"
+              transition={appleSheetSpring}
+              className="flex flex-col items-center pointer-events-none select-none transform-gpu will-change-transform"
             >
-              {/* White Top Tuft */}
-              <motion.div 
-                animate={{ rotate: [-4, 4, -4] }}
-                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-5 h-6 rounded-full bg-white shadow-sm mb-1.5"
-              />
+              {/* White Top Tuft with CSS GPU keyframe */}
+              <div className="w-5 h-6 rounded-full bg-white shadow-sm mb-1.5 tuft-sway" />
 
               {/* Eyebrows */}
               <div className="flex items-center justify-between w-32 sm:w-36 px-2 mb-1.5">
-                <motion.div 
-                  animate={{ 
-                    y: focusTarget === 'password' && !showPassword ? 5 : 0,
-                    rotate: focusTarget === 'password' && !showPassword ? 16 : 0 
+                <div 
+                  style={{
+                    transform: focusTarget === 'password' && !showPassword ? 'translateY(5px) rotate(16deg)' : 'none',
+                    transition: 'transform 0.18s ease-out'
                   }}
-                  transition={{ duration: 0.18 }}
                   className="w-7 h-2 rounded-full bg-[#081226]"
                 />
-                <motion.div 
-                  animate={{ 
-                    y: focusTarget === 'password' && !showPassword ? 5 : 0,
-                    rotate: focusTarget === 'password' && !showPassword ? -16 : 0 
+                <div 
+                  style={{
+                    transform: focusTarget === 'password' && !showPassword ? 'translateY(5px) rotate(-16deg)' : 'none',
+                    transition: 'transform 0.18s ease-out'
                   }}
-                  transition={{ duration: 0.18 }}
                   className="w-7 h-2 rounded-full bg-[#081226]"
                 />
               </div>
@@ -374,44 +366,46 @@ export default function Login() {
               <div className="flex items-center justify-center space-x-4 sm:space-x-5">
                 {/* Left Eye */}
                 <div className="relative w-14 h-16 sm:w-16 sm:h-18 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden">
-                  <motion.div 
-                    animate={{ height: isBlinking ? '100%' : '0%' }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute top-0 inset-x-0 bg-[#FF7A00] z-20"
-                  />
-                  <motion.div
-                    animate={{ 
-                      x: eyePos.x, 
-                      y: eyePos.y,
-                      scaleY: focusTarget === 'password' && !showPassword ? 0.35 : 1
+                  <div 
+                    style={{
+                      transform: isBlinking ? 'scaleY(1)' : 'scaleY(0)',
+                      transformOrigin: 'top center',
+                      transition: 'transform 0.12s ease-in-out'
                     }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                    className="absolute inset-0 bg-[#FF7A00] z-20"
+                  />
+                  <div
+                    style={{
+                      transform: `translate3d(${eyePos.x}px, ${eyePos.y}px, 0) scaleY(${focusTarget === 'password' && !showPassword ? 0.35 : 1})`,
+                      transition: 'transform 0.15s cubic-bezier(0.2, 0.9, 0.3, 1)'
+                    }}
                     className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5 transform-gpu"
                   >
                     <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
                     <div className="w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 right-2 opacity-80" />
-                  </motion.div>
+                  </div>
                 </div>
 
                 {/* Right Eye */}
                 <div className="relative w-14 h-16 sm:w-16 sm:h-18 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden">
-                  <motion.div 
-                    animate={{ height: isBlinking ? '100%' : '0%' }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute top-0 inset-x-0 bg-[#FF7A00] z-20"
-                  />
-                  <motion.div
-                    animate={{ 
-                      x: eyePos.x, 
-                      y: eyePos.y,
-                      scaleY: focusTarget === 'password' && !showPassword ? 0.35 : 1
+                  <div 
+                    style={{
+                      transform: isBlinking ? 'scaleY(1)' : 'scaleY(0)',
+                      transformOrigin: 'top center',
+                      transition: 'transform 0.12s ease-in-out'
                     }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                    className="absolute inset-0 bg-[#FF7A00] z-20"
+                  />
+                  <div
+                    style={{
+                      transform: `translate3d(${eyePos.x}px, ${eyePos.y}px, 0) scaleY(${focusTarget === 'password' && !showPassword ? 0.35 : 1})`,
+                      transition: 'transform 0.15s cubic-bezier(0.2, 0.9, 0.3, 1)'
+                    }}
                     className="w-9 h-10 sm:w-10 sm:h-11 rounded-full bg-[#081226] relative flex items-start justify-start p-1.5 transform-gpu"
                   >
                     <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
                     <div className="w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 right-2 opacity-80" />
-                  </motion.div>
+                  </div>
                 </div>
               </div>
 
@@ -422,16 +416,15 @@ export default function Login() {
               </div>
             </motion.div>
 
-            {/* Step 2 Form Content */}
+            {/* Step 2 Form Content (Slides into view with pure GPU opacity & translateY) */}
             <motion.div
               animate={{
                 opacity: step === 'credentials' ? 1 : 0,
                 y: step === 'credentials' ? 0 : 20,
-                height: step === 'credentials' ? 'auto' : 0,
                 pointerEvents: step === 'credentials' ? 'auto' : 'none',
               }}
-              transition={fluidSpring}
-              className="w-full flex flex-col items-center transform-gpu"
+              transition={contentFadeSpring}
+              className="w-full flex flex-col items-center mt-3 transform-gpu will-change-transform"
             >
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#081226] text-center mb-1">
                 {role === 'admin' ? 'Enter Admin Key' : 'Enter Your Name'}
@@ -457,11 +450,7 @@ export default function Login() {
                 </div>
 
                 {role === 'admin' && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="relative"
-                  >
+                  <div className="relative">
                     <input
                       id="password-field"
                       type={showPassword ? 'text' : 'password'}
@@ -480,22 +469,16 @@ export default function Login() {
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                  </motion.div>
+                  </div>
                 )}
 
                 {error && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-2.5 rounded-xl bg-black/30 border border-white/20 text-white text-xs font-medium text-center shadow-md"
-                  >
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/20 text-white text-xs font-medium text-center shadow-md animate-fadeIn">
                     {error}
-                  </motion.div>
+                  </div>
                 )}
 
-                <motion.button
-                  whileHover={{ scale: 1.015 }}
-                  whileTap={{ scale: 0.97 }}
+                <button
                   type="submit"
                   disabled={isLoading}
                   className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-[#081226] text-white font-extrabold text-sm tracking-wide shadow-xl shadow-black/25 flex items-center justify-center space-x-2 mt-2 hover:bg-[#0D1B3A] transition-transform active:scale-[0.98]"
@@ -511,7 +494,7 @@ export default function Login() {
                       <ArrowRight className="w-4 h-4 text-[#FF7A00]" />
                     </>
                   )}
-                </motion.button>
+                </button>
               </form>
             </motion.div>
           </div>
@@ -519,7 +502,7 @@ export default function Login() {
           {/* Subtitle Footer */}
           <div 
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
-            className="w-full text-center text-[11px] font-semibold text-[#081226]/60 pt-1"
+            className="w-full text-center text-[11px] font-semibold text-[#081226]/60 pt-1 select-none"
           >
             Santha Mutual Aid • Zero-Interest Group Ledger
           </div>

@@ -386,3 +386,12 @@ body {
   box-shadow: 2px 2px 0px 0px #000000;
   font-weight: 800;
 }
+
+@keyframes tuftSway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+.tuft-sway {
+  animation: tuftSway 3.2s ease-in-out infinite;
+  transform-origin: bottom center;
+}
