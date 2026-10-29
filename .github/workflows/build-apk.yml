@@ -38,6 +38,9 @@ jobs:
         run: npm ci
 
       - name: Build Web Application
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://your-project.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'your-supabase-anon-key-placeholder' }}
         run: npm run build
 
       - name: Sync Capacitor Android
