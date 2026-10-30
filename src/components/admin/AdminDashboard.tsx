@@ -14,6 +14,7 @@ import Reports from './Reports';
 import DonationManagement from './DonationManagement';
 import WarningManagement from './WarningManagement';
 import ActivityNotifications from './ActivityNotifications';
+import DashboardSkeleton from '../common/DashboardSkeleton';
 
 export default function AdminDashboard() {
   const { groupStats, currentUser, logout, loading, isDarkMode, payments, loans, allUsers, activeMembers, donations, activities } = useApp();
@@ -80,18 +81,7 @@ export default function AdminDashboard() {
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
-        <div className="text-center p-8 bg-white border-3 border-black shadow-[6px_6px_0px_#000]">
-          <div className="w-12 h-12 bg-[#FFE600] border-2 border-black mx-auto mb-4 animate-bounce flex items-center justify-center font-black">
-            FT
-          </div>
-          <p className="text-black font-mono font-black uppercase text-xs tracking-widest">
-            F.O.R.T PROTOCOL INITIALIZING...
-          </p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton isAdmin={true} />;
   }
 
   const activeTabMeta = allTabs.find(t => t.id === activeTab);
