@@ -94,7 +94,7 @@ interface CachedAppData {
   lastSyncedAt: string;
 }
 
-const CACHE_KEY = 'santha_cached_data_v1';
+const CACHE_KEY = 'santha_cached_data_v2';
 
 const getInitialCache = (): CachedAppData => {
   try {
@@ -231,6 +231,9 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
     setWarnings(warningsData);
     setMemberExits(exitsData);
     setActivities(activitiesData);
+    if (bankAccountsData && bankAccountsData.length > 0) {
+      setBankAccounts(bankAccountsData);
+    }
 
     const now = new Date().toISOString();
     setLastSyncedAt(now);
@@ -245,7 +248,8 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
         warnings: warningsData,
         memberExits: exitsData,
         activities: activitiesData,
-        lastSyncedAt: now
+        lastSyncedAt: now,
+        bankAccounts: bankAccountsData || []
       };
       window.localStorage.setItem(CACHE_KEY, JSON.stringify(cacheToSave));
     } catch (cacheErr) {
