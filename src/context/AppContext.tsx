@@ -47,6 +47,12 @@ interface AppContextType {
   clearActivities: () => Promise<void>;
   isOffline: boolean;
   lastSyncedAt: string | null;
+  bankAccounts: BankAccount[];
+  activeBankAccounts: BankAccount[];
+  addBankAccount: (account: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  updateBankAccount: (id: string, updates: Partial<BankAccount>) => Promise<boolean>;
+  deleteBankAccount: (id: string) => Promise<boolean>;
+  setDefaultBankAccount: (id: string) => Promise<boolean>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -751,6 +757,65 @@ const markWarningAsRead = async (warningId: string) => {
     setIsDarkMode(!isDarkMode);
   };
 
+  const addBankAccount = async (account: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
+    try {
+      const created = await dataService.addBankAccount(account);
+      setBankAccounts(prev => {
+        const updated = account.isPrimary
+          ? prev.map(a => ({ ...a, isPrimary: false })).concat(created)
+          : prev.concat(created);
+        return updated;
+      });
+      if (currentUser?.id) {
+        await dataService.logActivity('bank_account_added', `Admin added bank account: ${account.bankName}`, currentUser.id);
+      }
+      return true;
+    } catch (err) {
+      console.error('Error adding bank account:', err);
+      return false;
+    }
+  };
+
+  const updateBankAccount = async (id: string, updates: Partial<BankAccount>): Promise<boolean> => {
+    try {
+      await dataService.updateBankAccount(id, updates);
+      setBankAccounts(prev => prev.map(acc => {
+        if (acc.id === id) {
+          return { ...acc, ...updates };
+        }
+        if (updates.isPrimary) {
+          return { ...acc, isPrimary: false };
+        }
+        return acc;
+      }));
+      if (currentUser?.id) {
+        await dataService.logActivity('bank_account_updated', `Admin updated bank account: ${id}`, currentUser.id);
+      }
+      return true;
+    } catch (err) {
+      console.error('Error updating bank account:', err);
+      return false;
+    }
+  };
+
+  const deleteBankAccount = async (id: string): Promise<boolean> => {
+    try {
+      await dataService.deleteBankAccount(id);
+      setBankAccounts(prev => prev.filter(acc => acc.id !== id));
+      if (currentUser?.id) {
+        await dataService.logActivity('bank_account_deleted', `Admin deleted bank account: ${id}`, currentUser.id);
+      }
+      return true;
+    } catch (err) {
+      console.error('Error deleting bank account:', err);
+      return false;
+    }
+  };
+
+  const setDefaultBankAccount = async (id: string): Promise<boolean> => {
+    return updateBankAccount(id, { isPrimary: true });
+  };
+
   return (
     <AppContext.Provider value={{
       currentUser,
@@ -792,7 +857,13 @@ const markWarningAsRead = async (warningId: string) => {
       processMemberExit,
       clearActivities,
       isOffline,
-      lastSyncedAt
+      lastSyncedAt,
+      bankAccounts: bankAccounts || [],
+      activeBankAccounts: activeBankAccounts || [],
+      addBankAccount,
+      updateBankAccount,
+      deleteBankAccount,
+      setDefaultBankAccount
     }}>
       {children}
     </AppContext.Provider>

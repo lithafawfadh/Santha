@@ -30,7 +30,8 @@ const COMMON_BANKS = [
 ];
 
 export default function BankSettingsManagement() {
-  const { bankAccounts, addBankAccount, updateBankAccount, deleteBankAccount, setDefaultBankAccount } = useApp();
+  const { bankAccounts = [], addBankAccount, updateBankAccount, deleteBankAccount, setDefaultBankAccount } = useApp();
+  const safeAccounts = Array.isArray(bankAccounts) && bankAccounts.length > 0 ? bankAccounts : [];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
@@ -64,7 +65,7 @@ export default function BankSettingsManagement() {
       contributionText: 'Monthly Contribution · LKR 300',
       notes: 'Please include your member name in the transfer remarks so the treasurer can stamp your month promptly.',
       isActive: true,
-      isPrimary: bankAccounts.length === 0,
+      isPrimary: safeAccounts.length === 0,
     });
     setIsModalOpen(true);
   };
@@ -112,7 +113,7 @@ export default function BankSettingsManagement() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (bankAccounts.length <= 1) {
+    if (safeAccounts.length <= 1) {
       alert('At least one bank account must remain in the system for member payments.');
       return;
     }
@@ -124,8 +125,8 @@ export default function BankSettingsManagement() {
     }
   };
 
-  const primaryAccount = bankAccounts.find(a => a.isPrimary) || bankAccounts[0];
-  const activeCount = bankAccounts.filter(a => a.isActive).length;
+  const primaryAccount = safeAccounts.find(a => a.isPrimary) || safeAccounts[0];
+  const activeCount = safeAccounts.filter(a => a.isActive).length;
 
   return (
     <div className="space-y-6 text-black animate-fadeIn">
@@ -176,7 +177,7 @@ export default function BankSettingsManagement() {
           </div>
           <div>
             <div className="text-[11px] font-mono font-black uppercase text-black/60">Total Configured</div>
-            <div className="text-xl font-black text-black">{bankAccounts.length} Accounts</div>
+            <div className="text-xl font-black text-black">{safeAccounts.length} Accounts</div>
           </div>
         </div>
 
@@ -218,7 +219,7 @@ export default function BankSettingsManagement() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {bankAccounts.map((account) => {
+          {safeAccounts.map((account) => {
             return (
               <div
                 key={account.id}
