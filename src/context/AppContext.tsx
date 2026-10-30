@@ -96,11 +96,24 @@ interface CachedAppData {
 
 const CACHE_KEY = 'santha_cached_data_v2';
 
+// Automatic legacy cleanup for mobile app WebView
+if (typeof window !== 'undefined' && window.localStorage) {
+  try {
+    window.localStorage.removeItem('santha_cached_data_v1');
+  } catch (e) {
+    // ignore
+  }
+}
+
 const getInitialCache = (): CachedAppData => {
   try {
     const raw = typeof window !== 'undefined' ? window.localStorage.getItem(CACHE_KEY) : null;
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      // Validate that users in cache are actually user objects with role, not bank accounts
+      if (parsed.allUsers && parsed.allUsers.length > 0 && parsed.allUsers[0].role) {
+        return parsed;
+      }
     }
   } catch (e) {
     console.error('Failed to parse cached app data', e);
