@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
-import { User, Payment, Loan, Donation, MeetingReport, Warning, MemberExit, ActivityLog } from '../types';
+import { User, Payment, Loan, Donation, MeetingReport, Warning, MemberExit, ActivityLog, BankAccount } from '../types';
+import { DEFAULT_BANK_ACCOUNTS } from '../utils/bankingApps';
 
 // Performance optimization: Simple cache with 30-second duration
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -904,5 +905,168 @@ async updateLoanDueDate(loanId: string, newDueDate: string): Promise<boolean> {
       notes: data.notes || undefined,
       createdAt: data.created_at,
     };
+  },
+
+  // Bank Accounts Management
+  async getBankAccounts(): Promise<BankAccount[]> {
+    const cacheKey = 'bank_accounts';
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+
+    try {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('bank_accounts')
+          .select('*')
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          const accounts: BankAccount[] = data.map((item: any) => ({
+            id: item.id,
+            bankName: item.bank_name,
+            accountName: item.account_name,
+            accountNumber: item.account_number,
+            branchName: item.branch_name,
+            contributionText: item.contribution_text || 'Monthly Contribution · LKR 300',
+            notes: item.notes || '',
+            isActive: item.is_active ?? true,
+            isPrimary: item.is_primary ?? false,
+            qrCodeUrl: item.qr_code_url || undefined,
+            displayOrder: item.display_order ?? 1,
+            createdAt: item.created_at,
+            updatedAt: item.updated_at
+          }));
+          localStorage.setItem('santha_bank_accounts', JSON.stringify(accounts));
+          cache.set(cacheKey, { data: accounts, timestamp: Date.now() });
+          return accounts;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch bank accounts from Supabase, checking local storage:', e);
+    }
+
+    try {
+      const stored = localStorage.getItem('santha_bank_accounts');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cache.set(cacheKey, { data: parsed, timestamp: Date.now() });
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('Error reading stored bank accounts:', err);
+    }
+
+    localStorage.setItem('santha_bank_accounts', JSON.stringify(DEFAULT_BANK_ACCOUNTS));
+    cache.set(cacheKey, { data: DEFAULT_BANK_ACCOUNTS, timestamp: Date.now() });
+    return DEFAULT_BANK_ACCOUNTS;
+  },
+
+  async addBankAccount(account: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>): Promise<BankAccount> {
+    const newId = 'acc_' + Date.now();
+    const created: BankAccount = {
+      ...account,
+      id: newId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('bank_accounts')
+          .insert({
+            id: newId,
+            bank_name: account.bankName,
+            account_name: account.accountName,
+            account_number: account.accountNumber,
+            branch_name: account.branchName,
+            contribution_text: account.contributionText,
+            notes: account.notes,
+            is_active: account.isActive,
+            is_primary: account.isPrimary,
+            qr_code_url: account.qrCodeUrl,
+            display_order: account.displayOrder ?? 1,
+          })
+          .select()
+          .single();
+
+        if (!error && data) {
+          created.id = data.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase insert failed, continuing with local persistence:', e);
+    }
+
+    const existing = await this.getBankAccounts();
+    const updatedList = account.isPrimary
+      ? existing.map(a => ({ ...a, isPrimary: false })).concat(created)
+      : existing.concat(created);
+
+    localStorage.setItem('santha_bank_accounts', JSON.stringify(updatedList));
+    cache.delete('bank_accounts');
+    return created;
+  },
+
+  async updateBankAccount(id: string, updates: Partial<BankAccount>): Promise<boolean> {
+    try {
+      if (supabase) {
+        const payload: any = { updated_at: new Date().toISOString() };
+        if (updates.bankName !== undefined) payload.bank_name = updates.bankName;
+        if (updates.accountName !== undefined) payload.account_name = updates.accountName;
+        if (updates.accountNumber !== undefined) payload.account_number = updates.accountNumber;
+        if (updates.branchName !== undefined) payload.branch_name = updates.branchName;
+        if (updates.contributionText !== undefined) payload.contribution_text = updates.contributionText;
+        if (updates.notes !== undefined) payload.notes = updates.notes;
+        if (updates.isActive !== undefined) payload.is_active = updates.isActive;
+        if (updates.isPrimary !== undefined) payload.is_primary = updates.isPrimary;
+        if (updates.qrCodeUrl !== undefined) payload.qr_code_url = updates.qrCodeUrl;
+        if (updates.displayOrder !== undefined) payload.display_order = updates.displayOrder;
+
+        await supabase.from('bank_accounts').update(payload).eq('id', id);
+
+        if (updates.isPrimary) {
+          await supabase.from('bank_accounts').update({ is_primary: false }).neq('id', id);
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase update failed, continuing with local persistence:', e);
+    }
+
+    const existing = await this.getBankAccounts();
+    const updatedList = existing.map(acc => {
+      if (acc.id === id) {
+        return { ...acc, ...updates, updatedAt: new Date().toISOString() };
+      }
+      if (updates.isPrimary) {
+        return { ...acc, isPrimary: false };
+      }
+      return acc;
+    });
+
+    localStorage.setItem('santha_bank_accounts', JSON.stringify(updatedList));
+    cache.delete('bank_accounts');
+    return true;
+  },
+
+  async deleteBankAccount(id: string): Promise<boolean> {
+    try {
+      if (supabase) {
+        await supabase.from('bank_accounts').delete().eq('id', id);
+      }
+    } catch (e) {
+      console.warn('Supabase delete failed, continuing with local persistence:', e);
+    }
+
+    const existing = await this.getBankAccounts();
+    const updatedList = existing.filter(acc => acc.id !== id);
+    localStorage.setItem('santha_bank_accounts', JSON.stringify(updatedList));
+    cache.delete('bank_accounts');
+    return true;
   },
 };

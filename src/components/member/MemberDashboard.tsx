@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard,
+  User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard, Smartphone,
   Edit3, X, Moon, Sun, CheckCircle2, Clock, AlertTriangle,
   Activity, FileText, Zap, Users, LogOut, Wallet,
   ChevronDown, Copy, Check, ArrowRight
@@ -12,6 +12,8 @@ import { MONTHLY_CONTRIBUTION } from '../../data/mockData';
 import WarningBanner from '../common/WarningBanner';
 import TactileFolderCard from '../common/TactileFolderCard';
 import MeetingReportCard from './MeetingReportCard';
+import BankingAppChooserModal from '../common/BankingAppChooserModal';
+import { cleanAccountNumber } from '../../utils/bankingApps';
 
 // ─── Spring Presets ──────────────────────────────────────────────────────────
 const spring = { type: 'spring', stiffness: 350, damping: 28 };
@@ -482,7 +484,28 @@ interface QuickActionModalProps {
 }
 
 const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActionModalProps) => {
+  const { activeBankAccounts } = useApp();
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [showAppChooser, setShowAppChooser] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const accounts = activeBankAccounts && activeBankAccounts.length > 0
+    ? activeBankAccounts
+    : [
+        {
+          id: 'default-combank',
+          bankName: 'Commercial Bank of Ceylon',
+          accountName: 'Santha Mutual Pool',
+          accountNumber: '8010 000 000',
+          branchName: 'Colombo Main Branch',
+          contributionText: 'Monthly Contribution · LKR 300',
+          notes: 'Please include your member name in the transfer remarks so the treasurer can stamp your month promptly.',
+          isActive: true,
+          isPrimary: true,
+        }
+      ];
+
+  const currentAccount = accounts[selectedIdx] || accounts[0];
   const borderColor = isDarkMode ? '#2E364A' : '#121212';
   const modalBg = isDarkMode ? '#171B26' : '#FFFFFF';
 
@@ -493,22 +516,29 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            key="quick-action-backdrop"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
           />
+
+          {/* Modal Container */}
           <motion.div
-            className="fixed inset-x-4 top-[10%] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-50 rounded-2xl border-2 overflow-hidden shadow-2xl p-5 select-none"
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            key="quick-action-content"
+            className="relative w-full max-w-md z-10 rounded-2xl border-2 overflow-hidden shadow-2xl p-5 select-none max-h-[90vh] flex flex-col transform-gpu"
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={springFast}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             style={{
               backgroundColor: modalBg,
               borderColor,
@@ -529,7 +559,7 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
                     Mutual Aid Transfer
                   </h3>
                   <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-                    Monthly Contribution · LKR 300
+                    {currentAccount.contributionText || 'Monthly Contribution · LKR 300'}
                   </p>
                 </div>
               </div>
@@ -542,8 +572,33 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
               </button>
             </div>
 
+            {/* Multiple Bank Selector Tabs */}
+            {accounts.length > 1 && (
+              <div className="pt-3 pb-1">
+                <div className="text-[10px] font-black uppercase text-neutral-400 mb-1 tracking-wider">
+                  Select Transfer Channel:
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  {accounts.map((acc, idx) => (
+                    <button
+                      key={acc.id}
+                      onClick={() => setSelectedIdx(idx)}
+                      className={`px-2.5 py-1 rounded-lg border-2 text-[11px] font-black whitespace-nowrap transition-all ${
+                        selectedIdx === idx
+                          ? 'bg-[#FF7A00] text-white shadow-[1px_1px_0px_#000]'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                      }`}
+                      style={{ borderColor }}
+                    >
+                      {acc.bankName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Bank Details Card */}
-            <div className="py-4 space-y-3">
+            <div className="py-3 space-y-3 overflow-y-auto">
               <div
                 className="p-3.5 rounded-xl border-2 space-y-2.5"
                 style={{
@@ -553,21 +608,21 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
               >
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-neutral-500 dark:text-neutral-400">Bank Name</span>
-                  <span className="font-bold text-neutral-900 dark:text-white">Commercial Bank of Ceylon</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">{currentAccount.bankName}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-neutral-500 dark:text-neutral-400">Account Name</span>
-                  <span className="font-bold text-neutral-900 dark:text-white">Santha Mutual Pool</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">{currentAccount.accountName}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
                   <span className="font-medium text-neutral-500 dark:text-neutral-400">Account Number</span>
                   <button
-                    onClick={() => copyToClipboard('acc', '8010000000')}
+                    onClick={() => copyToClipboard('acc', cleanAccountNumber(currentAccount.accountNumber))}
                     className="flex items-center gap-1.5 font-black text-sm text-[#FF7A00] hover:underline"
                   >
-                    <span>8010 000 000</span>
+                    <span className="font-mono">{currentAccount.accountNumber}</span>
                     {copiedKey === 'acc' ? (
                       <Check className="w-3.5 h-3.5 text-emerald-500" />
                     ) : (
@@ -578,7 +633,7 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-neutral-500 dark:text-neutral-400">Branch</span>
-                  <span className="font-bold text-neutral-900 dark:text-white">Colombo Main Branch</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">{currentAccount.branchName}</span>
                 </div>
               </div>
 
@@ -592,17 +647,18 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
                 }}
               >
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>
-                  Please include your <strong>member name</strong> in the transfer remarks so the treasurer can stamp your month promptly.
+                <span className="leading-relaxed">
+                  {currentAccount.notes || 'Please include your member name in the transfer remarks so the treasurer can stamp your month promptly.'}
                 </span>
               </div>
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col gap-2 pt-2 border-t" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
+              {/* Primary Action: Open Banking App */}
               <button
-                onClick={() => copyToClipboard('all', 'Commercial Bank | Santha Mutual Pool | 8010000000 | LKR 300')}
-                className="flex-1 py-2.5 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                onClick={() => setShowAppChooser(true)}
+                className="w-full py-2.5 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[1px] active:translate-y-[1px]"
                 style={{
                   borderColor,
                   backgroundColor: '#FF7A00',
@@ -610,31 +666,56 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
                   boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
                 }}
               >
-                {copiedKey === 'all' ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Copied Details!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>Copy All Bank Details</span>
-                  </>
-                )}
+                <Smartphone className="w-4 h-4" />
+                <span>Pay via Banking App (BOC, Q+, Vishwa...)</span>
               </button>
 
-              <button
-                onClick={onClose}
-                className="px-4 py-2.5 rounded-xl border-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 transition-colors"
-                style={{ borderColor }}
-              >
-                Close
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => copyToClipboard('all', `${currentAccount.bankName} | ${currentAccount.accountName} | ${cleanAccountNumber(currentAccount.accountNumber)} | ${currentAccount.contributionText || 'LKR 300'}`)}
+                  className="flex-1 py-2 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-1.5 active:translate-x-[1px] active:translate-y-[1px]"
+                  style={{
+                    borderColor,
+                    backgroundColor: isDarkMode ? '#232936' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#121212',
+                    boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+                  }}
+                >
+                  {copiedKey === 'all' ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Copied Details!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy All Details</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-xl border-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 transition-colors"
+                  style={{ borderColor }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
+
+    {/* Banking App Selector Sheet rendered outside the modal container to prevent unmount glitch */}
+    <BankingAppChooserModal
+      isOpen={showAppChooser}
+      onClose={() => setShowAppChooser(false)}
+      bankAccount={currentAccount}
+      isDarkMode={isDarkMode}
+    />
+    </>
   );
 });
 QuickActionModal.displayName = 'QuickActionModal';
@@ -680,20 +761,26 @@ const ProfileSheet = React.memo(({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            key="profile-backdrop"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
           />
+
+          {/* Slide-over Sheet */}
           <motion.div
-            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-88 flex flex-col border-l-2 select-none"
+            key="profile-content"
+            className="relative z-10 h-full w-full sm:w-88 flex flex-col border-l-2 select-none transform-gpu"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={spring}
+            transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
             style={{
               backgroundColor: sheetBg,
               borderColor,
@@ -842,7 +929,7 @@ const ProfileSheet = React.memo(({
               </button>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
@@ -869,23 +956,29 @@ const MeetingSheet = React.memo(({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex flex-col">
+          {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            key="meeting-sheet-backdrop"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
           />
+
+          {/* Full-Screen Sheet Container */}
           <motion.div
-            className="fixed inset-0 z-50 flex flex-col select-none"
+            key="meeting-sheet-content"
+            className="relative w-full h-full flex flex-col select-none z-10 transform-gpu"
             style={{
               backgroundColor: sheetBg,
             }}
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={spring}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.26, ease: [0.32, 0.72, 0, 1] }}
           >
             {/* Full-Screen Header with Status Bar Safe-Area Clearance & Frosted Glass */}
             <div
@@ -999,7 +1092,7 @@ const MeetingSheet = React.memo(({
               )}
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

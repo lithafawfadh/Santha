@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import MeetingReportsManagement from './MeetingReportsManagement';
 import {
-  BarChart3, Users, DollarSign, CreditCard, FileText, Settings, Gift, X,
+  BarChart3, Users, DollarSign, CreditCard, FileText, Settings, Gift, X, Landmark,
   FileSpreadsheet, AlertCircle, Award, Bell, Menu, Activity, ChevronRight,
   TrendingUp, Wallet, ArrowUpRight, Search, AlertTriangle, LogOut
 } from 'lucide-react';
@@ -14,6 +14,7 @@ import Reports from './Reports';
 import DonationManagement from './DonationManagement';
 import WarningManagement from './WarningManagement';
 import ActivityNotifications from './ActivityNotifications';
+import BankSettingsManagement from './BankSettingsManagement';
 import DashboardSkeleton from '../common/DashboardSkeleton';
 
 export default function AdminDashboard() {
@@ -333,6 +334,7 @@ export default function AdminDashboard() {
               {activeTab === 'payments' && <PaymentGrid />}
               {activeTab === 'loans' && <LoanManagement />}
               {activeTab === 'donations' && <DonationManagement />}
+              {activeTab === 'bank-settings' && <BankSettingsManagement />}
               {activeTab === 'members' && <MemberManagement />}
               {activeTab === 'reports' && <Reports />}
               {activeTab === 'warnings' && <WarningManagement />}

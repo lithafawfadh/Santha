@@ -39,7 +39,21 @@
     </application>
 
     <!-- Permissions -->
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Banking Apps Query Visibility (Android 11+) -->
+    <queries>
+        <package android:name="lk.combank.qplus" />
+        <package android:name="com.combank.digital" />
+        <package android:name="lk.boc.bocflex" />
+        <package android:name="lk.boc.smartpay" />
+        <package android:name="com.sampath.vishwa" />
+        <package android:name="lk.sampath.wepay" />
+        <package android:name="lk.peoplesbank.peopleswave" />
+        <package android:name="lk.hnb.solo" />
+        <package android:name="lk.dialog.genie" />
+        <package android:name="lk.fintechnology.frimi" />
+        <package android:name="com.seylan.seylanpay" />
+    </queries>
 </manifest>

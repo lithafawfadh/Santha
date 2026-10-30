@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { User, Payment, Loan, GroupStats, Donation, Warning, MemberExit, ActivityLog } from '../types';
+import { User, Payment, Loan, GroupStats, Donation, Warning, MemberExit, ActivityLog, BankAccount } from '../types';
+import { DEFAULT_BANK_ACCOUNTS } from '../utils/bankingApps';
 import { authService } from '../services/authService';
 import { dataService } from '../services/dataService';
 import { MONTHLY_CONTRIBUTION } from '../data/mockData';
@@ -127,6 +128,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const darkModeKey = currentUser ? `darkMode_${currentUser.id}` : 'darkMode_guest';
   const [isDarkMode, setIsDarkMode] = useLocalStorage(darkModeKey, false);
   const [warnings, setWarnings] = useState<Warning[]>(initialCache.warnings || []);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>(initialCache.bankAccounts || DEFAULT_BANK_ACCOUNTS);
+
+  const activeBankAccounts = useMemo(() => {
+    const list = bankAccounts.filter(a => a.isActive);
+    return list.length > 0 ? list : bankAccounts;
+  }, [bankAccounts]);
+
   
   const [groupStats, setGroupStats] = useState<GroupStats>({
     totalMembers: 0,
@@ -199,7 +207,8 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
     if (showGlobalLoading) {
       setLoading(true);
     }
-    const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData, activitiesData] = await Promise.all([
+    const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData, activitiesData, bankAccountsData] = await Promise.all([
+        dataService.getBankAccounts(),
       dataService.getUsers(),
       dataService.getPayments(),
       dataService.getLoans(),

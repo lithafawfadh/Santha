@@ -94,3 +94,20 @@ export interface ActivityLog {
   actorId: string;
   createdAt: string;
 }
+
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  branchName: string;
+  contributionText?: string;
+  notes?: string;
+  isActive: boolean;
+  isPrimary: boolean;
+  qrCodeUrl?: string;
+  displayOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
