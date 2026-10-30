@@ -304,12 +304,38 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
       setIsOffline(true);
     };
 
+    // 1. Online / Offline listeners
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // 2. App Focus & Visibility Change (triggers instant sync when user reopens/switches to app)
+    let lastResumeSync = Date.now();
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible' && currentUser) {
+        // Debounce by 5s to avoid double triggers
+        if (Date.now() - lastResumeSync > 5000) {
+          lastResumeSync = Date.now();
+          refreshData(false);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
+    // 3. Gentle Background Heartbeat: sync every 45s only if user is actively viewing the app
+    const syncInterval = setInterval(() => {
+      if (document.visibilityState === 'visible' && currentUser && !document.hidden) {
+        refreshData(false);
+      }
+    }, 45000);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      clearInterval(syncInterval);
     };
   }, [currentUser?.id]);
 
