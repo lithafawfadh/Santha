@@ -208,14 +208,14 @@ const refreshData = async (showGlobalLoading: boolean = true) => {
       setLoading(true);
     }
     const [usersData, paymentsData, loansData, donationsData, warningsData, exitsData, activitiesData, bankAccountsData] = await Promise.all([
-        dataService.getBankAccounts(),
       dataService.getUsers(),
       dataService.getPayments(),
       dataService.getLoans(),
       dataService.getDonations(),
       dataService.getWarnings(),
       dataService.getMemberExits(),
-      dataService.getActivityLogs()
+      dataService.getActivityLogs(),
+      dataService.getBankAccounts()
     ]);
 
     setAllUsers(usersData);
