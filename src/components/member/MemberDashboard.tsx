@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, DollarSign, Calendar, AlertCircle, TrendingUp, CreditCard,
   Edit3, X, Moon, Sun, CheckCircle2, Clock, AlertTriangle,
-  Activity, FileText, Zap, Users, LogOut,
+  Activity, FileText, Zap, Users, LogOut, Wallet,
   ChevronDown, Copy, Check, ArrowRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
@@ -50,6 +50,7 @@ const NavBar = React.memo(({
       style={{
         backgroundColor: headerBg,
         borderColor,
+        paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
       }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
@@ -920,39 +921,55 @@ const MeetingSheet = React.memo(({
             onClick={onClose}
           />
           <motion.div
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t-2 border-x-2 overflow-hidden select-none"
+            className="fixed inset-0 z-50 flex flex-col select-none"
             style={{
               backgroundColor: sheetBg,
-              borderColor,
-              maxHeight: '85dvh',
-              boxShadow: '0px -6px 0px rgba(0,0,0,0.2)',
             }}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
+            initial={{ opacity: 0, y: '100%' }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: '100%' }}
             transition={spring}
           >
-            {/* Sheet Handle & Title */}
-            <div className="flex items-center justify-between p-5 border-b-2" style={{ borderColor }}>
-              <div>
-                <h3 className="text-base font-black text-neutral-950 dark:text-white">
-                  Community Resolutions Archive
-                </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {reports.length} official assembly record{reports.length !== 1 ? 's' : ''}
-                </p>
+            {/* Full-Screen Header with Status Bar Safe-Area Clearance */}
+            <div
+              className="border-b-2 shrink-0 transition-colors"
+              style={{
+                borderColor,
+                backgroundColor: sheetBg,
+                paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
+              }}
+            >
+              <div className="flex items-center justify-between px-5 h-16">
+                <div>
+                  <h3 className="text-base font-black text-neutral-950 dark:text-white">
+                    Community Resolutions Archive
+                  </h3>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {reports.length} official assembly record{reports.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-9 h-9 rounded-xl border-2 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white active:translate-x-[1px] active:translate-y-[1px] transition-all"
+                  style={{
+                    borderColor,
+                    backgroundColor: isDarkMode ? '#171B26' : '#FFFFFF',
+                    boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+                  }}
+                  aria-label="Close resolutions archive"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg border-2 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
-                style={{ borderColor }}
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
 
-            {/* List */}
-            <div className="overflow-y-auto p-5 space-y-4" style={{ maxHeight: 'calc(85dvh - 80px)' }}>
+            {/* Scrollable Resolution Content Area */}
+            <div
+              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-w-4xl w-full mx-auto"
+              style={{
+                paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 32px)',
+              }}
+            >
               {reports.length === 0 ? (
                 <div className="text-center py-12 text-neutral-400">
                   <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
@@ -1232,7 +1249,7 @@ export default function MemberDashboard() {
             iconColor="#FFFFFF"
             badge={
               <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-black border-2 whitespace-nowrap shrink-0"
                 style={{
                   borderColor,
                   backgroundColor: isDarkMode ? 'rgba(52,211,153,0.15)' : 'rgba(34,197,94,0.12)',
@@ -1259,7 +1276,7 @@ export default function MemberDashboard() {
             iconColor="#FFFFFF"
             badge={
               <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-black border-2 whitespace-nowrap shrink-0"
                 style={{
                   borderColor,
                   backgroundColor: isDarkMode ? 'rgba(255,122,0,0.15)' : 'rgba(255,122,0,0.12)',
@@ -1286,7 +1303,7 @@ export default function MemberDashboard() {
             iconColor="#FFFFFF"
             badge={
               <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-black border-2 whitespace-nowrap shrink-0"
                 style={{
                   borderColor,
                   backgroundColor: isDarkMode ? 'rgba(96,165,250,0.15)' : 'rgba(59,130,246,0.12)',
@@ -1313,7 +1330,7 @@ export default function MemberDashboard() {
             iconColor="#FFFFFF"
             badge={
               <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-black border-2"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-black border-2 whitespace-nowrap shrink-0"
                 style={{
                   borderColor,
                   backgroundColor: isDarkMode ? 'rgba(244,114,182,0.15)' : 'rgba(236,72,153,0.12)',
@@ -1583,9 +1600,9 @@ export default function MemberDashboard() {
                 color: '#22C55E',
               },
               {
-                label: 'Active Emergency Loans',
-                value: String(groupStats.activeLoans),
-                icon: CreditCard,
+                label: 'Total Collected (Pool + Loans)',
+                value: `LKR ${(groupStats.totalFunds + groupStats.totalLoanAmount).toLocaleString()}`,
+                icon: Wallet,
                 color: '#FF7A00',
               },
             ].map(({ label, value, icon: Icon, color }, i) => (

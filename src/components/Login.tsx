@@ -184,7 +184,7 @@ export default function Login() {
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md mb-6 w-fit shadow-sm">
             <span className="w-2 h-2 rounded-full bg-[#FFE600] animate-pulse" />
             <span className="text-xs font-mono font-bold tracking-widest text-[#FFE600] uppercase">
-              SANTHA LEDGER PROTOCOL
+              FORT LEDGER PROTOCOL
             </span>
           </div>
 
@@ -317,7 +317,7 @@ export default function Login() {
               style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 14px)' }}
               className="w-full text-center text-[11px] font-semibold text-[#081226]/60 select-none pb-2"
             >
-              Santha Mutual Aid • Zero-Interest Group Ledger
+              FORT Mutual Aid • Zero-Interest Group Ledger
             </div>
           </div>
 
@@ -365,7 +365,7 @@ export default function Login() {
                 {role === 'admin' ? 'Enter Admin Key' : 'Enter Your Name'}
               </h2>
               <p className="text-xs font-semibold text-[#081226]/65 text-center mb-5">
-                Santha Mutual Aid • LKR 300/mo Pool
+                FORT Mutual Aid • LKR 300/mo Pool
               </p>
 
               {/* The Form */}
@@ -425,7 +425,7 @@ export default function Login() {
                     </>
                   ) : (
                     <>
-                      <span>{role === 'admin' ? 'Authorize Admin' : 'Enter Santha'}</span>
+                      <span>{role === 'admin' ? 'Authorize Admin' : 'Enter FORT'}</span>
                       <ArrowRight className="w-4 h-4 text-[#FF7A00]" />
                     </>
                   )}
@@ -438,7 +438,7 @@ export default function Login() {
               style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
               className="w-full text-center text-[11px] font-semibold text-[#081226]/60 pt-1 select-none"
             >
-              Santha Mutual Aid • Zero-Interest Group Ledger
+              FORT Mutual Aid • Zero-Interest Group Ledger
             </div>
           </motion.div>
 

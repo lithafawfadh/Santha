@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.santha.app',
-  appName: 'Santha',
+  appName: 'FORT',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
@@ -17,6 +17,7 @@ const config: CapacitorConfig = {
       androidScaleType: 'CENTER_CROP'
     },
     StatusBar: {
+      overlaysWebView: true,
       style: 'DARK',
       backgroundColor: '#0E1117'
     }

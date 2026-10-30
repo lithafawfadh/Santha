@@ -102,7 +102,7 @@ export default function TactileFolderCard({
 
       {/* Folder Card Body */}
       <div
-        className={`relative rounded-2xl border-2 flex-1 p-4 sm:p-5 flex flex-col justify-between transition-colors ${bodyClassName}`}
+        className={`relative rounded-2xl border-2 flex-1 p-3.5 sm:p-4 flex flex-col justify-between transition-colors ${bodyClassName}`}
         style={{
           backgroundColor: cardBg,
           borderColor,
@@ -114,7 +114,7 @@ export default function TactileFolderCard({
         ) : (
           <>
             {/* Top row: Icon Squircle + Meta Badge */}
-            <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-start justify-between gap-2 mb-2.5">
               {Icon && (
                 <div
                   className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
@@ -129,7 +129,7 @@ export default function TactileFolderCard({
               )}
 
               {badge && (
-                <div className="flex items-center gap-1.5 self-start pt-0.5">
+                <div className="flex items-center gap-1.5 self-start pt-0.5 shrink-0 whitespace-nowrap">
                   {badge}
                 </div>
               )}
@@ -138,9 +138,11 @@ export default function TactileFolderCard({
             {/* Bottom row: Title & Value/Subtitle */}
             <div className="mt-auto pt-1">
               {title && (
-                <h3 className="text-[15px] sm:text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug">
-                  {title}
-                </h3>
+                <div className="min-h-[38px] flex items-end">
+                  <h3 className="text-[14px] sm:text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug">
+                    {title}
+                  </h3>
+                </div>
               )}
               {value && (
                 <div className="text-xl sm:text-2xl font-black tabular-nums tracking-tight text-neutral-950 dark:text-white mt-1">

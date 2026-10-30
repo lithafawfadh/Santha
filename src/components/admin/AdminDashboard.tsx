@@ -176,7 +176,13 @@ export default function AdminDashboard() {
       <main className="flex-1 flex flex-col min-h-screen min-w-0">
         
         {/* ─── TOP APP BAR (Matching Reference Blueprint) ─── */}
-        <header className="sticky top-0 z-40 w-full h-16 bg-white border-b-2 border-black px-4 sm:px-8 flex items-center justify-between">
+        <header
+          className="sticky top-0 z-40 w-full bg-white border-b-2 border-black"
+          style={{
+            paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
+          }}
+        >
+          <div className="w-full h-16 px-4 sm:px-8 flex items-center justify-between">
           
           {/* Breadcrumb Title */}
           <div className="flex items-center gap-3">
@@ -250,14 +256,23 @@ export default function AdminDashboard() {
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+          </div>
         </header>
 
         {/* ─── MOBILE FULL MENU OVERLAY ─── */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-[60] bg-white p-6 pt-20 overflow-y-auto border-b-3 border-black">
+          <div
+            className="lg:hidden fixed inset-0 z-[60] bg-white p-6 overflow-y-auto border-b-3 border-black"
+            style={{
+              paddingTop: 'calc(4rem + max(env(safe-area-inset-top, 0px), var(--sat, 0px)))',
+            }}
+          >
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute top-4 right-4 w-10 h-10 bg-white border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_#000]"
+              className="absolute right-4 w-10 h-10 bg-white border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_#000]"
+              style={{
+                top: 'calc(1rem + max(env(safe-area-inset-top, 0px), var(--sat, 0px)))',
+              }}
             >
               <X className="w-5 h-5" />
             </button>

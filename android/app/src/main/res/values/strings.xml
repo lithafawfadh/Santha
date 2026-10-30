@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Santha</string>
-    <string name="title_activity_main">Santha</string>
+    <string name="app_name">FORT</string>
+    <string name="title_activity_main">FORT</string>
     <string name="package_name">com.santha.app</string>
     <string name="custom_url_scheme">com.santha.app</string>
 </resources>

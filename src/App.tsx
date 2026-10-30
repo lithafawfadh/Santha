@@ -1,6 +1,7 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { AppProvider, useApp } from './context/AppContext';
 import Login from './components/Login';
 import OfflineBadge from './components/common/OfflineBadge';
@@ -42,6 +43,40 @@ function AppContent() {
       backListenerPromise.then(l => l.remove());
     };
   }, []);
+
+  // Mobile Status Bar & Notch / Safe-Area Inset Management
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const setupStatusBar = async () => {
+      try {
+        await StatusBar.setOverlaysWebView({ overlay: true });
+
+        // Retrieve native hardware status bar height
+        const info = await StatusBar.getInfo();
+        const height = (info && info.height && info.height > 0) ? info.height : 28;
+        document.documentElement.style.setProperty('--sat', `${height}px`);
+
+        // Dynamically configure status bar style and background color
+        if (isDarkMode) {
+          await StatusBar.setStyle({ style: Style.Dark });
+          await StatusBar.setBackgroundColor({ color: '#0E1117' });
+        } else {
+          await StatusBar.setStyle({ style: Style.Light });
+          const barColor = !currentUser
+            ? '#FAF7F2'
+            : currentUser.role === 'admin'
+            ? '#FFFFFF'
+            : '#FAF7F2';
+          await StatusBar.setBackgroundColor({ color: barColor });
+        }
+      } catch (err) {
+        console.warn('StatusBar configuration notice:', err);
+      }
+    };
+
+    setupStatusBar();
+  }, [isDarkMode, currentUser]);
 
   if (!currentUser) {
     return <Login />;
