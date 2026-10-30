@@ -10,7 +10,7 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
 
   const borderColor = isDarkMode ? '#2E364A' : '#121212';
   const cardBg = isDarkMode ? '#171B26' : '#FFFFFF';
-  const headerBg = isDarkMode ? '#0E1117' : '#FAF7F2';
+  const headerBg = isDarkMode ? 'rgba(14, 17, 23, 0.82)' : 'rgba(250, 247, 242, 0.82)';
   const shadow = isDarkMode ? '3px 3px 0px rgba(0,0,0,0.6)' : '3px 3px 0px #121212';
   const blockBg = isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
 
@@ -68,9 +68,11 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
     >
       {/* ── Top Navigation Bar Skeleton ── */}
       <header
-        className="sticky top-0 z-40 border-b-2 transition-colors select-none"
+        className="sticky top-0 z-40 border-b-2 select-none"
         style={{
           backgroundColor: headerBg,
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
           borderColor,
           paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
         }}
@@ -131,23 +133,17 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
       {/* ── Main Content Skeleton ── */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Section Title: My Overview */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="space-y-1.5">
-            <div
-              className="h-6 w-36 rounded-md animate-pulse"
-              style={{ backgroundColor: blockBg }}
-            />
-            <div
-              className="h-3.5 w-60 rounded-md animate-pulse"
-              style={{ backgroundColor: blockBg }}
-            />
-          </div>
+        <div className="flex items-center justify-between pt-1 pb-0.5">
           <div
-            className="h-8 w-24 rounded-xl border-2 animate-pulse"
+            className="h-6 w-32 rounded-md animate-pulse"
+            style={{ backgroundColor: blockBg }}
+          />
+          <div
+            className="h-6 w-16 rounded-lg border-2 animate-pulse"
             style={{
               borderColor,
               backgroundColor: cardBg,
-              boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+              boxShadow: isDarkMode ? '1.5px 1.5px 0px rgba(0,0,0,0.5)' : '1.5px 1.5px 0px #121212',
             }}
           />
         </div>
@@ -160,11 +156,11 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
             { label: 'MUTUAL POOL', color: '#3B82F6' },
             { label: '0% LOAN', color: '#EC4899' },
           ].map((card, idx) => (
-            <div key={idx} className="relative pt-[20px] flex flex-col">
+            <div key={idx} className="relative pt-[18px] flex flex-col">
               {/* Tab Header */}
               <div className="absolute top-0 left-3.5 z-10 flex items-end">
                 <div
-                  className="h-[20px] px-3 min-w-[64px] rounded-tl-md border-t-2 border-l-2 flex items-center justify-center text-[10px] font-black uppercase tracking-wider"
+                  className="h-[18px] px-2.5 min-w-[58px] rounded-tl-md border-t-2 border-l-2 flex items-center justify-center text-[9px] font-black uppercase tracking-wider"
                   style={{
                     backgroundColor: card.color,
                     borderColor,
@@ -174,15 +170,15 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
                   {card.label}
                 </div>
                 <svg
-                  width="11"
-                  height="20"
-                  viewBox="0 0 11 20"
+                  width="10"
+                  height="18"
+                  viewBox="0 0 10 18"
                   fill="none"
                   className="shrink-0 -ml-[1px]"
                   style={{ color: borderColor }}
                 >
                   <path
-                    d="M0 0 L1.5 1.5 L6.8 14.2 C8 17 9.4 20 11 20 L0 20 Z"
+                    d="M0 0 L1.5 1.5 L6.2 12.8 C7.3 15.3 8.5 18 10 18 L0 18 Z"
                     fill="currentColor"
                   />
                 </svg>
@@ -190,7 +186,7 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
 
               {/* Card Body */}
               <div
-                className="relative rounded-2xl border-2 flex-1 p-3.5 sm:p-4 flex flex-col justify-between"
+                className="relative rounded-2xl border-2 flex-1 p-3 sm:p-3.5 flex flex-col"
                 style={{
                   backgroundColor: cardBg,
                   borderColor,
@@ -198,9 +194,9 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
                 }}
               >
                 {/* Top Row: Icon + Badge */}
-                <div className="flex items-start justify-between gap-2 mb-2.5">
+                <div className="flex items-center justify-between gap-2 mb-2">
                   <div
-                    className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0 animate-pulse"
+                    className="w-9 h-9 rounded-xl border-2 flex items-center justify-center shrink-0 animate-pulse"
                     style={{
                       backgroundColor: card.color,
                       borderColor,
@@ -215,18 +211,18 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
                   />
                 </div>
 
-                {/* Bottom Row: Title & Values */}
-                <div className="mt-auto pt-1 space-y-2">
+                {/* Content: Title & Values - No dead void */}
+                <div className="space-y-1">
                   <div
-                    className="h-3.5 w-24 rounded-md animate-pulse"
+                    className="h-3 w-20 rounded-md animate-pulse"
                     style={{ backgroundColor: blockBg }}
                   />
                   <div
-                    className="h-6 w-32 rounded-md animate-pulse"
+                    className="h-5 w-24 rounded-md animate-pulse"
                     style={{ backgroundColor: blockBg }}
                   />
                   <div
-                    className="h-3 w-28 rounded-md animate-pulse"
+                    className="h-2.5 w-28 rounded-md animate-pulse"
                     style={{ backgroundColor: blockBg }}
                   />
                 </div>

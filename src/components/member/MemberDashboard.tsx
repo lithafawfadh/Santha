@@ -40,15 +40,17 @@ const NavBar = React.memo(({
   reportCount,
 }: NavBarProps) => {
   const borderColor = isDarkMode ? '#2E364A' : '#121212';
-  const headerBg = isDarkMode ? '#0E1117' : '#FAF7F2';
+  const headerBg = isDarkMode ? 'rgba(14, 17, 23, 0.82)' : 'rgba(250, 247, 242, 0.82)';
   const buttonBg = isDarkMode ? '#171B26' : '#FFFFFF';
   const shadow = isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212';
 
   return (
     <header
-      className="sticky top-0 z-40 border-b-2 transition-colors select-none"
+      className="sticky top-0 z-40 border-b-2 select-none"
       style={{
         backgroundColor: headerBg,
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         borderColor,
         paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
       }}
@@ -69,7 +71,7 @@ const NavBar = React.memo(({
             {name ? name.charAt(0).toUpperCase() : 'S'}
           </button>
 
-          <div className="leading-tight">
+          <div className="flex flex-col justify-center leading-tight">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-neutral-950 dark:text-white">
                 {name || 'Member'}
@@ -87,7 +89,7 @@ const NavBar = React.memo(({
               </span>
             </div>
             <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              @{username || 'member'} · 0% Interest Fund
+              @{username || 'member'}
             </p>
           </div>
         </div>
@@ -290,21 +292,21 @@ const LoanCard = React.memo(({ loan, isDarkMode }: LoanCardProps) => {
       isDarkMode={isDarkMode}
       delay={0.12}
     >
-      {/* Top Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      {/* Top Header - Optically Centered */}
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div
-          className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0"
+          className="w-9 h-9 rounded-xl border-2 flex items-center justify-center shrink-0"
           style={{
             backgroundColor: tabColor,
             borderColor,
             color: '#FFFFFF',
           }}
         >
-          <Zap className="w-5 h-5" strokeWidth={2.2} />
+          <Zap className="w-4.5 h-4.5" strokeWidth={2.4} />
         </div>
 
         <span
-          className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border-2"
+          className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border-2 shrink-0"
           style={{
             borderColor,
             backgroundColor:
@@ -331,99 +333,66 @@ const LoanCard = React.memo(({ loan, isDarkMode }: LoanCardProps) => {
         </span>
       </div>
 
-      {/* Main Loan Details */}
-      <div className="space-y-3">
+      {/* Main Loan Details & Consolidated Status */}
+      <div className="space-y-2">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <h3 className="text-[12px] sm:text-[13px] font-bold tracking-tight text-neutral-600 dark:text-neutral-400 leading-tight">
             Emergency Loan · 0% Interest
-          </p>
-          <p className="text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-neutral-950 dark:text-white mt-0.5">
+          </h3>
+          <div className="text-xl sm:text-2xl font-black tabular-nums tracking-tight text-neutral-950 dark:text-white leading-tight mt-0.5">
             LKR {loan.amount.toLocaleString()}
-          </p>
+          </div>
         </div>
 
-        {/* Outstanding Callout */}
-        {loan.status !== 'repaid' && outstanding > 0 && (
+        {/* Dynamic Repayment Bar & Context */}
+        {loan.status !== 'repaid' && (
           <div
-            className="p-3 rounded-xl border-2"
+            className="p-2.5 rounded-xl border-2 space-y-2"
             style={{
               borderColor,
-              backgroundColor: isDarkMode ? 'rgba(255,122,0,0.08)' : '#FFF7ED',
-              boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.5)' : '2px 2px 0px #121212',
+              backgroundColor: isDarkMode ? 'rgba(255,122,0,0.06)' : '#FFFBF5',
             }}
           >
-            <div className="flex items-center justify-between text-xs font-bold text-neutral-600 dark:text-neutral-300 mb-0.5">
-              <span>Outstanding Balance</span>
-              <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="text-neutral-600 dark:text-neutral-300">
+                {loan.repaidAmount > 0 ? (
+                  <>Outstanding: <span className="font-black text-neutral-950 dark:text-white">LKR {outstanding.toLocaleString()}</span></>
+                ) : (
+                  <span className="font-semibold text-neutral-500 dark:text-neutral-400">Total Outstanding</span>
+                )}
+              </span>
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-orange-600 dark:text-orange-400">
                 {isOverdue ? `${Math.abs(daysRemaining)}d overdue` : `${daysRemaining}d left`}
               </span>
             </div>
-            <p className="text-xl font-black tabular-nums text-neutral-950 dark:text-white">
-              LKR {outstanding.toLocaleString()}
-            </p>
-            <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mt-1">
-              Due {dueDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            </p>
+
+            {/* Progress bar */}
+            <div
+              className="h-2 rounded-full border overflow-hidden"
+              style={{
+                borderColor,
+                backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#E2E8F0',
+              }}
+            >
+              <motion.div
+                className="h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+                style={{ backgroundColor: '#FF7A00' }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] font-medium text-neutral-500 dark:text-neutral-400 pt-0.5">
+              <span>{Math.round(progress)}% repaid (LKR {loan.repaidAmount.toLocaleString()})</span>
+              <span>Due {dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            </div>
           </div>
         )}
 
-        {/* Repayment Progress Stats */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div
-            className="p-2.5 rounded-xl border-2"
-            style={{
-              borderColor,
-              backgroundColor: isDarkMode ? 'rgba(52,211,153,0.08)' : 'rgba(34,197,94,0.08)',
-            }}
-          >
-            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-0.5">
-              Paid So Far
-            </p>
-            <p className="text-sm font-black tabular-nums text-emerald-800 dark:text-emerald-200">
-              LKR {loan.repaidAmount.toLocaleString()}
-            </p>
-          </div>
-
-          <div
-            className="p-2.5 rounded-xl border-2"
-            style={{
-              borderColor,
-              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FAF7F2',
-            }}
-          >
-            <p className="text-[10px] font-black uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-0.5">
-              Repaid
-            </p>
-            <p className="text-sm font-black tabular-nums text-neutral-900 dark:text-white">
-              {Math.round(progress)}%
-            </p>
-          </div>
-        </div>
-
-        {/* Progress Bar with 2px Border */}
-        <div>
-          <div
-            className="h-2.5 rounded-full border-2 overflow-hidden"
-            style={{
-              borderColor,
-              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#E2E8F0',
-            }}
-          >
-            <motion.div
-              className="h-full rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1.1, ease: 'easeOut' }}
-              style={{
-                backgroundColor: loan.status === 'repaid' ? '#22C55E' : '#FF7A00',
-              }}
-            />
-          </div>
-        </div>
-
         {loan.status === 'repaid' && (
-          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 pt-1">
-            <CheckCircle2 className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 py-1">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>Loan fully repaid in good standing.</span>
           </div>
         )}
@@ -451,20 +420,20 @@ const NoLoan = React.memo(({
       isDarkMode={isDarkMode}
       delay={0.12}
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div
-          className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0"
+          className="w-9 h-9 rounded-xl border-2 flex items-center justify-center shrink-0"
           style={{
             backgroundColor: '#EC4899',
             borderColor,
             color: '#FFFFFF',
           }}
         >
-          <Zap className="w-5 h-5" strokeWidth={2.2} />
+          <Zap className="w-4.5 h-4.5" strokeWidth={2.4} />
         </div>
 
         <span
-          className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border-2"
+          className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border-2 shrink-0"
           style={{
             borderColor,
             backgroundColor: 'rgba(236,72,153,0.12)',
@@ -475,18 +444,21 @@ const NoLoan = React.memo(({
         </span>
       </div>
 
-      <div className="space-y-2 mb-4">
-        <h4 className="text-base font-bold text-neutral-900 dark:text-white">
-          0% Emergency Loan Protection
-        </h4>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-          As an active contributing member, you have instant access to interest-free emergency assistance when urgent needs arise.
+      <div className="space-y-1 mb-3">
+        <h3 className="text-[12px] sm:text-[13px] font-bold tracking-tight text-neutral-600 dark:text-neutral-400 leading-tight">
+          0% Emergency Protection
+        </h3>
+        <div className="text-base sm:text-lg font-black tracking-tight text-neutral-950 dark:text-white leading-tight">
+          Instant Aid Ready
+        </div>
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-normal">
+          Interest-free emergency assistance accessible whenever urgent needs arise.
         </p>
       </div>
 
       <button
         onClick={onRequestLoan}
-        className="w-full py-2.5 px-4 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        className="w-full py-2 px-3.5 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-1.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
         style={{
           borderColor,
           backgroundColor: '#EC4899',
@@ -915,12 +887,14 @@ const MeetingSheet = React.memo(({
             exit={{ opacity: 0, y: '100%' }}
             transition={spring}
           >
-            {/* Full-Screen Header with Status Bar Safe-Area Clearance */}
+            {/* Full-Screen Header with Status Bar Safe-Area Clearance & Frosted Glass */}
             <div
-              className="border-b-2 shrink-0 transition-colors"
+              className="border-b-2 shrink-0 transition-colors sticky top-0 z-10"
               style={{
                 borderColor,
-                backgroundColor: sheetBg,
+                backgroundColor: isDarkMode ? 'rgba(14, 17, 23, 0.82)' : 'rgba(250, 247, 242, 0.82)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
                 paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
               }}
             >
@@ -1000,10 +974,9 @@ const MeetingSheet = React.memo(({
                         {r.decisions.map((d, j) => (
                           <div
                             key={j}
-                            className="flex items-start gap-2 p-2 rounded-xl border text-xs"
+                            className="flex items-start gap-2 py-1 px-2 rounded-lg text-xs leading-snug"
                             style={{
-                              borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : '#FAF7F2',
+                              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
                             }}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
@@ -1201,24 +1174,20 @@ export default function MemberDashboard() {
         />
 
         {/* ── Section Title: My Overview ── */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-950 dark:text-white">
-              My Overview
-            </h1>
-            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Personal contribution status & ledger balances
-            </p>
-          </div>
+        <div className="flex items-center justify-between pt-1 pb-0.5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-950 dark:text-white leading-none">
+            My Overview
+          </h1>
           <span
-            className="text-xs font-bold text-neutral-600 dark:text-neutral-400 px-3 py-1 rounded-xl border-2"
+            className="px-2.5 py-1 rounded-lg border-2 text-[10px] sm:text-xs font-mono font-bold tracking-wider uppercase transition-colors"
             style={{
               borderColor,
-              backgroundColor: isDarkMode ? '#171B26' : '#FFFFFF',
-              boxShadow: isDarkMode ? '2px 2px 0px rgba(0,0,0,0.6)' : '2px 2px 0px #121212',
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.04)' : '#FFFFFF',
+              color: isDarkMode ? '#94A3B8' : '#64748B',
+              boxShadow: isDarkMode ? '1.5px 1.5px 0px rgba(0,0,0,0.5)' : '1.5px 1.5px 0px #121212',
             }}
           >
-            {selectedYear} Fiscal Period
+            FY {selectedYear}
           </span>
         </div>
 
@@ -1563,14 +1532,14 @@ export default function MemberDashboard() {
           isDarkMode={isDarkMode}
           delay={0.2}
         >
-          <div className="flex items-center gap-2 pb-3 border-b-2" style={{ borderColor }}>
+          <div className="flex items-center gap-2 pb-2.5 border-b-2" style={{ borderColor }}>
             <Activity className="w-4 h-4 text-[#FF7A00]" />
-            <h3 className="text-sm font-black text-neutral-950 dark:text-white uppercase tracking-wider">
-              Group Mutual Ledger Summary
+            <h3 className="text-xs sm:text-sm font-bold text-neutral-950 dark:text-white uppercase tracking-wider">
+              Community Ledger Summary
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2.5">
             {[
               {
                 label: 'Active Trusted Members',
@@ -1593,27 +1562,27 @@ export default function MemberDashboard() {
             ].map(({ label, value, icon: Icon, color }, i) => (
               <div
                 key={i}
-                className="p-3.5 rounded-xl border-2 flex items-center gap-3.5"
+                className="p-2.5 sm:p-3 rounded-xl border-2 flex items-center gap-3 transition-colors"
                 style={{
                   borderColor,
                   backgroundColor: isDarkMode ? 'rgba(255,255,255,0.02)' : '#FAF7F2',
                 }}
               >
                 <div
-                  className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0"
+                  className="w-9 h-9 rounded-xl border-2 flex items-center justify-center shrink-0"
                   style={{
                     backgroundColor: color,
                     borderColor,
                     color: '#FFFFFF',
                   }}
                 >
-                  <Icon className="w-5 h-5" strokeWidth={2.2} />
+                  <Icon className="w-4.5 h-4.5" strokeWidth={2.4} />
                 </div>
-                <div>
-                  <p className="text-lg font-black tabular-nums text-neutral-950 dark:text-white leading-tight">
+                <div className="min-w-0">
+                  <p className="text-base sm:text-lg font-black tabular-nums text-neutral-950 dark:text-white leading-tight truncate">
                     {value}
                   </p>
-                  <p className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
                     {label}
                   </p>
                 </div>

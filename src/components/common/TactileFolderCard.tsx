@@ -67,13 +67,13 @@ export default function TactileFolderCard({
       whileHover={onClick ? { y: -2 } : undefined}
       whileTap={onClick ? { scale: 0.985, y: 1 } : undefined}
       onClick={onClick}
-      className={`relative pt-[20px] flex flex-col ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`relative pt-[18px] flex flex-col ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       {/* Folder Tab sticking out with signature right-side wedge */}
       <div className="absolute top-0 left-3.5 z-10 flex items-end select-none pointer-events-none">
         {/* Main Tab Body */}
         <div
-          className="h-[20px] px-3 min-w-[64px] rounded-tl-md border-t-2 border-l-2 flex items-center justify-center text-[10px] font-black uppercase tracking-wider relative z-10"
+          className="h-[18px] px-2.5 min-w-[58px] rounded-tl-md border-t-2 border-l-2 flex items-center justify-center text-[9px] font-black uppercase tracking-wider relative z-10"
           style={{
             backgroundColor: tabColor,
             borderColor,
@@ -85,16 +85,16 @@ export default function TactileFolderCard({
 
         {/* Signature Bevel Wedge on the right */}
         <svg
-          width="11"
-          height="20"
-          viewBox="0 0 11 20"
+          width="10"
+          height="18"
+          viewBox="0 0 10 18"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="shrink-0 -ml-[1px] relative z-0"
           style={{ color: borderColor }}
         >
           <path
-            d="M0 0 L1.5 1.5 L6.8 14.2 C8 17 9.4 20 11 20 L0 20 Z"
+            d="M0 0 L1.5 1.5 L6.2 12.8 C7.3 15.3 8.5 18 10 18 L0 18 Z"
             fill="currentColor"
           />
         </svg>
@@ -102,7 +102,7 @@ export default function TactileFolderCard({
 
       {/* Folder Card Body */}
       <div
-        className={`relative rounded-2xl border-2 flex-1 p-3.5 sm:p-4 flex flex-col justify-between transition-colors ${bodyClassName}`}
+        className={`relative rounded-2xl border-2 flex-1 p-3 sm:p-3.5 flex flex-col transition-colors ${bodyClassName}`}
         style={{
           backgroundColor: cardBg,
           borderColor,
@@ -113,44 +113,42 @@ export default function TactileFolderCard({
           children
         ) : (
           <>
-            {/* Top row: Icon Squircle + Meta Badge */}
-            <div className="flex items-start justify-between gap-2 mb-2.5">
+            {/* Top row: Compact Icon Squircle + Meta Badge */}
+            <div className="flex items-center justify-between gap-2 mb-2">
               {Icon && (
                 <div
-                  className="w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
+                  className="w-9 h-9 rounded-xl border-2 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
                   style={{
                     backgroundColor: iconBg || tabColor,
                     borderColor,
                     color: iconColor || (['#3B82F6', '#8B5CF6', '#64748B'].includes(iconBg || tabColor) ? '#FFFFFF' : '#121212'),
                   }}
                 >
-                  <Icon className="w-5 h-5" strokeWidth={2.2} />
+                  <Icon className="w-4.5 h-4.5" strokeWidth={2.4} />
                 </div>
               )}
 
               {badge && (
-                <div className="flex items-center gap-1.5 self-start pt-0.5 shrink-0 whitespace-nowrap">
+                <div className="flex items-center gap-1.5 self-center shrink-0 whitespace-nowrap">
                   {badge}
                 </div>
               )}
             </div>
 
-            {/* Bottom row: Title & Value/Subtitle */}
-            <div className="mt-auto pt-1">
+            {/* Bottom Content: Title & Value/Subtitle - No dead void */}
+            <div className="space-y-0.5">
               {title && (
-                <div className="min-h-[38px] flex items-end">
-                  <h3 className="text-[14px] sm:text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug">
-                    {title}
-                  </h3>
-                </div>
+                <h3 className="text-[12px] sm:text-[13px] font-bold tracking-tight text-neutral-600 dark:text-neutral-400 leading-tight">
+                  {title}
+                </h3>
               )}
               {value && (
-                <div className="text-xl sm:text-2xl font-black tabular-nums tracking-tight text-neutral-950 dark:text-white mt-1">
+                <div className="text-lg sm:text-xl font-black tabular-nums tracking-tight text-neutral-950 dark:text-white leading-tight">
                   {value}
                 </div>
               )}
               {subtitle && (
-                <p className="text-[11px] sm:text-xs font-medium text-neutral-500 dark:text-neutral-400 mt-0.5 leading-normal">
+                <p className="text-[10px] sm:text-[11px] font-medium text-neutral-500 dark:text-neutral-400 leading-normal">
                   {subtitle}
                 </p>
               )}

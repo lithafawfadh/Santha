@@ -167,8 +167,11 @@ export default function AdminDashboard() {
         
         {/* ─── TOP APP BAR (Matching Reference Blueprint) ─── */}
         <header
-          className="sticky top-0 z-40 w-full bg-white border-b-2 border-black"
+          className="sticky top-0 z-40 w-full border-b-2 border-black"
           style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
           }}
         >
