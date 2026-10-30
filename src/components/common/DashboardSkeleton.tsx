@@ -295,26 +295,23 @@ export default function DashboardSkeleton({ isAdmin = false }: DashboardSkeleton
             </div>
 
             {/* 12-Month Grid Placeholder */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
                 <div
                   key={m}
-                  className="h-24 rounded-xl border-2 p-2.5 flex flex-col justify-between animate-pulse"
+                  className="rounded-2xl border-2 py-3 px-2 sm:py-3.5 sm:px-3 flex flex-col items-center justify-center gap-2 animate-pulse"
                   style={{
                     backgroundColor: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
                     borderColor,
+                    boxShadow: shadow,
                   }}
                 >
                   <div
-                    className="h-3 w-10 rounded-md"
+                    className="h-3 w-8 rounded-md"
                     style={{ backgroundColor: blockBg }}
                   />
                   <div
-                    className="w-7 h-7 rounded-full mx-auto"
-                    style={{ backgroundColor: blockBg }}
-                  />
-                  <div
-                    className="h-2 w-12 mx-auto rounded-md"
+                    className="w-6 h-6 rounded-full"
                     style={{ backgroundColor: blockBg }}
                   />
                 </div>

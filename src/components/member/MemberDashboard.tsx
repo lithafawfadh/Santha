@@ -220,7 +220,9 @@ const MonthTile = React.memo(({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ ...springFast, delay: index * 0.02 }}
-      className="relative rounded-xl border-2 p-2.5 sm:p-3 flex flex-col items-center justify-between min-h-[82px] select-none transition-all"
+      whileTap={{ scale: 0.95 }}
+      title={isPaid && paidDate ? `Paid on ${new Date(paidDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : month}
+      className="relative rounded-2xl border-2 py-3 px-2 sm:py-3.5 sm:px-3 flex flex-col items-center justify-center gap-2 select-none transition-all cursor-default"
       style={{
         backgroundColor: bgStyle,
         borderColor: borderStyle,
@@ -229,49 +231,32 @@ const MonthTile = React.memo(({
     >
       {/* Month Label */}
       <span
-        className="text-[11px] font-black tracking-wider uppercase"
+        className="text-xs sm:text-[13px] font-black tracking-wider uppercase leading-none"
         style={{ color: badgeText }}
       >
         {shortMonth}
       </span>
 
       {/* Center Icon */}
-      <div className="my-1 flex items-center justify-center">
+      <div className="flex items-center justify-center">
         {isPaid ? (
           <CheckCircle2
-            className="w-5 h-5 text-emerald-500 dark:text-emerald-400"
-            strokeWidth={2.4}
+            className="w-6 h-6 text-emerald-600 dark:text-emerald-400"
+            strokeWidth={2.5}
           />
         ) : isCurrent ? (
           <div className="relative">
-            <Clock className="w-5 h-5 text-orange-500 animate-pulse" strokeWidth={2.4} />
+            <Clock className="w-6 h-6 text-orange-500 animate-pulse" strokeWidth={2.5} />
           </div>
         ) : isPast ? (
           <AlertTriangle
-            className="w-5 h-5 text-red-500 dark:text-red-400"
-            strokeWidth={2.4}
+            className="w-6 h-6 text-red-500 dark:text-red-400"
+            strokeWidth={2.5}
           />
         ) : (
           <div
-            className="w-4 h-4 rounded-full border-2 border-neutral-300 dark:border-neutral-700"
+            className="w-5 h-5 rounded-full border-2 border-neutral-300 dark:border-neutral-700 opacity-60"
           />
-        )}
-      </div>
-
-      {/* Status / Date Label */}
-      <div className="text-[10px] font-bold text-center leading-tight truncate w-full">
-        {isPaid && paidDate ? (
-          <span className="text-emerald-700 dark:text-emerald-300 font-black">
-            {new Date(paidDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </span>
-        ) : isPaid ? (
-          <span className="text-emerald-700 dark:text-emerald-300">Paid</span>
-        ) : isCurrent ? (
-          <span className="text-orange-600 dark:text-orange-400 font-black">Due Now</span>
-        ) : isPast ? (
-          <span className="text-red-600 dark:text-red-400 font-bold">Unpaid</span>
-        ) : (
-          <span className="text-neutral-400 dark:text-neutral-500">Upcoming</span>
         )}
       </div>
     </motion.div>
