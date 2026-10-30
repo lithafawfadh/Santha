@@ -44,6 +44,7 @@ export default function AdminDashboard() {
     reports: { accent: '#818CF8' },
     warnings: { accent: '#FF6B6B' },
     meetings: { accent: '#F59E0B' },
+    'bank-settings': { accent: '#FF7A00' },
   };
 
   const tabSections = [
@@ -60,6 +61,7 @@ export default function AdminDashboard() {
         { id: 'loans', label: 'LOANS', icon: CreditCard },
         { id: 'donations', label: 'DONATIONS', icon: Gift },
         { id: 'finances', label: 'FINANCES', icon: FileSpreadsheet },
+        { id: 'bank-settings', label: 'BANK SETTINGS', icon: Landmark },
       ]
     },
     {
