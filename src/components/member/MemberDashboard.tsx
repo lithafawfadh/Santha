@@ -13,7 +13,7 @@ import WarningBanner from '../common/WarningBanner';
 import TactileFolderCard from '../common/TactileFolderCard';
 import MeetingReportCard from './MeetingReportCard';
 import BankingAppChooserModal from '../common/BankingAppChooserModal';
-import { cleanAccountNumber } from '../../utils/bankingApps';
+import { cleanAccountNumber, openNativePaymentChooser } from '../../utils/bankingApps';
 
 // ─── Spring Presets ──────────────────────────────────────────────────────────
 const spring = { type: 'spring', stiffness: 350, damping: 28 };
@@ -486,8 +486,8 @@ interface QuickActionModalProps {
 const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActionModalProps) => {
   const { activeBankAccounts } = useApp();
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const [showAppChooser, setShowAppChooser] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [payStatus, setPayStatus] = useState<string | null>(null);
 
   const accounts = activeBankAccounts && activeBankAccounts.length > 0
     ? activeBankAccounts
@@ -515,8 +515,26 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
+  const handlePayViaNativeChooser = async () => {
+    setPayStatus('Account copied! Opening app chooser...');
+    setCopiedKey('acc');
+
+    // Trigger the native Android bottom chooser (Action Chooser sheet)
+    const opened = await openNativePaymentChooser(currentAccount);
+
+    setTimeout(() => {
+      setPayStatus(null);
+      setCopiedKey(null);
+    }, 3500);
+
+    if (!opened) {
+      // If running on a desktop browser that has no native chooser sheet, fallback notification
+      setPayStatus('Account number copied to clipboard! Paste it into your online banking.');
+      setTimeout(() => setPayStatus(null), 4000);
+    }
+  };
+
   return (
-    <>
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
@@ -651,13 +669,27 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
                   {currentAccount.notes || 'Please include your member name in the transfer remarks so the treasurer can stamp your month promptly.'}
                 </span>
               </div>
+
+              {/* Live Toast feedback */}
+              {payStatus && (
+                <div
+                  className="p-2 rounded-lg border-2 text-[11px] font-black text-center animate-fadeIn"
+                  style={{
+                    borderColor,
+                    backgroundColor: '#10B981',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  {payStatus}
+                </div>
+              )}
             </div>
 
             {/* Footer Buttons */}
             <div className="flex flex-col gap-2 pt-2 border-t" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
-              {/* Primary Action: Open Banking App */}
+              {/* Native Android Chooser Button */}
               <button
-                onClick={() => setShowAppChooser(true)}
+                onClick={handlePayViaNativeChooser}
                 className="w-full py-2.5 rounded-xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2 active:translate-x-[1px] active:translate-y-[1px]"
                 style={{
                   borderColor,
@@ -667,7 +699,7 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
                 }}
               >
                 <Smartphone className="w-4 h-4" />
-                <span>Pay via Banking App (BOC, Q+, Vishwa...)</span>
+                <span>Pay via Banking App</span>
               </button>
 
               <div className="flex gap-2">
@@ -707,15 +739,6 @@ const QuickActionModal = React.memo(({ isOpen, onClose, isDarkMode }: QuickActio
         </div>
       )}
     </AnimatePresence>
-
-    {/* Banking App Selector Sheet rendered outside the modal container to prevent unmount glitch */}
-    <BankingAppChooserModal
-      isOpen={showAppChooser}
-      onClose={() => setShowAppChooser(false)}
-      bankAccount={currentAccount}
-      isDarkMode={isDarkMode}
-    />
-    </>
   );
 });
 QuickActionModal.displayName = 'QuickActionModal';
