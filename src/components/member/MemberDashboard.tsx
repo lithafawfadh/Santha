@@ -975,6 +975,19 @@ const MeetingSheet = React.memo(({
 }: MeetingSheetProps) => {
   const borderColor = isDarkMode ? '#2E364A' : '#121212';
   const sheetBg = isDarkMode ? '#0E1117' : '#FAF7F2';
+  const headerBg = isDarkMode ? '#131822' : '#F5F0E8';
+
+  // Prevent background scroll bleed when resolution sheet is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -983,11 +996,11 @@ const MeetingSheet = React.memo(({
           {/* Backdrop */}
           <motion.div
             key="meeting-sheet-backdrop"
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             onClick={onClose}
           />
 
@@ -1001,16 +1014,14 @@ const MeetingSheet = React.memo(({
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ duration: 0.26, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
           >
-            {/* Full-Screen Header with Status Bar Safe-Area Clearance & Frosted Glass */}
+            {/* Solid Hardware-Accelerated Header (no GPU backdrop-filter flicker during translate) */}
             <div
-              className="border-b-2 shrink-0 transition-colors sticky top-0 z-10"
+              className="border-b-2 shrink-0 sticky top-0 z-10 transition-colors"
               style={{
                 borderColor,
-                backgroundColor: isDarkMode ? 'rgba(14, 17, 23, 0.82)' : 'rgba(250, 247, 242, 0.82)',
-                backdropFilter: 'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                backgroundColor: headerBg,
                 paddingTop: 'max(env(safe-area-inset-top, 0px), var(--sat, 0px))',
               }}
             >
@@ -1043,6 +1054,7 @@ const MeetingSheet = React.memo(({
               className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-w-4xl w-full mx-auto"
               style={{
                 paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 32px)',
+                WebkitOverflowScrolling: 'touch',
               }}
             >
               {reports.length === 0 ? (
@@ -1051,12 +1063,9 @@ const MeetingSheet = React.memo(({
                   <p className="text-sm font-bold">No meeting reports filed yet.</p>
                 </div>
               ) : (
-                reports.map((r, i) => (
-                  <motion.div
+                reports.map((r) => (
+                  <div
                     key={r.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ ...spring, delay: i * 0.04 }}
                     className="rounded-2xl border-2 p-4 space-y-3"
                     style={{
                       borderColor,
@@ -1110,7 +1119,7 @@ const MeetingSheet = React.memo(({
                         <span>Present: {r.attendees.join(', ')}</span>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 ))
               )}
             </div>
