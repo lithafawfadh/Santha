@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feature/mobile-app
+      - feat/native-payment-chooser
     tags:
       - 'v*'
   workflow_dispatch:
