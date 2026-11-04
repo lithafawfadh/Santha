@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   };
 
   const safeActivities = activities || [];
+  const googleSheetUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || '';
 
   const TAB_THEMES: Record<string, { accent: string }> = {
     overview: { accent: '#FFE600' },
@@ -354,7 +355,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <a
-                      href="https://docs.google.com/spreadsheets/d/your-google-sheet-id-placeholder/edit?rm=minimal"
+                      href={googleSheetUrl || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 bg-white text-black font-black text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 hover:bg-black hover:text-white transition-colors"
@@ -364,7 +365,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1 bg-white">
                     <iframe
-                      src="https://docs.google.com/spreadsheets/d/your-google-sheet-id-placeholder/edit?rm=minimal"
+                      src={googleSheetUrl || "about:blank"}
                       className="w-full h-full border-none"
                       title="Finances Database"
                     />

@@ -1,5 +1,6 @@
 Add-Type -AssemblyName System.Drawing
-$srcPath = "D:\santha\Santha\public\android-chrome-512x512.png"
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$srcPath = Join-Path $projectRoot "public\android-chrome-512x512.png"
 $srcImg = [System.Drawing.Image]::FromFile($srcPath)
 
 $sizes = @{
@@ -12,7 +13,7 @@ $sizes = @{
 
 foreach ($folder in $sizes.Keys) {
     $dim = $sizes[$folder]
-    $destFolder = "D:\santha\Santha\android\app\src\main\res\$folder"
+    $destFolder = Join-Path $projectRoot "android\app\src\main\res\$folder"
     if (Test-Path $destFolder) {
         $bmp = New-Object System.Drawing.Bitmap($dim, $dim)
         $graph = [System.Drawing.Graphics]::FromImage($bmp)
